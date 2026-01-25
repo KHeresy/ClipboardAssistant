@@ -13,12 +13,18 @@
 #include <QSettings>
 #include <windows.h> 
 #include "Setting.h"
+#include <QBuffer>
+#include <QImageReader>
+#include <QRegularExpression>
+#include <QNetworkRequest>
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ClipboardAssistantClass)
 {
     ui->setupUi(this);
+    
+    m_networkManager = new QNetworkAccessManager(this);
 
     // Clipboard Monitor
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
@@ -64,13 +70,70 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &eventType, void *message,
 void ClipboardAssistant::onClipboardChanged()
 {
     const QMimeData* data = QApplication::clipboard()->mimeData();
-    if (data->hasText()) {
+    
+    m_currentHtml.clear();
+    m_pendingDownloads.clear();
+
+    if (data->hasImage()) {
+        QImage image = qvariant_cast<QImage>(data->imageData());
+        if (!image.isNull()) {
+            QByteArray byteArray;
+            QBuffer buffer(&byteArray);
+            buffer.open(QIODevice::WriteOnly);
+            image.save(&buffer, "PNG");
+            QString base64 = byteArray.toBase64();
+            QString html = QString("<img src='data:image/png;base64,%1' />").arg(base64);
+            ui->textClipboard->setHtml(html);
+        } else {
+             ui->textClipboard->setText("[Invalid Image Content]");
+        }
+    } else if (data->hasHtml()) {
+        m_currentHtml = data->html();
+        ui->textClipboard->setHtml(m_currentHtml);
+        processHtmlImages(m_currentHtml);
+    } else if (data->hasText()) {
         ui->textClipboard->setText(data->text());
-    } else if (data->hasImage()) {
-        ui->textClipboard->setText("[Image Content]");
     } else {
         ui->textClipboard->setText("[Unknown Content]");
     }
+}
+
+void ClipboardAssistant::processHtmlImages(QString html)
+{
+    QRegularExpression regex("<img\\s+[^>]*src=[\\\"'](http[^\\\"']+)[\\\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
+    
+    QRegularExpressionMatchIterator i = regex.globalMatch(html);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString urlStr = match.captured(1);
+        
+        if (!m_pendingDownloads.contains(urlStr)) {
+            m_pendingDownloads.insert(urlStr);
+            
+            QNetworkRequest request((QUrl(urlStr)));
+            request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+            
+            QNetworkReply* reply = m_networkManager->get(request);
+            connect(reply, &QNetworkReply::finished, [this, reply, urlStr]() {
+                onImageDownloaded(reply, urlStr);
+            });
+        }
+    }
+}
+
+void ClipboardAssistant::onImageDownloaded(QNetworkReply* reply, QString originalUrl)
+{
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray data = reply->readAll();
+        QImage image;
+        if (image.loadFromData(data)) {
+            ui->textClipboard->document()->addResource(QTextDocument::ImageResource, QUrl(originalUrl), QVariant(image));
+            ui->textClipboard->setHtml(m_currentHtml);
+        }
+    }
+    
+    m_pendingDownloads.remove(originalUrl);
+    reply->deleteLater();
 }
 
 void ClipboardAssistant::loadPlugins()
@@ -155,16 +218,6 @@ void ClipboardAssistant::registerGlobalHotkey()
 {
     QSettings settings("Heresy", "ClipboardAssistant");
     QString hotkeyStr = settings.value("GlobalHotkey", "Ctrl+Alt+V").toString();
-    QKeySequence ks(hotkeyStr);
-    
-    // Simple mapping for demonstration (Needs more robust mapping for production)
-    // Assuming format "Ctrl+Alt+V"
-    
-    // Better parser needed for arbitrary keys, but sticking to basic MODs + Key char for now
-    // Or we could use a library like QHotKey if external libs were allowed, but here we use WinAPI directly.
-    
-    // Parse QKeySequence to WinAPI
-    // This is a naive implementation.
     
     UINT modifiers = 0;
     if (hotkeyStr.contains("Ctrl")) modifiers |= MOD_CONTROL;
@@ -172,22 +225,17 @@ void ClipboardAssistant::registerGlobalHotkey()
     if (hotkeyStr.contains("Shift")) modifiers |= MOD_SHIFT;
     
     int key = 0;
-    // Extract the last part as the key
     QStringList parts = hotkeyStr.split("+");
     if (!parts.isEmpty()) {
         QString keyPart = parts.last();
         if (keyPart.length() == 1) {
             key = keyPart.at(0).toUpper().unicode();
         } else {
-             // Handle special keys F1-F12, etc if needed. 
-             // Defaults to 'V' if parsing fails or fallback.
              if (key == 0) key = 'V'; 
         }
     }
     
-    if (!RegisterHotKey((HWND)winId(), 100, modifiers, key)) {
-         // Log or warn
-    }
+    RegisterHotKey((HWND)winId(), 100, modifiers, key);
 }
 
 void ClipboardAssistant::unregisterGlobalHotkey()
@@ -203,7 +251,6 @@ ClipboardAssistant::PluginCallback::PluginCallback(ClipboardAssistant* parent)
 
 void ClipboardAssistant::PluginCallback::onTextData(const QString& text, bool isFinal)
 {
-    // Ensure GUI updates happen on main thread
     QMetaObject::invokeMethod(m_parent, [this, text, isFinal]() {
         m_parent->handlePluginOutput(text, !m_firstChunk);
         if (m_firstChunk) m_firstChunk = false;

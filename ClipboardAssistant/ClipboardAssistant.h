@@ -6,6 +6,9 @@
 #include <QList>
 #include <QMap>
 #include <QListWidget>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QSet>
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardPlugin.h"
 
@@ -27,17 +30,23 @@ private slots:
     void onBtnCopyOutputClicked();
     void onBtnSettingsClicked();
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void onImageDownloaded(QNetworkReply* reply, QString originalUrl);
 
 private:
     void loadPlugins();
     void setupTrayIcon();
     void registerGlobalHotkey();
     void unregisterGlobalHotkey();
+    void processHtmlImages(QString html);
 
     Ui::ClipboardAssistantClass *ui;
     QSystemTrayIcon* m_trayIcon;
     QMenu* m_trayMenu;
     QList<IClipboardPlugin*> m_plugins;
+    QNetworkAccessManager* m_networkManager;
+    QString m_currentHtml;
+    QSet<QString> m_pendingDownloads;
+
     // Map list item unique ID to Plugin* and FeatureID
     struct FeatureInfo {
         IClipboardPlugin* plugin;
