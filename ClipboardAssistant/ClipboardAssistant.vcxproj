@@ -102,11 +102,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+
+    <ClCompile Include="Setting.cpp" />
     <QtRcc Include="ClipboardAssistant.qrc" />
     <QtUic Include="ClipboardAssistant.ui" />
+    <QtUic Include="Setting.ui" />
     <QtMoc Include="ClipboardAssistant.h" />
+    <QtMoc Include="Setting.h" />
     <ClCompile Include="ClipboardAssistant.cpp" />
     <ClCompile Include="main.cpp" />
+
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\IClipboardPlugin.h" />
+
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -1,21 +1,30 @@
 #pragma once
 
-#include <QWidget>
+#include <QDialog>
+#include <QKeySequence>
 #include "ui_Setting.h"
+#include "../Common/IClipboardPlugin.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SettingClass; };
 QT_END_NAMESPACE
 
-class Setting : public QWidget
+class Setting : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	Setting(QWidget *parent = nullptr);
-	~Setting();
+    Setting(const QList<IClipboardPlugin*>& plugins, QWidget *parent = nullptr);
+    ~Setting();
+
+    QKeySequence getHotkey() const;
+    void setHotkey(const QKeySequence& sequence);
+
+private slots:
+    void onPluginSelected(int row);
+    void onAccepted();
 
 private:
-	Ui::SettingClass *ui;
+    Ui::SettingClass *ui;
+    QList<IClipboardPlugin*> m_plugins;
 };
-

@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="ClipboardAssistant">
+    <qresource prefix="/ClipboardAssistant">
+        <file>app_icon.jpg</file>
     </qresource>
 </RCC>

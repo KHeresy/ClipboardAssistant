@@ -24,5 +24,6 @@ ClipboardAssistant 主程式概念：
 
 OpenAIAssistant
 - 對應主程式的 Plug-in
+- 本身不包含圖形介面、介面由主程式負責
 - 將剪貼簿的內容傳給 OpenAI 的 API，支援文字、圖檔、串流回覆
   - 在設定介面可以設定 OpenAI Server、API Key、Model、其他參數

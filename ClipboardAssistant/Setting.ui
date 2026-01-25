@@ -1,22 +1,86 @@
-<UI version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<UI version="4.0">
  <class>SettingClass</class>
- <widget class="QWidget" name="SettingClass" >
-  <property name="objectName" >
-   <string notr="true">SettingClass</string>
-  </property>
-  <property name="geometry" >
+ <widget class="QDialog" name="SettingClass">
+  <property name="geometry">
    <rect>
-	<x>0</x>
-	<y>0</y>
-	<width>600</width>
-	<height>400</height>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>400</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Setting</string>
-  </property>$centralwidget$
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBoxGeneral">
+     <property name="title">
+      <string>General</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="labelHotkey">
+        <property name="text">
+         <string>Global Hotkey:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="keySequenceEdit">
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxPlugins">
+     <property name="title">
+      <string>Plugin Settings</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QListWidget" name="listPlugins">
+        <property name="maximumSize">
+         <size>
+          <width>150</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QStackedWidget" name="stackedWidgetPlugins">
+        <widget class="QWidget" name="pageEmpty"/>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
- <connections/>
+ <layoutDefault spacing="6" margin="11"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>SettingClass</receiver>
+   <slot>accept()</slot>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>SettingClass</receiver>
+   <slot>reject()</slot>
+  </connection>
+ </connections>
 </UI>
