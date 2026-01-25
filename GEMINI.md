@@ -1,0 +1,5 @@
+- 使用的 Shell 是 pwsh、請不要使用 && 連結指令，改用分號
+- 使用的作業系統是 Windows 11、請避免使用 Linux 專用指令，例如 apt-get、apt、yum、dnf、brew 等等
+- 檔案請使用 UTF-8 編碼
+- 已經預先安裝了 Qt SDK 已經支援，請優先使用 STL 與 Qt SDK 內建的功能
+- 編輯檔案後、請使用 msbuild ClipboardAssistant.slnx 進行建置測試、確認可以編譯

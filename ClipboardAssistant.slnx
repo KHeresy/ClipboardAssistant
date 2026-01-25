@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="ClipboardAssistant/ClipboardAssistant.vcxproj" Id="d55463c8-2f17-4bcb-942e-ae9bbf2f2da4" />
+  <Project Path="OpenAIAssistant/OpenAIAssistant.vcxproj" Id="c1fc2268-1d53-4b74-ab85-23114caaef3d" />
+</Solution>
