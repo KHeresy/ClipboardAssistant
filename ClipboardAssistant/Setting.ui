@@ -41,6 +41,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="checkBoxCloseOnEsc">
+        <property name="text">
+         <string>Close main window with Esc key</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

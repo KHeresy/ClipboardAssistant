@@ -15,6 +15,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     QString hotkeyStr = settings.value("GlobalHotkey", "Ctrl+Alt+V").toString();
     ui->keySequenceEdit->setKeySequence(QKeySequence(hotkeyStr));
     ui->checkBoxAutoCopy->setChecked(settings.value("AutoCopy", false).toBool());
+    ui->checkBoxCloseOnEsc->setChecked(settings.value("CloseOnEsc", false).toBool());
 
     // Setup Plugins
     ui->listPlugins->clear();
@@ -105,5 +106,6 @@ void Setting::accept()
     QSettings settings("Heresy", "ClipboardAssistant");
     settings.setValue("GlobalHotkey", ui->keySequenceEdit->keySequence().toString());
     settings.setValue("AutoCopy", ui->checkBoxAutoCopy->isChecked());
+    settings.setValue("CloseOnEsc", ui->checkBoxCloseOnEsc->isChecked());
     QDialog::accept();
 }

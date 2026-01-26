@@ -101,6 +101,18 @@ void ClipboardAssistant::closeEvent(QCloseEvent *event)
     }
 }
 
+void ClipboardAssistant::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape) {
+        QSettings settings("Heresy", "ClipboardAssistant");
+        if (settings.value("CloseOnEsc", false).toBool()) {
+            hide();
+            return;
+        }
+    }
+    QWidget::keyPressEvent(event);
+}
+
 void ClipboardAssistant::loadSettings()
 {
     QSettings settings("Heresy", "ClipboardAssistant");
@@ -177,25 +189,30 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &eventType, void *message,
 {
     MSG* msg = static_cast<MSG*>(message);
     if (msg->message == WM_HOTKEY) {
-        if (msg->wParam == 100) {
+        int hotkeyId = (int)msg->wParam;
+        bool isMain = (hotkeyId == 100);
+        bool isFeature = m_hotkeyMap.contains(hotkeyId);
+
+        if (isMain || isFeature) {
             QSettings settings("Heresy", "ClipboardAssistant");
-            if (settings.value("AutoCopy", false).toBool()) {
-                QTimer::singleShot(50, [this]() {
-                    sendCtrlC();
-                    QTimer::singleShot(300, this, [this]() {
-                        show();
-                        activateWindow();
-                    });
-                });
-            } else {
+            auto activate = [this, hotkeyId]() {
                 show();
                 activateWindow();
-            }
-            return true;
-        } else if (m_hotkeyMap.contains(msg->wParam)) {
-            FeatureInfo info = m_hotkeyMap[msg->wParam];
-            if (info.mainButton && info.mainButton->isEnabled()) {
-                onRunFeature(info.plugin, info.featureId);
+                if (m_hotkeyMap.contains(hotkeyId)) {
+                    FeatureInfo info = m_hotkeyMap[hotkeyId];
+                    if (info.mainButton && info.mainButton->isEnabled()) {
+                        onRunFeature(info.plugin, info.featureId);
+                    }
+                }
+            };
+
+            if (settings.value("AutoCopy", false).toBool()) {
+                QTimer::singleShot(50, [this, activate]() {
+                    sendCtrlC();
+                    QTimer::singleShot(300, this, [activate]() { activate(); });
+                });
+            } else {
+                activate();
             }
             return true;
         }
@@ -479,14 +496,16 @@ void ClipboardAssistant::registerGlobalHotkey() {
             if (!feature.customShortcut.isEmpty() && feature.isCustomShortcutGlobal) {
                 int id = m_nextHotkeyId++;
                 registerFeatureHotkey(id, feature.customShortcut);
-                m_hotkeyMap.insert(id, { plugin, feature.id, nullptr });
+                QString uniqueId = plugin->name() + "::" + feature.id;
+                QPushButton* btn = m_featureMap.contains(uniqueId) ? m_featureMap[uniqueId].mainButton : nullptr;
+                m_hotkeyMap.insert(id, { plugin, feature.id, btn });
             }
         }
     }
 }
 void ClipboardAssistant::registerFeatureHotkey(int id, const QKeySequence& ks) {
     if (ks.isEmpty()) return;
-    QString ksStr = ks.toString(); UINT modifiers = 0;
+    QString ksStr = ks.toString(QKeySequence::PortableText); UINT modifiers = 0;
     if (ksStr.contains("Ctrl")) modifiers |= MOD_CONTROL;
     if (ksStr.contains("Alt")) modifiers |= MOD_ALT;
     if (ksStr.contains("Shift")) modifiers |= MOD_SHIFT;
@@ -499,6 +518,7 @@ void ClipboardAssistant::registerFeatureHotkey(int id, const QKeySequence& ks) {
             bool ok; int fNum = keyPart.mid(1).toInt(&ok); if (ok && fNum >= 1 && fNum <= 12) key = VK_F1 + (fNum - 1);
         } else if (keyPart == "Ins") key = VK_INSERT; else if (keyPart == "Del") key = VK_DELETE;
         else if (keyPart == "Home") key = VK_HOME; else if (keyPart == "End") key = VK_END;
+        else if (keyPart == "Space") key = VK_SPACE; else if (keyPart == "Tab") key = VK_TAB;
     }
     if (key != 0) RegisterHotKey((HWND)winId(), id, modifiers, key);
 }
