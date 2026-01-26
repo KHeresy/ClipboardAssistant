@@ -23,6 +23,7 @@ public:
     DataTypes supportedInputs() const override { return Text | Image | File; }
     DataTypes supportedOutputs() const override { return Text; }
     bool supportsStreaming() const override { return true; }
+    void abort() override;
 
     void process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) override;
     bool hasSettings() const override;
@@ -36,5 +37,6 @@ public:
 
 private:
     QNetworkAccessManager* m_networkManager;
+    QNetworkReply* m_currentReply = nullptr;
     void ensureDefaultActions();
 };

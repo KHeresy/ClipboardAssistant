@@ -23,30 +23,37 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 #include <QFileInfo>
+#include <QWheelEvent>
 #include "RegExAssistant.h"
 
-void sendCtrlC() {
-    INPUT inputs[8];
+void sendCtrlKey(char key) {
+    INPUT inputs[10];
     ZeroMemory(inputs, sizeof(inputs));
     int n = 0;
-    inputs[n].type = INPUT_KEYBOARD;
-    inputs[n].ki.wVk = VK_MENU;
-    inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
-    inputs[n].type = INPUT_KEYBOARD;
-    inputs[n].ki.wVk = VK_CONTROL;
-    inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
+    auto release = [&](WORD vkey) {
+        inputs[n].type = INPUT_KEYBOARD;
+        inputs[n].ki.wVk = vkey;
+        inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
+    };
+    release(VK_CONTROL);
+    release(VK_MENU);
+    release(VK_SHIFT);
+    release(VK_LWIN);
     inputs[n].type = INPUT_KEYBOARD;
     inputs[n++].ki.wVk = VK_CONTROL;
     inputs[n].type = INPUT_KEYBOARD;
-    inputs[n++].ki.wVk = 'C';
+    inputs[n++].ki.wVk = (WORD)key;
     inputs[n].type = INPUT_KEYBOARD;
-    inputs[n].ki.wVk = 'C';
+    inputs[n].ki.wVk = (WORD)key;
     inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
     inputs[n].type = INPUT_KEYBOARD;
     inputs[n].ki.wVk = VK_CONTROL;
     inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(n, inputs, sizeof(INPUT));
 }
+
+void sendCtrlC() { sendCtrlKey('C'); }
+void sendCtrlV() { sendCtrlKey('V'); }
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     : QWidget(parent)
@@ -57,8 +64,18 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
     onClipboardChanged();
     connect(ui->btnCopyOutput, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCopyOutputClicked);
+    connect(ui->btnPaste, &QPushButton::clicked, this, &ClipboardAssistant::onBtnPasteClicked);
     connect(ui->btnSettings, &QPushButton::clicked, this, &ClipboardAssistant::onBtnSettingsClicked);
     connect(ui->btnAddFeature, &QPushButton::clicked, this, &ClipboardAssistant::onBtnAddFeatureClicked);
+    connect(ui->btnCancel, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCancelClicked);
+    connect(ui->checkAlwaysOnTop, &QCheckBox::toggled, this, &ClipboardAssistant::onCheckAlwaysOnTopToggled);
+    connect(ui->spinInputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinInputFontSizeChanged);
+    connect(ui->spinOutputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinOutputFontSizeChanged);
+
+    // Install event filters for zooming
+    ui->textClipboard->installEventFilter(this);
+    ui->textOutput->installEventFilter(this);
+
     loadPlugins();
     reloadFeatures();
     setupTrayIcon();
@@ -90,6 +107,18 @@ void ClipboardAssistant::loadSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     ui->splitter_horizontal->restoreState(settings.value("splitter_horizontal").toByteArray());
     ui->splitter->restoreState(settings.value("splitter_vertical").toByteArray());
+    
+    bool ontap = settings.value("AlwaysOnTop", false).toBool();
+    ui->checkAlwaysOnTop->setChecked(ontap);
+    onCheckAlwaysOnTopToggled(ontap);
+
+    int inSize = settings.value("InputFontSize", 10).toInt();
+    ui->spinInputFontSize->setValue(inSize);
+    onSpinInputFontSizeChanged(inSize);
+
+    int outSize = settings.value("OutputFontSize", 10).toInt();
+    ui->spinOutputFontSize->setValue(outSize);
+    onSpinOutputFontSizeChanged(outSize);
 }
 
 void ClipboardAssistant::saveSettings()
@@ -98,6 +127,50 @@ void ClipboardAssistant::saveSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("splitter_horizontal", ui->splitter_horizontal->saveState());
     settings.setValue("splitter_vertical", ui->splitter->saveState());
+    settings.setValue("AlwaysOnTop", ui->checkAlwaysOnTop->isChecked());
+    settings.setValue("InputFontSize", ui->spinInputFontSize->value());
+    settings.setValue("OutputFontSize", ui->spinOutputFontSize->value());
+}
+
+void ClipboardAssistant::onCheckAlwaysOnTopToggled(bool checked)
+{
+    if (checked) {
+        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    } else {
+        setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+    }
+    show(); 
+}
+
+void ClipboardAssistant::onSpinInputFontSizeChanged(int size)
+{
+    QFont font = ui->textClipboard->font();
+    font.setPointSize(size);
+    ui->textClipboard->setFont(font);
+}
+
+void ClipboardAssistant::onSpinOutputFontSizeChanged(int size)
+{
+    QFont font = ui->textOutput->font();
+    font.setPointSize(size);
+    ui->textOutput->setFont(font);
+}
+
+bool ClipboardAssistant::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::Wheel) {
+        QWheelEvent *wheelEvent = static_cast<QWheelEvent*>(event);
+        if (wheelEvent->modifiers() & Qt::ControlModifier) {
+            int delta = wheelEvent->angleDelta().y() > 0 ? 1 : -1;
+            if (watched == ui->textClipboard) {
+                ui->spinInputFontSize->setValue(ui->spinInputFontSize->value() + delta);
+            } else if (watched == ui->textOutput) {
+                ui->spinOutputFontSize->setValue(ui->spinOutputFontSize->value() + delta);
+            }
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 bool ClipboardAssistant::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -189,7 +262,7 @@ void ClipboardAssistant::updateButtonsState()
 
 void ClipboardAssistant::processHtmlImages(QString html)
 {
-    QRegularExpression regex("<img\\s+[^>]*src=[\"'](http[^\"']+)[\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression regex("<img\\s+[^>]*src=[\\\"'](http[^\\\"']+)[\\\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatchIterator i = regex.globalMatch(html);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -328,6 +401,8 @@ void ClipboardAssistant::addFeatureWidget(IClipboardPlugin* plugin, const Plugin
 void ClipboardAssistant::onRunFeature(IClipboardPlugin* plugin, QString featureId)
 {
     ui->textOutput->clear(); ui->textOutput->setText("Processing...");
+    m_activePlugin = plugin;
+    if (plugin->supportsStreaming()) ui->btnCancel->setVisible(true);
     PluginCallback* callback = new PluginCallback(this);
     plugin->process(featureId, QApplication::clipboard()->mimeData(), callback);
 }
@@ -365,7 +440,25 @@ void ClipboardAssistant::onBtnAddFeatureClicked()
 }
 
 void ClipboardAssistant::onBtnCopyOutputClicked() { QApplication::clipboard()->setText(ui->textOutput->toPlainText()); }
+
+void ClipboardAssistant::onBtnPasteClicked()
+{
+    onBtnCopyOutputClicked();
+    hide();
+    QTimer::singleShot(500, []() { sendCtrlV(); });
+}
+
 void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) reloadFeatures(); }
+
+void ClipboardAssistant::onBtnCancelClicked()
+{
+    if (m_activePlugin) {
+        m_activePlugin->abort();
+        ui->btnCancel->setVisible(false);
+        ui->textOutput->append("\n[Operation Cancelled]");
+    }
+}
+
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.jpg"));
     m_trayMenu = new QMenu(this);
@@ -386,7 +479,7 @@ void ClipboardAssistant::registerGlobalHotkey() {
             if (!feature.customShortcut.isEmpty() && feature.isCustomShortcutGlobal) {
                 int id = m_nextHotkeyId++;
                 registerFeatureHotkey(id, feature.customShortcut);
-                m_hotkeyMap.insert(id, { plugin, feature.id });
+                m_hotkeyMap.insert(id, { plugin, feature.id, nullptr });
             }
         }
     }
@@ -415,6 +508,6 @@ void ClipboardAssistant::PluginCallback::onTextData(const QString& text, bool is
     QMetaObject::invokeMethod(m_parent, [this, text, isFinal]() { m_parent->handlePluginOutput(text, !m_firstChunk); if (m_firstChunk) m_firstChunk = false; });
 }
 void ClipboardAssistant::PluginCallback::onError(const QString& message) { QMetaObject::invokeMethod(m_parent, [this, message]() { m_parent->handlePluginError(message); }); }
-void ClipboardAssistant::PluginCallback::onFinished() { delete this; }
+void ClipboardAssistant::PluginCallback::onFinished() { m_parent->ui->btnCancel->setVisible(false); delete this; }
 void ClipboardAssistant::handlePluginOutput(const QString& text, bool append) { if (!append) ui->textOutput->clear(); ui->textOutput->insertPlainText(text); ui->textOutput->moveCursor(QTextCursor::End); }
-void ClipboardAssistant::handlePluginError(const QString& msg) { QMessageBox::critical(this, "Plugin Error", msg); }
+void ClipboardAssistant::handlePluginError(const QString& msg) { ui->btnCancel->setVisible(false); QMessageBox::critical(this, "Plugin Error", msg); }

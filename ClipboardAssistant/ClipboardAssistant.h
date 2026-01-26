@@ -26,11 +26,17 @@ public:
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
     void onClipboardChanged();
     void onBtnCopyOutputClicked();
+    void onBtnPasteClicked();
     void onBtnSettingsClicked();
+    void onBtnCancelClicked();
+    void onCheckAlwaysOnTopToggled(bool checked);
+    void onSpinInputFontSizeChanged(int size);
+    void onSpinOutputFontSizeChanged(int size);
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void onImageDownloaded(QNetworkReply* reply, QString originalUrl);
     
@@ -58,6 +64,7 @@ private:
     QSystemTrayIcon* m_trayIcon;
     QMenu* m_trayMenu;
     QList<PluginInfo> m_plugins;
+    IClipboardPlugin* m_activePlugin = nullptr;
     class RegExAssistant* m_regexAssistant;
     QList<QShortcut*> m_localShortcuts;
     QNetworkAccessManager* m_networkManager;

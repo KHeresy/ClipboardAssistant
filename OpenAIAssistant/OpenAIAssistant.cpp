@@ -89,8 +89,18 @@ QList<PluginFeature> OpenAIAssistant::features() const
     return list;
 }
 
+void OpenAIAssistant::abort()
+{
+    if (m_currentReply) {
+        m_currentReply->abort();
+        m_currentReply = nullptr;
+    }
+}
+
 void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, IPluginCallback* callback)
 {
+    abort(); // Cancel any existing request
+
     QSettings settings("Heresy", "ClipboardAssistant");
     QString apiKey = settings.value("OpenAI/ApiKey").toString();
     QString model = settings.value("OpenAI/Model", "gpt-3.5-turbo").toString();
@@ -207,7 +217,8 @@ void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, I
     request.setUrl(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    QNetworkReply* reply = m_networkManager->post(request, postData);
+    m_currentReply = m_networkManager->post(request, postData);
+    QNetworkReply* reply = m_currentReply;
 
     QByteArray* responseBuffer = new QByteArray();
 
@@ -240,13 +251,16 @@ void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, I
         }
     });
 
-    connect(reply, &QNetworkReply::finished, [reply, callback, responseBuffer]() {
+    connect(reply, &QNetworkReply::finished, [this, reply, callback, responseBuffer]() {
+        if (m_currentReply == reply) m_currentReply = nullptr;
         if (reply->error() != QNetworkReply::NoError) {
-            QString errorMsg = reply->errorString();
-            if (!responseBuffer->isEmpty()) {
-                errorMsg += "\nResponse: " + QString::fromUtf8(*responseBuffer);
+            if (reply->error() != QNetworkReply::OperationCanceledError) {
+                QString errorMsg = reply->errorString();
+                if (!responseBuffer->isEmpty()) {
+                    errorMsg += "\nResponse: " + QString::fromUtf8(*responseBuffer);
+                }
+                callback->onError(errorMsg);
             }
-            callback->onError(errorMsg);
         } else {
             if (!responseBuffer->isEmpty()) {
                 QJsonDocument doc = QJsonDocument::fromJson(*responseBuffer);

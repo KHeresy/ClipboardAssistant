@@ -64,6 +64,9 @@ public:
     virtual DataTypes supportedOutputs() const = 0;
     virtual bool supportsStreaming() const { return false; }
 
+    // Abort current operation
+    virtual void abort() {}
+
     // Process the clipboard data using the specified feature
     virtual void process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) = 0;
     
