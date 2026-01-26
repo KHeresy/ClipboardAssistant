@@ -22,6 +22,13 @@ public:
     bool hasSettings() const override;
     void showSettings(QWidget* parent) override;
 
+    // Editable interface
+    bool isEditable() const override;
+    QString createFeature(QWidget* parent) override;
+    void editFeature(const QString& featureId, QWidget* parent) override;
+    void deleteFeature(const QString& featureId) override;
+
 private:
     QNetworkAccessManager* m_networkManager;
+    void ensureDefaultActions();
 };

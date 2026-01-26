@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QDialog>
 #include <QSettings>
 #include <windows.h> 
@@ -17,6 +18,7 @@
 #include <QImageReader>
 #include <QRegularExpression>
 #include <QNetworkRequest>
+#include <QInputDialog>
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     : QWidget(parent)
@@ -31,13 +33,15 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     onClipboardChanged(); // Initial load
 
     // UI Signals
-    connect(ui->listFeatures, &QListWidget::itemClicked, this, &ClipboardAssistant::onFeatureClicked);
     connect(ui->btnCopyOutput, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCopyOutputClicked);
     connect(ui->btnSettings, &QPushButton::clicked, this, &ClipboardAssistant::onBtnSettingsClicked);
-
-    loadPlugins();
+    connect(ui->btnAddFeature, &QPushButton::clicked, this, &ClipboardAssistant::onBtnAddFeatureClicked);
+    
+    loadPlugins(); // Load DLLs once
+    reloadFeatures(); // Populate list
+    
     setupTrayIcon();
-    registerGlobalHotkey();
+    // Note: registerGlobalHotkey is called inside reloadFeatures
 }
 
 ClipboardAssistant::~ClipboardAssistant()
@@ -61,6 +65,10 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &eventType, void *message,
         if (msg->wParam == 100) { // Our ID
             show();
             activateWindow();
+            return true;
+        } else if (m_hotkeyMap.contains(msg->wParam)) {
+            FeatureInfo info = m_hotkeyMap[msg->wParam];
+            onRunFeature(info.plugin, info.featureId);
             return true;
         }
     }
@@ -100,7 +108,7 @@ void ClipboardAssistant::onClipboardChanged()
 
 void ClipboardAssistant::processHtmlImages(QString html)
 {
-    QRegularExpression regex("<img\\s+[^>]*src=[\\\"'](http[^\\\"']+)[\\\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression regex("<img\\s+[^>]*src=[\"'](http[^\"']+)[\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
     
     QRegularExpressionMatchIterator i = regex.globalMatch(html);
     while (i.hasNext()) {
@@ -148,30 +156,168 @@ void ClipboardAssistant::loadPlugins()
             IClipboardPlugin* iPlugin = qobject_cast<IClipboardPlugin*>(plugin);
             if (iPlugin) {
                 m_plugins.append(iPlugin);
-                for (const auto& feature : iPlugin->features()) {
-                    QListWidgetItem* item = new QListWidgetItem(feature.name + " (" + feature.description + ")", ui->listFeatures);
-                    QString uniqueId = iPlugin->name() + "::" + feature.id;
-                    item->setData(Qt::UserRole, uniqueId);
-                    
-                    FeatureInfo info = { iPlugin, feature.id };
-                    m_featureMap.insert(uniqueId, info);
-                }
             }
         }
     }
 }
 
-void ClipboardAssistant::onFeatureClicked(QListWidgetItem* item)
+void ClipboardAssistant::clearLayout(QLayout* layout)
 {
-    QString uniqueId = item->data(Qt::UserRole).toString();
-    if (m_featureMap.contains(uniqueId)) {
-        FeatureInfo info = m_featureMap[uniqueId];
+    if (!layout) return;
+    while (auto item = layout->takeAt(0)) {
+        if (item->widget()) {
+            item->widget()->deleteLater();
+        } else if (item->layout()) {
+            clearLayout(item->layout());
+        }
+        delete item;
+    }
+}
+
+void ClipboardAssistant::reloadFeatures()
+{
+    unregisterGlobalHotkey();
+    // Clear local shortcuts
+    qDeleteAll(m_localShortcuts);
+    m_localShortcuts.clear();
+
+    clearLayout(ui->layoutFeatures);
+
+    int defaultIndex = 1;
+    for (IClipboardPlugin* plugin : m_plugins) {
+        for (const auto& feature : plugin->features()) {
+            addFeatureWidget(plugin, feature);
+            
+            FeatureInfo info = { plugin, feature.id };
+
+            // 1. Local Shortcut: Ctrl + Number (1-9)
+            if (defaultIndex <= 9) {
+                QKeySequence ks(QString("Ctrl+%1").arg(defaultIndex));
+                QShortcut* sc = new QShortcut(ks, this);
+                connect(sc, &QShortcut::activated, [this, plugin, id = feature.id]() {
+                    onRunFeature(plugin, id);
+                });
+                m_localShortcuts.append(sc);
+                defaultIndex++;
+            }
+
+            // 2. Custom Shortcut (Local if not marked as Global)
+            if (!feature.customShortcut.isEmpty() && !feature.isCustomShortcutGlobal) {
+                QShortcut* sc = new QShortcut(feature.customShortcut, this);
+                connect(sc, &QShortcut::activated, [this, plugin, id = feature.id]() {
+                    onRunFeature(plugin, id);
+                });
+                m_localShortcuts.append(sc);
+            }
+        }
+    }
+    
+    ui->layoutFeatures->addStretch();
+    registerGlobalHotkey(); // Registers WinAPI hotkeys
+}
+
+void ClipboardAssistant::addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature)
+{
+    QWidget* row = new QWidget();
+    QHBoxLayout* layout = new QHBoxLayout(row);
+    layout->setContentsMargins(2, 2, 2, 2);
+    layout->setSpacing(2);
+
+    QPushButton* btnMain = new QPushButton();
+    btnMain->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    btnMain->setMinimumHeight(50);
+    
+    QVBoxLayout* btnLayout = new QVBoxLayout(btnMain);
+    btnLayout->setContentsMargins(5, 5, 5, 5);
+    btnLayout->setSpacing(0);
+
+    QLabel* lblName = new QLabel(feature.name);
+    lblName->setStyleSheet("font-weight: bold; font-size: 14px;");
+    lblName->setAlignment(Qt::AlignCenter);
+    
+    QString shortcutText;
+    // Find the default Ctrl+N if applicable
+    // This is a bit redundant but for UI display:
+    static QMap<QString, int> featureOrder; // Temporary map to track index
+    // Note: This logic is simplified. In a real app we'd pass the index.
+    
+    QLabel* lblShortcut = new QLabel();
+    lblShortcut->setStyleSheet("font-size: 9px; color: #666;");
+    lblShortcut->setAlignment(Qt::AlignCenter);
+    
+    if (!feature.customShortcut.isEmpty()) {
+        lblShortcut->setText(feature.customShortcut.toString() + (feature.isCustomShortcutGlobal ? " (Global)" : ""));
+    }
+
+    btnLayout->addWidget(lblName);
+    btnLayout->addWidget(lblShortcut);
+
+    connect(btnMain, &QPushButton::clicked, [this, plugin, id = feature.id]() {
+        onRunFeature(plugin, id);
+    });
+
+    layout->addWidget(btnMain);
+
+    if (plugin->isEditable()) {
+        QVBoxLayout* sideLayout = new QVBoxLayout();
+        sideLayout->setSpacing(1);
         
-        ui->textOutput->clear();
-        ui->textOutput->setText("Processing...");
+        QPushButton* btnEdit = new QPushButton("E");
+        btnEdit->setFixedSize(22, 22);
+        connect(btnEdit, &QPushButton::clicked, [this, plugin, id = feature.id]() {
+            onEditFeature(plugin, id);
+        });
         
-        PluginCallback* callback = new PluginCallback(this);
-        info.plugin->process(info.featureId, QApplication::clipboard()->mimeData(), callback);
+        QPushButton* btnDel = new QPushButton("X");
+        btnDel->setFixedSize(22, 22);
+        connect(btnDel, &QPushButton::clicked, [this, plugin, id = feature.id]() {
+            onDeleteFeature(plugin, id);
+        });
+
+        sideLayout->addWidget(btnEdit);
+        sideLayout->addWidget(btnDel);
+        layout->addLayout(sideLayout);
+    }
+
+    ui->layoutFeatures->addWidget(row);
+}
+
+void ClipboardAssistant::onRunFeature(IClipboardPlugin* plugin, QString featureId)
+{
+    ui->textOutput->clear();
+    ui->textOutput->setText("Processing...");
+    
+    PluginCallback* callback = new PluginCallback(this);
+    plugin->process(featureId, QApplication::clipboard()->mimeData(), callback);
+}
+
+void ClipboardAssistant::onEditFeature(IClipboardPlugin* plugin, QString featureId)
+{
+    plugin->editFeature(featureId, this);
+    reloadFeatures();
+}
+
+void ClipboardAssistant::onDeleteFeature(IClipboardPlugin* plugin, QString featureId)
+{
+    if (QMessageBox::question(this, "Confirm", "Delete this action?") == QMessageBox::Yes) {
+        plugin->deleteFeature(featureId);
+        reloadFeatures();
+    }
+}
+
+void ClipboardAssistant::onBtnAddFeatureClicked()
+{
+    QList<IClipboardPlugin*> editablePlugins;
+    for (auto* plugin : m_plugins) {
+        if (plugin->isEditable()) editablePlugins.append(plugin);
+    }
+
+    if (editablePlugins.isEmpty()) return;
+
+    IClipboardPlugin* targetPlugin = editablePlugins.first();
+    QString newId = targetPlugin->createFeature(this);
+    if (!newId.isEmpty()) {
+        reloadFeatures();
     }
 }
 
@@ -184,8 +330,7 @@ void ClipboardAssistant::onBtnSettingsClicked()
 {
     Setting dlg(m_plugins, this);
     if (dlg.exec() == QDialog::Accepted) {
-        unregisterGlobalHotkey();
-        registerGlobalHotkey();
+        reloadFeatures(); 
     }
 }
 
@@ -216,31 +361,64 @@ void ClipboardAssistant::onTrayIconActivated(QSystemTrayIcon::ActivationReason r
 
 void ClipboardAssistant::registerGlobalHotkey()
 {
+    // 1. Main App Hotkey
     QSettings settings("Heresy", "ClipboardAssistant");
     QString hotkeyStr = settings.value("GlobalHotkey", "Ctrl+Alt+V").toString();
-    
+    registerFeatureHotkey(100, QKeySequence(hotkeyStr));
+
+    // 2. Feature Hotkeys (ONLY global ones)
+    m_hotkeyMap.clear();
+    m_nextHotkeyId = 101;
+
+    for (IClipboardPlugin* plugin : m_plugins) {
+        for (const auto& feature : plugin->features()) {
+            // Custom Hotkey - Global
+            if (!feature.customShortcut.isEmpty() && feature.isCustomShortcutGlobal) {
+                int id = m_nextHotkeyId++;
+                registerFeatureHotkey(id, feature.customShortcut);
+                m_hotkeyMap.insert(id, { plugin, feature.id });
+            }
+        }
+    }
+}
+
+void ClipboardAssistant::registerFeatureHotkey(int id, const QKeySequence& ks)
+{
+    if (ks.isEmpty()) return;
+
+    QString ksStr = ks.toString();
     UINT modifiers = 0;
-    if (hotkeyStr.contains("Ctrl")) modifiers |= MOD_CONTROL;
-    if (hotkeyStr.contains("Alt")) modifiers |= MOD_ALT;
-    if (hotkeyStr.contains("Shift")) modifiers |= MOD_SHIFT;
+    if (ksStr.contains("Ctrl")) modifiers |= MOD_CONTROL;
+    if (ksStr.contains("Alt")) modifiers |= MOD_ALT;
+    if (ksStr.contains("Shift")) modifiers |= MOD_SHIFT;
+    if (ksStr.contains("Meta")) modifiers |= MOD_WIN;
     
     int key = 0;
-    QStringList parts = hotkeyStr.split("+");
+    QStringList parts = ksStr.split("+");
     if (!parts.isEmpty()) {
         QString keyPart = parts.last();
         if (keyPart.length() == 1) {
             key = keyPart.at(0).toUpper().unicode();
-        } else {
-             if (key == 0) key = 'V'; 
-        }
+        } else if (keyPart.startsWith("F") && keyPart.length() > 1) {
+            bool ok;
+            int fNum = keyPart.mid(1).toInt(&ok);
+            if (ok && fNum >= 1 && fNum <= 12) key = VK_F1 + (fNum - 1);
+        } else if (keyPart == "Ins") key = VK_INSERT;
+        else if (keyPart == "Del") key = VK_DELETE;
+        else if (keyPart == "Home") key = VK_HOME;
+        else if (keyPart == "End") key = VK_END;
     }
-    
-    RegisterHotKey((HWND)winId(), 100, modifiers, key);
+
+    if (key != 0) {
+        RegisterHotKey((HWND)winId(), id, modifiers, key);
+    }
 }
 
 void ClipboardAssistant::unregisterGlobalHotkey()
 {
-    UnregisterHotKey((HWND)winId(), 100);
+    for (int i = 100; i < m_nextHotkeyId + 20; ++i) { // Buffer for potential overlap
+        UnregisterHotKey((HWND)winId(), i);
+    }
 }
 
 // Callback implementation

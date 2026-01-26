@@ -12,6 +12,8 @@ struct PluginFeature {
     QString name;
     QString description;
     QKeySequence defaultShortcut;
+    QKeySequence customShortcut;
+    bool isCustomShortcutGlobal = false;
 };
 
 class IPluginCallback {
@@ -40,8 +42,6 @@ public:
     virtual QList<PluginFeature> features() const = 0;
     
     // Process the clipboard data using the specified feature
-    // The plugin should call methods on the callback object to report results.
-    // The caller guarantees the callback object remains valid until onFinished is called or the operation is cancelled (not implemented yet).
     virtual void process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) = 0;
     
     // Check if the plugin has a settings dialog
@@ -49,6 +49,21 @@ public:
     
     // Show the settings dialog
     virtual void showSettings(QWidget* parent) = 0;
+
+    // -- New Methods for Dynamic Actions --
+
+    // Check if this plugin allows the user to add/remove features
+    virtual bool isEditable() const { return false; }
+
+    // Request the plugin to create a new feature (usually shows a dialog)
+    // Returns the ID of the new feature if successful, or empty string if cancelled.
+    virtual QString createFeature(QWidget* parent) { return QString(); }
+
+    // Request the plugin to edit an existing feature
+    virtual void editFeature(const QString& featureId, QWidget* parent) {}
+
+    // Request the plugin to delete a feature
+    virtual void deleteFeature(const QString& featureId) {}
 };
 
 #define IClipboardPlugin_iid "org.gemini.ClipboardAssistant.IClipboardPlugin"

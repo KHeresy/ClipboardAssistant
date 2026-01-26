@@ -9,6 +9,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSet>
+#include <QShortcut>
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardPlugin.h"
 
@@ -26,23 +27,33 @@ protected:
 
 private slots:
     void onClipboardChanged();
-    void onFeatureClicked(QListWidgetItem* item);
     void onBtnCopyOutputClicked();
     void onBtnSettingsClicked();
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void onImageDownloaded(QNetworkReply* reply, QString originalUrl);
+    
+    // New slots for dynamic features
+    void onBtnAddFeatureClicked();
+    void onRunFeature(IClipboardPlugin* plugin, QString featureId);
+    void onEditFeature(IClipboardPlugin* plugin, QString featureId);
+    void onDeleteFeature(IClipboardPlugin* plugin, QString featureId);
 
 private:
     void loadPlugins();
+    void reloadFeatures(); // Helper to refresh list
+    void clearLayout(QLayout* layout);
+    void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature);
     void setupTrayIcon();
     void registerGlobalHotkey();
     void unregisterGlobalHotkey();
+    void registerFeatureHotkey(int id, const QKeySequence& ks);
     void processHtmlImages(QString html);
 
     Ui::ClipboardAssistantClass *ui;
     QSystemTrayIcon* m_trayIcon;
     QMenu* m_trayMenu;
     QList<IClipboardPlugin*> m_plugins;
+    QList<QShortcut*> m_localShortcuts;
     QNetworkAccessManager* m_networkManager;
     QString m_currentHtml;
     QSet<QString> m_pendingDownloads;
@@ -53,6 +64,9 @@ private:
         QString featureId;
     };
     QMap<QString, FeatureInfo> m_featureMap;
+    // Map WinAPI Hotkey ID to FeatureInfo
+    QMap<int, FeatureInfo> m_hotkeyMap;
+    int m_nextHotkeyId = 101; // Start after 100 (main app hotkey)
     
     class PluginCallback : public IPluginCallback {
     public:
