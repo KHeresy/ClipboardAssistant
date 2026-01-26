@@ -13,6 +13,8 @@
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardPlugin.h"
 
+QT_END_NAMESPACE
+
 class ClipboardAssistant : public QWidget
 {
     Q_OBJECT
@@ -54,7 +56,8 @@ private:
     Ui::ClipboardAssistantClass *ui;
     QSystemTrayIcon* m_trayIcon;
     QMenu* m_trayMenu;
-    QList<IClipboardPlugin*> m_plugins;
+    QList<PluginInfo> m_plugins;
+    class RegExAssistant* m_regexAssistant;
     QList<QShortcut*> m_localShortcuts;
     QNetworkAccessManager* m_networkManager;
     QString m_currentHtml;

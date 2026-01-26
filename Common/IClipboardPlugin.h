@@ -16,6 +16,12 @@ struct PluginFeature {
     bool isCustomShortcutGlobal = false;
 };
 
+struct PluginInfo {
+    class IClipboardPlugin* plugin;
+    bool isInternal;
+    QString filePath;
+};
+
 class IPluginCallback {
 public:
     virtual ~IPluginCallback() = default;
@@ -37,10 +43,27 @@ public:
     
     // Return the plugin name
     virtual QString name() const = 0;
+
+    // Return the plugin version
+    virtual QString version() const { return "1.0.0"; }
     
     // Return a list of features provided by this plugin
     virtual QList<PluginFeature> features() const = 0;
     
+    // Capabilities
+    enum DataType {
+        None = 0,
+        Text = 1 << 0,
+        Image = 1 << 1,
+        Rtf = 1 << 2,
+        File = 1 << 3
+    };
+    Q_DECLARE_FLAGS(DataTypes, DataType)
+
+    virtual DataTypes supportedInputs() const = 0;
+    virtual DataTypes supportedOutputs() const = 0;
+    virtual bool supportsStreaming() const { return false; }
+
     // Process the clipboard data using the specified feature
     virtual void process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) = 0;
     
@@ -68,3 +91,4 @@ public:
 
 #define IClipboardPlugin_iid "org.gemini.ClipboardAssistant.IClipboardPlugin"
 Q_DECLARE_INTERFACE(IClipboardPlugin, IClipboardPlugin_iid)
+Q_DECLARE_OPERATORS_FOR_FLAGS(IClipboardPlugin::DataTypes)

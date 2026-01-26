@@ -32,6 +32,11 @@ QString OpenAIAssistant::name() const
     return "OpenAI Assistant";
 }
 
+QString OpenAIAssistant::version() const
+{
+    return "1.1.0";
+}
+
 void OpenAIAssistant::ensureDefaultActions()
 {
     QSettings settings("Heresy", "ClipboardAssistant");

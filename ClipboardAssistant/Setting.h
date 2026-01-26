@@ -14,7 +14,7 @@ class Setting : public QDialog
     Q_OBJECT
 
 public:
-    Setting(const QList<IClipboardPlugin*>& plugins, QWidget *parent = nullptr);
+    Setting(const QList<struct PluginInfo>& plugins, QWidget *parent = nullptr);
     ~Setting();
 
     QKeySequence getHotkey() const;

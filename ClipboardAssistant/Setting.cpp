@@ -4,10 +4,9 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-Setting::Setting(const QList<IClipboardPlugin*>& plugins, QWidget *parent)
+Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::SettingClass)
-    , m_plugins(plugins)
 {
     ui->setupUi(this);
 
@@ -19,25 +18,53 @@ Setting::Setting(const QList<IClipboardPlugin*>& plugins, QWidget *parent)
 
     // Setup Plugins
     ui->listPlugins->clear();
-    for (IClipboardPlugin* plugin : m_plugins) {
+    for (const auto& info : plugins) {
+        IClipboardPlugin* plugin = info.plugin;
         ui->listPlugins->addItem(plugin->name());
         
         QWidget* page = new QWidget();
+        QVBoxLayout* layout = new QVBoxLayout(page);
+        
+        // Header: Name and Version
+        QLabel* title = new QLabel(QString("<b>%1</b> v%2").arg(plugin->name(), plugin->version()));
+        layout->addWidget(title);
+
+        // Source Info
+        QString sourceText = info.isInternal ? "<i>Built-in Module</i>" : QString("<i>External Plugin: %1</i>").arg(info.filePath);
+        QLabel* sourceLabel = new QLabel(sourceText);
+        sourceLabel->setStyleSheet("color: gray;");
+        layout->addWidget(sourceLabel);
+
+        layout->addSpacing(10);
+
+        // Capabilities
+        auto dataTypeToString = [](IClipboardPlugin::DataTypes types) {
+            QStringList parts;
+            if (types.testFlag(IClipboardPlugin::Text)) parts << "Text";
+            if (types.testFlag(IClipboardPlugin::Image)) parts << "Image";
+            if (types.testFlag(IClipboardPlugin::Rtf)) parts << "RTF";
+            if (types.testFlag(IClipboardPlugin::File)) parts << "File";
+            return parts.isEmpty() ? "None" : parts.join(", ");
+        };
+
+        QLabel* capTitle = new QLabel("<b>Module Capabilities:</b>");
+        layout->addWidget(capTitle);
+        
+        layout->addWidget(new QLabel(QString(" - Inputs: %1").arg(dataTypeToString(plugin->supportedInputs()))));
+        layout->addWidget(new QLabel(QString(" - Outputs: %1").arg(dataTypeToString(plugin->supportedOutputs()))));
+        layout->addWidget(new QLabel(QString(" - Streaming: %1").arg(plugin->supportsStreaming() ? "Yes" : "No")));
+
+        layout->addSpacing(10);
+
         if (plugin->hasSettings()) {
-            // Since the plugin interface currently only supports showing a modal dialog (showSettings),
-            // we'll add a button here to launch it. 
-            // Ideally, the interface should allow embedding a widget.
-            QVBoxLayout* layout = new QVBoxLayout(page);
             QPushButton* btn = new QPushButton("Configure " + plugin->name(), page);
             connect(btn, &QPushButton::clicked, [plugin, this]() {
                 plugin->showSettings(this);
             });
             layout->addWidget(btn);
-            layout->addStretch();
-        } else {
-            QVBoxLayout* layout = new QVBoxLayout(page);
-            layout->addWidget(new QLabel("No settings for this plugin."));
         }
+        
+        layout->addStretch();
         ui->stackedWidgetPlugins->addWidget(page);
     }
 
