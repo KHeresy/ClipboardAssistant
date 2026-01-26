@@ -41,8 +41,10 @@ private slots:
 private:
     void loadPlugins();
     void reloadFeatures(); // Helper to refresh list
+    void loadSettings();
+    void saveSettings();
     void clearLayout(QLayout* layout);
-    void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature);
+    void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature, int defaultIndex);
     void setupTrayIcon();
     void registerGlobalHotkey();
     void unregisterGlobalHotkey();

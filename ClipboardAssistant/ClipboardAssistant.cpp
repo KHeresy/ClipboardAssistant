@@ -41,7 +41,13 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     reloadFeatures(); // Populate list
     
     setupTrayIcon();
-    // Note: registerGlobalHotkey is called inside reloadFeatures
+    loadSettings();
+
+    // Default to 1:1 if no saved state
+    if (ui->splitter_horizontal->sizes().isEmpty() || ui->splitter_horizontal->sizes().at(0) == 0) {
+        int halfWidth = width() / 2;
+        ui->splitter_horizontal->setSizes({halfWidth, halfWidth});
+    }
 }
 
 ClipboardAssistant::~ClipboardAssistant()
@@ -52,10 +58,27 @@ ClipboardAssistant::~ClipboardAssistant()
 
 void ClipboardAssistant::closeEvent(QCloseEvent *event)
 {
+    saveSettings();
     if (m_trayIcon->isVisible()) {
         hide();
         event->ignore();
     }
+}
+
+void ClipboardAssistant::loadSettings()
+{
+    QSettings settings("Heresy", "ClipboardAssistant");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    ui->splitter_horizontal->restoreState(settings.value("splitter_horizontal").toByteArray());
+    ui->splitter->restoreState(settings.value("splitter_vertical").toByteArray());
+}
+
+void ClipboardAssistant::saveSettings()
+{
+    QSettings settings("Heresy", "ClipboardAssistant");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("splitter_horizontal", ui->splitter_horizontal->saveState());
+    settings.setValue("splitter_vertical", ui->splitter->saveState());
 }
 
 bool ClipboardAssistant::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -186,7 +209,7 @@ void ClipboardAssistant::reloadFeatures()
     int defaultIndex = 1;
     for (IClipboardPlugin* plugin : m_plugins) {
         for (const auto& feature : plugin->features()) {
-            addFeatureWidget(plugin, feature);
+            addFeatureWidget(plugin, feature, defaultIndex);
             
             FeatureInfo info = { plugin, feature.id };
 
@@ -216,7 +239,7 @@ void ClipboardAssistant::reloadFeatures()
     registerGlobalHotkey(); // Registers WinAPI hotkeys
 }
 
-void ClipboardAssistant::addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature)
+void ClipboardAssistant::addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature, int defaultIndex)
 {
     QWidget* row = new QWidget();
     QHBoxLayout* layout = new QHBoxLayout(row);
@@ -235,19 +258,18 @@ void ClipboardAssistant::addFeatureWidget(IClipboardPlugin* plugin, const Plugin
     lblName->setStyleSheet("font-weight: bold; font-size: 14px;");
     lblName->setAlignment(Qt::AlignCenter);
     
-    QString shortcutText;
-    // Find the default Ctrl+N if applicable
-    // This is a bit redundant but for UI display:
-    static QMap<QString, int> featureOrder; // Temporary map to track index
-    // Note: This logic is simplified. In a real app we'd pass the index.
-    
-    QLabel* lblShortcut = new QLabel();
-    lblShortcut->setStyleSheet("font-size: 9px; color: #666;");
-    lblShortcut->setAlignment(Qt::AlignCenter);
+    QStringList shortcuts;
+    if (defaultIndex <= 9) {
+        shortcuts << QString("Ctrl+%1").arg(defaultIndex);
+    }
     
     if (!feature.customShortcut.isEmpty()) {
-        lblShortcut->setText(feature.customShortcut.toString() + (feature.isCustomShortcutGlobal ? " (Global)" : ""));
+        shortcuts << (feature.customShortcut.toString() + (feature.isCustomShortcutGlobal ? " (Global)" : " (Local)"));
     }
+
+    QLabel* lblShortcut = new QLabel(shortcuts.join(" / "));
+    lblShortcut->setStyleSheet("font-size: 9px; color: #666;");
+    lblShortcut->setAlignment(Qt::AlignCenter);
 
     btnLayout->addWidget(lblName);
     btnLayout->addWidget(lblShortcut);
