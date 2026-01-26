@@ -105,9 +105,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IClipboardPlugin.h" />
+    <ClCompile Include="OpenAIAssistant.cpp" />
+    <ClCompile Include="OpenAISettings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="OpenAISettings.ui" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="openaiassistant_global.h" />
     <QtMoc Include="OpenAIAssistant.h" />
-    <ClCompile Include="OpenAIAssistant.cpp" />
+    <QtMoc Include="OpenAISettings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
