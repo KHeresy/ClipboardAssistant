@@ -16,6 +16,12 @@
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QUuid>
+#include <QBuffer>
+#include <QUrl>
+#include <QMimeDatabase>
+#include <QMimeType>
+#include <QFile>
+#include <QFileInfo>
 
 OpenAIAssistant::OpenAIAssistant()
 {
@@ -85,25 +91,17 @@ QList<PluginFeature> OpenAIAssistant::features() const
 
 void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, IPluginCallback* callback)
 {
-    if (!data->hasText()) {
-        callback->onError("No text in clipboard");
+    QSettings settings("Heresy", "ClipboardAssistant");
+    QString apiKey = settings.value("OpenAI/ApiKey").toString();
+    QString model = settings.value("OpenAI/Model", "gpt-3.5-turbo").toString();
+    QString baseUrl = settings.value("OpenAI/BaseUrl", "https://api.openai.com/v1").toString();
+    bool isAzure = settings.value("OpenAI/IsAzure", false).toBool();
+
+    if (apiKey.isEmpty()) {
+        callback->onError("OpenAI API Key is not set. Please configure in settings.");
         return;
     }
 
-    QString text = data->text();
-    
-        QSettings settings("Heresy", "ClipboardAssistant");
-        QString apiKey = settings.value("OpenAI/ApiKey").toString();
-        QString model = settings.value("OpenAI/Model", "gpt-3.5-turbo").toString();
-        QString baseUrl = settings.value("OpenAI/BaseUrl", "https://api.openai.com/v1").toString();
-        bool isAzure = settings.value("OpenAI/IsAzure", false).toBool();
-    
-        if (apiKey.isEmpty()) {
-            callback->onError("OpenAI API Key is not set. Please configure in settings.");
-            return;
-        }
-    
-            // Load prompt from settings based on ID
     QString systemInstruction;
     QString promptKey = "OpenAI/Actions/" + featureId + "/Prompt";
     if (settings.contains(promptKey)) {
@@ -112,168 +110,166 @@ void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, I
         systemInstruction = "You are a helpful assistant."; 
     }
 
-    QJsonArray messages;
-            
-            QJsonObject systemMsg;
-            systemMsg["role"] = "system";
-            systemMsg["content"] = systemInstruction;
-            messages.append(systemMsg);
-        
-            QJsonObject userMsg;
-            userMsg["role"] = "user";
-            userMsg["content"] = text;
-            messages.append(userMsg);
-        
-            QJsonObject json;
-            json["model"] = model;
-            json["messages"] = messages;
-            json["stream"] = true;    
-        QJsonDocument doc(json);
-        QByteArray postData = doc.toJson();
+    QJsonArray contentArray;
     
-        QUrl url;
-        QNetworkRequest request;
-        if (isAzure) {
-            url = QUrl(baseUrl); // Azure expects full URL in settings
-            request.setRawHeader("api-key", apiKey.toUtf8());
-        } else {
-            url = QUrl(baseUrl + "/chat/completions");
-            request.setRawHeader("Authorization", "Bearer " + apiKey.toUtf8());
+    // 1. Handle Text
+    if (data->hasText()) {
+        QJsonObject textObj;
+        textObj["type"] = "text";
+        textObj["text"] = data->text();
+        contentArray.append(textObj);
+    }
+
+    // 2. Handle Direct Image
+    if (data->hasImage()) {
+        QImage image = qvariant_cast<QImage>(data->imageData());
+        if (!image.isNull()) {
+            QByteArray ba;
+            QBuffer buf(&ba);
+            buf.open(QIODevice::WriteOnly);
+            image.save(&buf, "JPG");
+            QJsonObject imgObj;
+            imgObj["type"] = "image_url";
+            QJsonObject imgUrl;
+            imgUrl["url"] = "data:image/jpeg;base64," + QString::fromLatin1(ba.toBase64());
+            imgObj["image_url"] = imgUrl;
+            contentArray.append(imgObj);
         }
-        request.setUrl(url);
-        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    
-            QNetworkReply* reply = m_networkManager->post(request, postData);
-    
-        
-    
-            // Buffer for non-streaming response
-    
-            QByteArray* responseBuffer = new QByteArray();
-    
-        
-    
-            connect(reply, &QNetworkReply::readyRead, [reply, callback, responseBuffer]() {
-    
-                while(reply->canReadLine()) {
-    
-                    QByteArray line = reply->readLine().trimmed();
-    
-                    if (line.startsWith("data: ")) {
-    
-                        QByteArray data = line.mid(6);
-    
-                        if (data == "[DONE]") continue;
-    
-                        
-    
-                        QJsonDocument doc = QJsonDocument::fromJson(data);
-    
-                        if (doc.isObject()) {
-    
-                            QJsonObject obj = doc.object();
-    
-                            if (obj.contains("choices")) {
-    
-                                QJsonArray choices = obj["choices"].toArray();
-    
-                                if (!choices.isEmpty()) {
-    
-                                    QJsonObject choice = choices[0].toObject();
-    
-                                    if (choice.contains("delta")) {
-    
-                                        QJsonObject delta = choice["delta"].toObject();
-    
-                                        if (delta.contains("content")) {
-    
-                                            callback->onTextData(delta["content"].toString(), false);
-    
-                                        }
-    
-                                    }
-    
-                                }
-    
-                            }
-    
-                        }
-    
-                    } else {
-    
-                        // If it doesn't look like SSE, buffer it as standard JSON
-    
-                        responseBuffer->append(line);
-    
-                    }
-    
+    }
+
+    // 3. Handle Files
+    if (data->hasUrls()) {
+        QMimeDatabase db;
+        for (const QUrl& url : data->urls()) {
+            QString path = url.toLocalFile();
+            if (path.isEmpty()) continue;
+            
+            QMimeType mime = db.mimeTypeForFile(path);
+            if (mime.name().startsWith("image/")) {
+                QImage img(path);
+                if (!img.isNull()) {
+                    QByteArray ba;
+                    QBuffer buf(&ba);
+                    buf.open(QIODevice::WriteOnly);
+                    img.save(&buf, "JPG");
+                    QJsonObject imgObj;
+                    imgObj["type"] = "image_url";
+                    QJsonObject imgUrl;
+                    imgUrl["url"] = "data:image/jpeg;base64," + QString::fromLatin1(ba.toBase64());
+                    imgObj["image_url"] = imgUrl;
+                    contentArray.append(imgObj);
                 }
-    
-            });
-    
-        
-    
-            connect(reply, &QNetworkReply::finished, [reply, callback, responseBuffer]() {
-    
-                if (reply->error() != QNetworkReply::NoError) {
-    
-                    QString errorMsg = reply->errorString();
-    
-                    if (!responseBuffer->isEmpty()) {
-    
-                        errorMsg += "\nResponse: " + QString::fromUtf8(*responseBuffer);
-    
-                    }
-    
-                    callback->onError(errorMsg);
-    
-                } else {
-    
-                    // If streaming didn't produce output, try parsing as a whole JSON
-    
-                    if (!responseBuffer->isEmpty()) {
-    
-                        QJsonDocument doc = QJsonDocument::fromJson(*responseBuffer);
-    
-                        if (doc.isObject()) {
-    
-                            QJsonObject obj = doc.object();
-    
-                            if (obj.contains("choices")) {
-    
-                                QJsonArray choices = obj["choices"].toArray();
-    
-                                if (!choices.isEmpty()) {
-    
-                                    QJsonObject choice = choices[0].toObject();
-    
-                                    if (choice.contains("message")) {
-    
-                                        QJsonObject msg = choice["message"].toObject();
-    
-                                        callback->onTextData(msg["content"].toString(), true);
-    
-                                    }
-    
-                                }
-    
-                            }
-    
-                        }
-    
-                    }
-    
-                    callback->onTextData("", true); 
-    
-                    callback->onFinished();
-    
+            } else if (mime.name().startsWith("text/")) {
+                QFile f(path);
+                if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                    QJsonObject textObj;
+                    textObj["type"] = "text";
+                    textObj["text"] = QString("\nFile (%1):\n%2").arg(QFileInfo(path).fileName(), QString::fromUtf8(f.readAll()));
+                    contentArray.append(textObj);
                 }
-    
-                delete responseBuffer;
-    
-                reply->deleteLater();
-    
-            });
+            }
+        }
+    }
+
+    if (contentArray.isEmpty()) {
+        callback->onError("Clipboard is empty or contains unsupported data.");
+        return;
+    }
+
+    QJsonArray messages;
+    QJsonObject systemMsg;
+    systemMsg["role"] = "system";
+    systemMsg["content"] = systemInstruction;
+    messages.append(systemMsg);
+
+    QJsonObject userMsg;
+    userMsg["role"] = "user";
+    userMsg["content"] = contentArray; // content can be array for Vision
+    messages.append(userMsg);
+
+    QJsonObject json;
+    json["model"] = model;
+    json["messages"] = messages;
+    json["stream"] = true;
+
+    QJsonDocument doc(json);
+    QByteArray postData = doc.toJson();
+
+    QUrl url;
+    QNetworkRequest request;
+    if (isAzure) {
+        url = QUrl(baseUrl);
+        request.setRawHeader("api-key", apiKey.toUtf8());
+    } else {
+        url = QUrl(baseUrl + "/chat/completions");
+        request.setRawHeader("Authorization", "Bearer " + apiKey.toUtf8());
+    }
+    request.setUrl(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply* reply = m_networkManager->post(request, postData);
+
+    QByteArray* responseBuffer = new QByteArray();
+
+    connect(reply, &QNetworkReply::readyRead, [reply, callback, responseBuffer]() {
+        while(reply->canReadLine()) {
+            QByteArray line = reply->readLine().trimmed();
+            if (line.startsWith("data: ")) {
+                QByteArray data = line.mid(6);
+                if (data == "[DONE]") continue;
+                
+                QJsonDocument doc = QJsonDocument::fromJson(data);
+                if (doc.isObject()) {
+                    QJsonObject obj = doc.object();
+                    if (obj.contains("choices")) {
+                        QJsonArray choices = obj["choices"].toArray();
+                        if (!choices.isEmpty()) {
+                            QJsonObject choice = choices[0].toObject();
+                            if (choice.contains("delta")) {
+                                QJsonObject delta = choice["delta"].toObject();
+                                if (delta.contains("content")) {
+                                    callback->onTextData(delta["content"].toString(), false);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                responseBuffer->append(line);
+            }
+        }
+    });
+
+    connect(reply, &QNetworkReply::finished, [reply, callback, responseBuffer]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            QString errorMsg = reply->errorString();
+            if (!responseBuffer->isEmpty()) {
+                errorMsg += "\nResponse: " + QString::fromUtf8(*responseBuffer);
+            }
+            callback->onError(errorMsg);
+        } else {
+            if (!responseBuffer->isEmpty()) {
+                QJsonDocument doc = QJsonDocument::fromJson(*responseBuffer);
+                if (doc.isObject()) {
+                    QJsonObject obj = doc.object();
+                    if (obj.contains("choices")) {
+                        QJsonArray choices = obj["choices"].toArray();
+                        if (!choices.isEmpty()) {
+                            QJsonObject choice = choices[0].toObject();
+                            if (choice.contains("message")) {
+                                QJsonObject msg = choice["message"].toObject();
+                                callback->onTextData(msg["content"].toString(), true);
+                            }
+                        }
+                    }
+                }
+            }
+            callback->onTextData("", true); 
+            callback->onFinished();
+        }
+        delete responseBuffer;
+        reply->deleteLater();
+    });
 }
 
 bool OpenAIAssistant::hasSettings() const

@@ -20,7 +20,7 @@ public:
     QString version() const override;
     QList<PluginFeature> features() const override;
     
-    DataTypes supportedInputs() const override { return Text; }
+    DataTypes supportedInputs() const override { return Text | Image | File; }
     DataTypes supportedOutputs() const override { return Text; }
     bool supportsStreaming() const override { return true; }
 

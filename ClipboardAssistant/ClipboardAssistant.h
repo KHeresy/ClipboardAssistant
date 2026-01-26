@@ -47,6 +47,7 @@ private:
     void saveSettings();
     void clearLayout(QLayout* layout);
     void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature, int defaultIndex);
+    void updateButtonsState();
     void setupTrayIcon();
     void registerGlobalHotkey();
     void unregisterGlobalHotkey();
@@ -67,6 +68,7 @@ private:
     struct FeatureInfo {
         IClipboardPlugin* plugin;
         QString featureId;
+        QPushButton* mainButton;
     };
     QMap<QString, FeatureInfo> m_featureMap;
     // Map WinAPI Hotkey ID to FeatureInfo
