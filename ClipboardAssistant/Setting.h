@@ -20,9 +20,10 @@ public:
     QKeySequence getHotkey() const;
     void setHotkey(const QKeySequence& sequence);
 
+    void accept() override;
+
 private slots:
     void onPluginSelected(int row);
-    void onAccepted();
 
 private:
     Ui::SettingClass *ui;

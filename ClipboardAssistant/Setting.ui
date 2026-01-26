@@ -19,16 +19,26 @@
      <property name="title">
       <string>General</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_general">
       <item>
-       <widget class="QLabel" name="labelHotkey">
-        <property name="text">
-         <string>Global Hotkey:</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="labelHotkey">
+          <property name="text">
+           <string>Global Hotkey:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QKeySequenceEdit" name="keySequenceEdit"/>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QKeySequenceEdit" name="keySequenceEdit">
+       <widget class="QCheckBox" name="checkBoxAutoCopy">
+        <property name="text">
+         <string>Auto-copy (Send Ctrl+C) when activated via hotkey</string>
+        </property>
        </widget>
       </item>
      </layout>

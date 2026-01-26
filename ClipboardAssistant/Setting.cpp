@@ -15,6 +15,7 @@ Setting::Setting(const QList<IClipboardPlugin*>& plugins, QWidget *parent)
     QSettings settings("Heresy", "ClipboardAssistant");
     QString hotkeyStr = settings.value("GlobalHotkey", "Ctrl+Alt+V").toString();
     ui->keySequenceEdit->setKeySequence(QKeySequence(hotkeyStr));
+    ui->checkBoxAutoCopy->setChecked(settings.value("AutoCopy", false).toBool());
 
     // Setup Plugins
     ui->listPlugins->clear();
@@ -72,9 +73,10 @@ void Setting::onPluginSelected(int row)
     }
 }
 
-void Setting::onAccepted()
+void Setting::accept()
 {
     QSettings settings("Heresy", "ClipboardAssistant");
     settings.setValue("GlobalHotkey", ui->keySequenceEdit->keySequence().toString());
-    accept();
+    settings.setValue("AutoCopy", ui->checkBoxAutoCopy->isChecked());
+    QDialog::accept();
 }

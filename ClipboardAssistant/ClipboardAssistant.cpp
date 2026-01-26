@@ -19,6 +19,7 @@
 #include <QRegularExpression>
 #include <QNetworkRequest>
 #include <QInputDialog>
+#include <QTimer>
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent)
     : QWidget(parent)
@@ -81,13 +82,59 @@ void ClipboardAssistant::saveSettings()
     settings.setValue("splitter_vertical", ui->splitter->saveState());
 }
 
+void sendCtrlC() {
+    // Use a sequence of inputs to ensure modifiers are released
+    INPUT inputs[8];
+    ZeroMemory(inputs, sizeof(inputs));
+
+    int n = 0;
+    // 1. Force release Alt and Ctrl (in case they are physically held)
+    inputs[n].type = INPUT_KEYBOARD;
+    inputs[n].ki.wVk = VK_MENU;
+    inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    inputs[n].type = INPUT_KEYBOARD;
+    inputs[n].ki.wVk = VK_CONTROL;
+    inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    // 2. Press Ctrl + C
+    inputs[n].type = INPUT_KEYBOARD;
+    inputs[n++].ki.wVk = VK_CONTROL;
+
+    inputs[n].type = INPUT_KEYBOARD;
+    inputs[n++].ki.wVk = 'C';
+
+    inputs[n].type = INPUT_KEYBOARD;
+    inputs[n].ki.wVk = 'C';
+    inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    inputs[n].type = INPUT_KEYBOARD;
+    inputs[n].ki.wVk = VK_CONTROL;
+    inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(n, inputs, sizeof(INPUT));
+}
+
 bool ClipboardAssistant::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
 {
     MSG* msg = static_cast<MSG*>(message);
     if (msg->message == WM_HOTKEY) {
         if (msg->wParam == 100) { // Our ID
-            show();
-            activateWindow();
+            QSettings settings("Heresy", "ClipboardAssistant");
+            if (settings.value("AutoCopy", false).toBool()) {
+                // Delay slightly to let the system finish processing the hotkey press
+                QTimer::singleShot(50, [this]() {
+                    sendCtrlC();
+                    // Wait a bit more for the target app to put data into clipboard
+                    QTimer::singleShot(300, this, [this]() {
+                        show();
+                        activateWindow();
+                    });
+                });
+            } else {
+                show();
+                activateWindow();
+            }
             return true;
         } else if (m_hotkeyMap.contains(msg->wParam)) {
             FeatureInfo info = m_hotkeyMap[msg->wParam];
