@@ -170,8 +170,16 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
                     if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(info.plugin, info.actionSetId);
                 }
             };
-            QSettings s("Heresy", "ClipboardAssistant");
-            if (s.value("AutoCopy", false).toBool()) {
+            
+            bool shouldAutoCopy = false;
+            if (id == 100) {
+                QSettings s("Heresy", "ClipboardAssistant");
+                shouldAutoCopy = s.value("AutoCopy", false).toBool();
+            } else {
+                shouldAutoCopy = m_hotkeyMap[id].isAutoCopy;
+            }
+
+            if (shouldAutoCopy) {
                 QTimer::singleShot(50, [this, act]() { sendCtrlC(); QTimer::singleShot(300, this, [act]() { act(); }); });
             } else act();
             return true;
@@ -180,11 +188,11 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
     return false;
 }
 void ClipboardAssistant::onClipboardChanged() {
-    const QMimeData* d = QApplication::clipboard()->mimeData(); m_currentHtml.clear(); m_pendingDownloads.clear();
+    const QMimeData* d = QApplication::clipboard()->mimeData(); m_currentHtml.clear(); m_pendingDownloads.clear(); m_currentImage = QImage();
     if (d->hasImage()) {
-        QImage img = qvariant_cast<QImage>(d->imageData());
-        if (!img.isNull()) {
-            QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); img.save(&buf, "PNG");
+        m_currentImage = qvariant_cast<QImage>(d->imageData());
+        if (!m_currentImage.isNull()) {
+            QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); m_currentImage.save(&buf, "PNG");
             ui->textClipboard->setHtml(QString("<img src='data:image/png;base64,%1' />").arg(QString::fromLatin1(ba.toBase64())));
         } else ui->textClipboard->setText("[Invalid Image]");
     } else if (d->hasHtml()) { m_currentHtml = d->html(); ui->textClipboard->setHtml(m_currentHtml); processHtmlImages(m_currentHtml); } 
@@ -253,7 +261,7 @@ void ClipboardAssistant::addActionSetWidget(IClipboardPlugin* p, const PluginAct
     QString uid = p->name() + "::" + f.id;
     item->setData(Qt::UserRole, uid);
     
-    m_actionSetMap.insert(uid, { p, f.id, nullptr, f.customShortcut, f.isCustomShortcutGlobal, f.name, nullptr });
+    m_actionSetMap.insert(uid, { p, f.id, nullptr, f.customShortcut, f.isCustomShortcutGlobal, f.isAutoCopy, f.name, nullptr });
     setupActionSetWidget(item, m_actionSetMap[uid]);
 }
 
@@ -318,6 +326,7 @@ void ClipboardAssistant::onRunActionSet(IClipboardPlugin* p, QString asid) {
     QMimeData* data = new QMimeData();
     data->setText(ui->textClipboard->toPlainText());
     if (!m_currentHtml.isEmpty()) data->setHtml(m_currentHtml);
+    if (!m_currentImage.isNull()) data->setImageData(m_currentImage);
     
     // Create callback
     p->process(asid, data, new PluginCallback(this));
@@ -336,12 +345,14 @@ void ClipboardAssistant::onEditActionSet(IClipboardPlugin* p, QString asid) {
     QString name;
     QKeySequence shortcut;
     bool isGlobal = false;
+    bool isAutoCopy = false;
     
     for(const auto& set : p->actionSets()) {
         if(set.id == asid) {
             name = set.name;
             shortcut = set.customShortcut;
             isGlobal = set.isCustomShortcutGlobal;
+            isAutoCopy = set.isAutoCopy;
             break;
         }
     }
@@ -349,6 +360,7 @@ void ClipboardAssistant::onEditActionSet(IClipboardPlugin* p, QString asid) {
     commonSettings->setName(name);
     commonSettings->setShortcut(shortcut);
     commonSettings->setIsGlobal(isGlobal);
+    commonSettings->setIsAutoCopy(isAutoCopy);
     commonSettings->setContent(pluginWidget);
     
     layout->addWidget(commonSettings);
@@ -359,7 +371,7 @@ void ClipboardAssistant::onEditActionSet(IClipboardPlugin* p, QString asid) {
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     
     if (dialog.exec() == QDialog::Accepted) {
-        p->saveSettings(asid, pluginWidget, commonSettings->name(), commonSettings->shortcut(), commonSettings->isGlobal());
+        p->saveSettings(asid, pluginWidget, commonSettings->name(), commonSettings->shortcut(), commonSettings->isGlobal(), commonSettings->isAutoCopy());
         reloadActionSets();
     }
 }
@@ -396,7 +408,7 @@ void ClipboardAssistant::onBtnAddActionSetClicked() {
         connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
         
         if (dialog.exec() == QDialog::Accepted) {
-             QString newId = target->saveSettings(QString(), pluginWidget, commonSettings->name(), commonSettings->shortcut(), commonSettings->isGlobal());
+             QString newId = target->saveSettings(QString(), pluginWidget, commonSettings->name(), commonSettings->shortcut(), commonSettings->isGlobal(), commonSettings->isAutoCopy());
              if(!newId.isEmpty()) reloadActionSets();
         }
     }
@@ -432,7 +444,7 @@ void ClipboardAssistant::registerGlobalHotkey() {
         ActionSetInfo& info = m_actionSetMap[uid];
         if (!info.customShortcut.isEmpty() && info.isCustomShortcutGlobal) {
             int id = m_nextHotkeyId++; registerActionSetHotkey(id, info.customShortcut);
-            m_hotkeyMap.insert(id, { info.plugin, info.actionSetId, info.mainButton, info.customShortcut, info.isCustomShortcutGlobal, info.name, info.lblContent });
+            m_hotkeyMap.insert(id, { info.plugin, info.actionSetId, info.mainButton, info.customShortcut, info.isCustomShortcutGlobal, info.isAutoCopy, info.name, info.lblContent });
         }
     }
 }

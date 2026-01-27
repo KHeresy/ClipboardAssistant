@@ -70,6 +70,7 @@ private:
     QList<QShortcut*> m_localShortcuts;
     QNetworkAccessManager* m_networkManager;
     QString m_currentHtml;
+    QImage m_currentImage;
     QSet<QString> m_pendingDownloads;
 
     // Map list item unique ID to Plugin* and ActionSetID
@@ -79,6 +80,7 @@ private:
         QPointer<QPushButton> mainButton;
         QKeySequence customShortcut;
         bool isCustomShortcutGlobal;
+        bool isAutoCopy;
         QString name;
         QPointer<QLabel> lblContent;
     };

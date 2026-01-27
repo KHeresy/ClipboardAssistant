@@ -84,6 +84,7 @@ QList<PluginActionSet> OpenAIAssistant::actionSets() const {
         f.description = s.value("Prompt").toString();
         f.customShortcut = QKeySequence(s.value("Shortcut").toString());
         f.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
+        f.isAutoCopy = s.value("IsAutoCopy", false).toBool();
         int order = s.value("Order", 999).toInt();
         sortedList.append({f, order});
         s.endGroup();
@@ -115,15 +116,16 @@ void OpenAIAssistant::process(const QString& actionSetId, const QMimeData* data,
     bool isAz = s.value(acG + "/IsAzure").toBool();
     if (key.isEmpty()) { callback->onError("API Key empty"); return; }
     QJsonArray content;
-    if (data->hasText()) { QJsonObject o; o["type"]="text"; o["text"]=data->text(); content.append(o); }
+    if (data->hasText() && !data->text().isEmpty()) { QJsonObject o; o["type"]="text"; o["text"]=data->text(); content.append(o); }
     if (data->hasImage()) {
         QImage img = qvariant_cast<QImage>(data->imageData());
         if (!img.isNull()) {
-            QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); img.save(&buf, "JPG");
-            QJsonObject o; o["type"]="image_url"; QJsonObject u; u["url"]="data:image/jpeg;base64,"+QString::fromLatin1(ba.toBase64());
+            QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); img.save(&buf, "PNG");
+            QJsonObject o; o["type"]="image_url"; QJsonObject u; u["url"]="data:image/png;base64,"+QString::fromLatin1(ba.toBase64());
             o["image_url"]=u; content.append(o);
         }
     }
+    if (content.isEmpty()) { callback->onError("No content to process"); return; }
     QJsonArray msgs;
     QJsonObject sys; sys["role"]="system"; sys["content"]=prompt; msgs.append(sys);
     QJsonObject usr; usr["role"]="user"; usr["content"]=content; msgs.append(usr);
@@ -210,7 +212,7 @@ QWidget* OpenAIAssistant::getSettingsWidget(const QString& actionSetId, QWidget*
     return content;
 }
 
-QString OpenAIAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) {
+QString OpenAIAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal, bool isAutoCopy) {
     QString id = actionSetId;
     if (id.isEmpty()) id = QUuid::createUuid().toString(QUuid::Id128);
 
@@ -224,6 +226,7 @@ QString OpenAIAssistant::saveSettings(const QString& actionSetId, QWidget* widge
     s.setValue("AccountId", cA ? cA->currentData().toString() : "");
     s.setValue("Shortcut", shortcut.toString());
     s.setValue("IsGlobal", isGlobal);
+    s.setValue("IsAutoCopy", isAutoCopy);
     if (actionSetId.isEmpty()) s.setValue("Order", 999);
     s.endGroup();
 

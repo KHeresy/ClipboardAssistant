@@ -6,6 +6,7 @@ ActionSetSettings::ActionSetSettings(QWidget *parent) :
     ui(new Ui::ActionSetSettings)
 {
     ui->setupUi(this);
+    connect(ui->checkGlobal, &QCheckBox::toggled, ui->checkAutoCopy, &QCheckBox::setEnabled);
 }
 
 ActionSetSettings::~ActionSetSettings()
@@ -41,6 +42,17 @@ bool ActionSetSettings::isGlobal() const
 void ActionSetSettings::setIsGlobal(bool isGlobal)
 {
     ui->checkGlobal->setChecked(isGlobal);
+    ui->checkAutoCopy->setEnabled(isGlobal);
+}
+
+bool ActionSetSettings::isAutoCopy() const
+{
+    return ui->checkAutoCopy->isChecked();
+}
+
+void ActionSetSettings::setIsAutoCopy(bool isAutoCopy)
+{
+    ui->checkAutoCopy->setChecked(isAutoCopy);
 }
 
 void ActionSetSettings::setContent(QWidget *content)

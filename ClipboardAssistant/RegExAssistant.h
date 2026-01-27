@@ -39,13 +39,19 @@ public:
 
     
 
-        QWidget* getSettingsWidget(const QString& actionSetId, QWidget* parent) override;
-
-        QString saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) override;
+            QWidget* getSettingsWidget(const QString& actionSetId, QWidget* parent) override;
 
     
 
-        void deleteActionSet(const QString& actionSetId) override;
+            QString saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal, bool isAutoCopy) override;
+
+    
+
+        
+
+    
+
+            void deleteActionSet(const QString& actionSetId) override;
 
         void setActionSetOrder(const QString& actionSetId, int order) override;
 

@@ -53,6 +53,7 @@ QList<PluginActionSet> RegExAssistant::actionSets() const
         f.description = "Regex: " + settings.value("Pattern").toString();
         f.customShortcut = QKeySequence(settings.value("Shortcut").toString());
         f.isCustomShortcutGlobal = settings.value("IsGlobal", false).toBool();
+        f.isAutoCopy = settings.value("IsAutoCopy", false).toBool();
         int order = settings.value("Order", 999).toInt();
         sortedList.append({f, order});
         settings.endGroup();
@@ -113,7 +114,7 @@ QWidget* RegExAssistant::getSettingsWidget(const QString& actionSetId, QWidget* 
     return content;
 }
 
-QString RegExAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) {
+QString RegExAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal, bool isAutoCopy) {
     QString id = actionSetId;
     if (id.isEmpty()) id = QUuid::createUuid().toString(QUuid::Id128);
     
@@ -127,6 +128,7 @@ QString RegExAssistant::saveSettings(const QString& actionSetId, QWidget* widget
     s.setValue("Replacement", eReplace ? eReplace->text() : "");
     s.setValue("Shortcut", shortcut.toString());
     s.setValue("IsGlobal", isGlobal);
+    s.setValue("IsAutoCopy", isAutoCopy);
     if (actionSetId.isEmpty()) s.setValue("Order", 999);
     s.endGroup();
     

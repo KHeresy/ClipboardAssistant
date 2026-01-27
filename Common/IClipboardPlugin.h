@@ -14,6 +14,7 @@ struct PluginActionSet {
     QKeySequence defaultShortcut;
     QKeySequence customShortcut;
     bool isCustomShortcutGlobal = false;
+    bool isAutoCopy = false;
 };
 
 struct PluginInfo {
@@ -103,7 +104,7 @@ public:
     // widget: the widget returned by getSettingsWidget.
     // name, shortcut, isGlobal: common settings handled by the host.
     // Returns the ID of the action set (new or existing).
-    virtual QString saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) { return QString(); }
+    virtual QString saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal, bool isAutoCopy) { return QString(); }
 };
 
 QT_END_NAMESPACE

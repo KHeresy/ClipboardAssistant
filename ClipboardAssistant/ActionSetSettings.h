@@ -24,6 +24,9 @@ public:
     bool isGlobal() const;
     void setIsGlobal(bool isGlobal);
 
+    bool isAutoCopy() const;
+    void setIsAutoCopy(bool isAutoCopy);
+
     // Adds a custom widget to the layout, below the general settings
     void setContent(QWidget *content);
 
