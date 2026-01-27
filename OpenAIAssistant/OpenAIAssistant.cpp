@@ -64,21 +64,21 @@ void OpenAIAssistant::ensureDefaultActions() {
     s.endGroup();
 }
 
-QList<PluginFeature> OpenAIAssistant::features() const {
-    QList<PluginFeature> list;
+QList<PluginActionSet> OpenAIAssistant::actionSets() const {
+    QList<PluginActionSet> list;
     QSettings s("Heresy", "ClipboardAssistant");
     s.beginGroup("OpenAI/Actions");
     QStringList ids = s.childGroups();
     
-    struct SortedFeature {
-        PluginFeature f;
+    struct SortedActionSet {
+        PluginActionSet f;
         int order;
     };
-    QList<SortedFeature> sortedList;
+    QList<SortedActionSet> sortedList;
 
     for (const QString& id : ids) {
         s.beginGroup(id);
-        PluginFeature f;
+        PluginActionSet f;
         f.id = id;
         f.name = s.value("Name").toString();
         f.description = s.value("Prompt").toString();
@@ -91,7 +91,7 @@ QList<PluginFeature> OpenAIAssistant::features() const {
     s.endGroup(); 
 
     // Sort by order
-    std::sort(sortedList.begin(), sortedList.end(), [](const SortedFeature& a, const SortedFeature& b) {
+    std::sort(sortedList.begin(), sortedList.end(), [](const SortedActionSet& a, const SortedActionSet& b) {
         return a.order < b.order;
     });
 
@@ -101,10 +101,10 @@ QList<PluginFeature> OpenAIAssistant::features() const {
 
 void OpenAIAssistant::abort() { if (m_currentReply) { m_currentReply->abort(); m_currentReply = nullptr; } }
 
-void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) {
+void OpenAIAssistant::process(const QString& actionSetId, const QMimeData* data, IPluginCallback* callback) {
     abort();
     QSettings s("Heresy", "ClipboardAssistant");
-    QString aG = "OpenAI/Actions/" + featureId;
+    QString aG = "OpenAI/Actions/" + actionSetId;
     QString prompt = s.value(aG + "/Prompt").toString();
     QString accId = s.value(aG + "/AccountId").toString();
     if (accId.isEmpty()) { s.beginGroup("OpenAI/Accounts"); if (!s.childGroups().isEmpty()) accId = s.childGroups().first(); s.endGroup(); }
@@ -185,7 +185,7 @@ QComboBox* createAccCombo(QWidget* p, QString selId = "") {
     return c;
 }
 
-QString OpenAIAssistant::createFeature(QWidget* p) {
+QString OpenAIAssistant::createActionSet(QWidget* p) {
     QDialog d(p); d.setWindowTitle("Add Action");
     QVBoxLayout* l = new QVBoxLayout(&d);
     QLineEdit* eN = new QLineEdit(&d);
@@ -218,9 +218,9 @@ QString OpenAIAssistant::createFeature(QWidget* p) {
     return "";
 }
 
-void OpenAIAssistant::editFeature(const QString& fid, QWidget* p) {
+void OpenAIAssistant::editActionSet(const QString& asid, QWidget* p) {
     QSettings s("Heresy", "ClipboardAssistant");
-    QString g = "OpenAI/Actions/" + fid;
+    QString g = "OpenAI/Actions/" + asid;
     QDialog d(p);
     d.setWindowTitle("Edit Action");
     QVBoxLayout* l = new QVBoxLayout(&d);
@@ -249,9 +249,9 @@ void OpenAIAssistant::editFeature(const QString& fid, QWidget* p) {
     }
 }
 
-void OpenAIAssistant::deleteFeature(const QString& fid) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("OpenAI/Actions/" + fid); }
+void OpenAIAssistant::deleteActionSet(const QString& asid) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("OpenAI/Actions/" + asid); }
 
-void OpenAIAssistant::setFeatureOrder(const QString& fid, int order) {
+void OpenAIAssistant::setActionSetOrder(const QString& asid, int order) {
     QSettings s("Heresy", "ClipboardAssistant");
-    s.setValue("OpenAI/Actions/" + fid + "/Order", order);
+    s.setValue("OpenAI/Actions/" + asid + "/Order", order);
 }

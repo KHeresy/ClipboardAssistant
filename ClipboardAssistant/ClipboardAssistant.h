@@ -42,15 +42,15 @@ private slots:
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void onImageDownloaded(QNetworkReply* reply, QString originalUrl);
     
-    // New slots for dynamic features
-    void onBtnAddFeatureClicked();
-    void onRunFeature(IClipboardPlugin* plugin, QString featureId);
-    void onEditFeature(IClipboardPlugin* plugin, QString featureId);
-    void onDeleteFeature(IClipboardPlugin* plugin, QString featureId);
+    // New slots for dynamic ActionSets
+    void onBtnAddActionSetClicked();
+    void onRunActionSet(IClipboardPlugin* plugin, QString actionSetId);
+    void onEditActionSet(IClipboardPlugin* plugin, QString actionSetId);
+    void onDeleteActionSet(IClipboardPlugin* plugin, QString actionSetId);
 
 private:
     void loadPlugins();
-    void reloadFeatures(); // Helper to refresh list
+    void reloadActionSets(); // Helper to refresh list
     void loadSettings();
     void saveSettings();
     void clearLayout(QLayout* layout);
@@ -58,7 +58,7 @@ private:
     void setupTrayIcon();
     void registerGlobalHotkey();
     void unregisterGlobalHotkey();
-    void registerFeatureHotkey(int id, const QKeySequence& ks);
+    void registerActionSetHotkey(int id, const QKeySequence& ks);
     void processHtmlImages(QString html);
 
     Ui::ClipboardAssistantClass *ui;
@@ -72,10 +72,10 @@ private:
     QString m_currentHtml;
     QSet<QString> m_pendingDownloads;
 
-    // Map list item unique ID to Plugin* and FeatureID
-    struct FeatureInfo {
+    // Map list item unique ID to Plugin* and ActionSetID
+    struct ActionSetInfo {
         IClipboardPlugin* plugin;
-        QString featureId;
+        QString actionSetId;
         QPointer<QPushButton> mainButton;
         QKeySequence customShortcut;
         bool isCustomShortcutGlobal;
@@ -83,12 +83,12 @@ private:
         QPointer<QLabel> lblContent;
     };
 
-    void updateFeatureShortcuts();
-    void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature, int defaultIndex);
-    void setupItemWidget(QListWidgetItem* item, FeatureInfo& info);
-    QMap<QString, FeatureInfo> m_featureMap;
-    // Map WinAPI Hotkey ID to FeatureInfo
-    QMap<int, FeatureInfo> m_hotkeyMap;
+    void updateActionSetShortcuts();
+    void addActionSetWidget(IClipboardPlugin* plugin, const PluginActionSet& actionSet, int defaultIndex);
+    void setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info);
+    QMap<QString, ActionSetInfo> m_actionSetMap;
+    // Map WinAPI Hotkey ID to ActionSetInfo
+    QMap<int, ActionSetInfo> m_hotkeyMap;
     int m_nextHotkeyId = 101; // Start after 100 (main app hotkey)
     
     class PluginCallback : public IPluginCallback {

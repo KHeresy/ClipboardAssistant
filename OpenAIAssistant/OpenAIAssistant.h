@@ -18,23 +18,23 @@ public:
 
     QString name() const override;
     QString version() const override;
-    QList<PluginFeature> features() const override;
+    QList<PluginActionSet> actionSets() const override;
     
     DataTypes supportedInputs() const override { return Text | Image | File; }
     DataTypes supportedOutputs() const override { return Text; }
     bool supportsStreaming() const override { return true; }
     void abort() override;
 
-    void process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) override;
+    void process(const QString& actionSetId, const QMimeData* data, IPluginCallback* callback) override;
     bool hasSettings() const override;
     void showSettings(QWidget* parent) override;
 
     // Editable interface
     bool isEditable() const override;
-    QString createFeature(QWidget* parent) override;
-    void editFeature(const QString& featureId, QWidget* parent) override;
-    void deleteFeature(const QString& featureId) override;
-    void setFeatureOrder(const QString& featureId, int order) override;
+    QString createActionSet(QWidget* parent) override;
+    void editActionSet(const QString& actionSetId, QWidget* parent) override;
+    void deleteActionSet(const QString& actionSetId) override;
+    void setActionSetOrder(const QString& actionSetId, int order) override;
 
 private:
     QNetworkAccessManager* m_networkManager;

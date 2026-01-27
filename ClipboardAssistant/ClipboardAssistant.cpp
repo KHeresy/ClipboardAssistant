@@ -47,53 +47,53 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(ne
     connect(ui->btnCopyOutput, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCopyOutputClicked);
     connect(ui->btnPaste, &QPushButton::clicked, this, &ClipboardAssistant::onBtnPasteClicked);
     connect(ui->btnSettings, &QPushButton::clicked, this, &ClipboardAssistant::onBtnSettingsClicked);
-    connect(ui->btnAddFeature, &QPushButton::clicked, this, &ClipboardAssistant::onBtnAddFeatureClicked);
+    connect(ui->btnAddActionSet, &QPushButton::clicked, this, &ClipboardAssistant::onBtnAddActionSetClicked);
     connect(ui->btnCancel, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCancelClicked);
     connect(ui->checkAlwaysOnTop, &QCheckBox::toggled, this, &ClipboardAssistant::onCheckAlwaysOnTopToggled);
     connect(ui->spinInputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinInputFontSizeChanged);
     connect(ui->spinOutputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinOutputFontSizeChanged);
     ui->textClipboard->installEventFilter(this); ui->textOutput->installEventFilter(this);
     
-    connect(ui->listFeatures->model(), &QAbstractItemModel::rowsMoved, this, [this](const QModelIndex &, int, int, const QModelIndex &, int) {
+    connect(ui->listActionSets->model(), &QAbstractItemModel::rowsMoved, this, [this](const QModelIndex &, int, int, const QModelIndex &, int) {
         QTimer::singleShot(0, this, [this]() {
-            for(int i = 0; i < ui->listFeatures->count(); ++i) {
-                QListWidgetItem* item = ui->listFeatures->item(i);
+            for(int i = 0; i < ui->listActionSets->count(); ++i) {
+                QListWidgetItem* item = ui->listActionSets->item(i);
                 QString uid = item->data(Qt::UserRole).toString();
-                if (m_featureMap.contains(uid)) {
-                    m_featureMap[uid].plugin->setFeatureOrder(m_featureMap[uid].featureId, i);
-                    if (!ui->listFeatures->itemWidget(item)) {
-                        setupItemWidget(item, m_featureMap[uid]);
+                if (m_actionSetMap.contains(uid)) {
+                    m_actionSetMap[uid].plugin->setActionSetOrder(m_actionSetMap[uid].actionSetId, i);
+                    if (!ui->listActionSets->itemWidget(item)) {
+                        setupActionSetWidget(item, m_actionSetMap[uid]);
                     }
                 }
             }
-            updateFeatureShortcuts();
+            updateActionSetShortcuts();
         });
     });
 
-    loadPlugins(); reloadFeatures(); setupTrayIcon(); loadSettings();
+    loadPlugins(); reloadActionSets(); setupTrayIcon(); loadSettings();
     if (ui->splitter_horizontal->sizes().isEmpty() || ui->splitter_horizontal->sizes().at(0) == 0) {
         int w = width() / 2; ui->splitter_horizontal->setSizes({w, w});
     }
 }
 ClipboardAssistant::~ClipboardAssistant() { unregisterGlobalHotkey(); delete ui; }
 
-void ClipboardAssistant::updateFeatureShortcuts() {
+void ClipboardAssistant::updateActionSetShortcuts() {
     unregisterGlobalHotkey();
     qDeleteAll(m_localShortcuts); m_localShortcuts.clear();
     int dIdx = 1;
-    for (int i = 0; i < ui->listFeatures->count(); ++i) {
-        QListWidgetItem* item = ui->listFeatures->item(i);
+    for (int i = 0; i < ui->listActionSets->count(); ++i) {
+        QListWidgetItem* item = ui->listActionSets->item(i);
         QString uid = item->data(Qt::UserRole).toString();
-        if (!m_featureMap.contains(uid)) continue;
-        FeatureInfo& info = m_featureMap[uid];
+        if (!m_actionSetMap.contains(uid)) continue;
+        ActionSetInfo& info = m_actionSetMap[uid];
         
         QStringList shortcuts;
         if (dIdx <= 9) {
             QString ks = QString("Ctrl+%1").arg(dIdx);
             shortcuts << ks;
             QShortcut* sc = new QShortcut(QKeySequence(ks), this);
-            connect(sc, &QShortcut::activated, [this, p=info.plugin, fid=info.featureId]() {
-                onRunFeature(p, fid);
+            connect(sc, &QShortcut::activated, [this, p=info.plugin, asid=info.actionSetId]() {
+                onRunActionSet(p, asid);
             });
             m_localShortcuts.append(sc); dIdx++;
         }
@@ -101,17 +101,17 @@ void ClipboardAssistant::updateFeatureShortcuts() {
             shortcuts << (info.customShortcut.toString() + (info.isCustomShortcutGlobal ? " (G)" : " (L)"));
             if (!info.isCustomShortcutGlobal) {
                 QShortcut* sc = new QShortcut(info.customShortcut, this);
-                connect(sc, &QShortcut::activated, [this, p=info.plugin, fid=info.featureId]() {
-                    onRunFeature(p, fid);
+                connect(sc, &QShortcut::activated, [this, p=info.plugin, asid=info.actionSetId]() {
+                    onRunActionSet(p, asid);
                 });
                 m_localShortcuts.append(sc);
             }
         }
         
         if (info.lblContent) {
-            QString html = QString("<div align='center'>"
-                                   "<b style='font-size:11pt; color:black; background:transparent;'>%1</b><br/>"
-                                   "<span style='font-size:8pt; color:#666666; background:transparent;'>%2</span>"
+            QString html = QString("<div align='center'>" 
+                                   "<b style='font-size:11pt; color:black; background:transparent;'>%1</b><br/>" 
+                                   "<span style='font-size:8pt; color:#666666; background:transparent;'>%2</span>" 
                                    "</div>").arg(info.name.toHtmlEscaped(), shortcuts.join(" / ").toHtmlEscaped());
             info.lblContent->setText(html);
         }
@@ -164,8 +164,8 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
             auto act = [this, id]() {
                 show(); activateWindow();
                 if (m_hotkeyMap.contains(id)) {
-                    FeatureInfo info = m_hotkeyMap[id];
-                    if (info.mainButton && info.mainButton->isEnabled()) onRunFeature(info.plugin, info.featureId);
+                    ActionSetInfo info = m_hotkeyMap[id];
+                    if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(info.plugin, info.actionSetId);
                 }
             };
             QSettings s("Heresy", "ClipboardAssistant");
@@ -185,7 +185,7 @@ void ClipboardAssistant::onClipboardChanged() {
             QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); img.save(&buf, "PNG");
             ui->textClipboard->setHtml(QString("<img src='data:image/png;base64,%1' />").arg(QString::fromLatin1(ba.toBase64())));
         } else ui->textClipboard->setText("[Invalid Image]");
-    } else if (d->hasHtml()) { m_currentHtml = d->html(); ui->textClipboard->setHtml(m_currentHtml); processHtmlImages(m_currentHtml); }
+    } else if (d->hasHtml()) { m_currentHtml = d->html(); ui->textClipboard->setHtml(m_currentHtml); processHtmlImages(m_currentHtml); } 
     else if (d->hasText()) ui->textClipboard->setText(d->text());
     else ui->textClipboard->setText("[Unknown]");
     updateButtonsState();
@@ -199,7 +199,7 @@ void ClipboardAssistant::updateButtonsState() {
         cT |= IClipboardPlugin::File; QMimeDatabase db;
         for (const QUrl& u : d->urls()) if (db.mimeTypeForFile(u.toLocalFile()).name().startsWith("image/")) { cT |= IClipboardPlugin::Image; break; }
     }
-    for (auto it = m_featureMap.begin(); it != m_featureMap.end(); ++it) {
+    for (auto it = m_actionSetMap.begin(); it != m_actionSetMap.end(); ++it) {
         if (it.value().mainButton) it.value().mainButton->setEnabled((it.value().plugin->supportedInputs() & cT) != IClipboardPlugin::None);
     }
 }
@@ -233,32 +233,32 @@ void ClipboardAssistant::loadPlugins() {
         if (p) { IClipboardPlugin* iP = qobject_cast<IClipboardPlugin*>(p); if (iP) m_plugins.append({iP, false, f}); }
     }
 }
-void ClipboardAssistant::reloadFeatures() {
+void ClipboardAssistant::reloadActionSets() {
     unregisterGlobalHotkey(); qDeleteAll(m_localShortcuts); m_localShortcuts.clear();
-    m_featureMap.clear();
-    ui->listFeatures->clear(); 
+    m_actionSetMap.clear();
+    ui->listActionSets->clear(); 
     for (const auto& info : m_plugins) {
-        for (const auto& f : info.plugin->features()) {
-            addFeatureWidget(info.plugin, f, 0);
+        for (const auto& f : info.plugin->actionSets()) {
+            addActionSetWidget(info.plugin, f, 0);
         }
     }
-    updateFeatureShortcuts();
+    updateActionSetShortcuts();
     updateButtonsState();
 }
-void ClipboardAssistant::addFeatureWidget(IClipboardPlugin* p, const PluginFeature& f, int) {
-    QListWidgetItem* item = new QListWidgetItem(ui->listFeatures);
+void ClipboardAssistant::addActionSetWidget(IClipboardPlugin* p, const PluginActionSet& f, int) {
+    QListWidgetItem* item = new QListWidgetItem(ui->listActionSets);
     item->setSizeHint(QSize(0, 75));
     QString uid = p->name() + "::" + f.id;
     item->setData(Qt::UserRole, uid);
     
-    m_featureMap.insert(uid, { p, f.id, nullptr, f.customShortcut, f.isCustomShortcutGlobal, f.name, nullptr });
-    setupItemWidget(item, m_featureMap[uid]);
+    m_actionSetMap.insert(uid, { p, f.id, nullptr, f.customShortcut, f.isCustomShortcutGlobal, f.name, nullptr });
+    setupActionSetWidget(item, m_actionSetMap[uid]);
 }
 
-void ClipboardAssistant::setupItemWidget(QListWidgetItem* item, FeatureInfo& info) {
+void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info) {
     QString uid = item->data(Qt::UserRole).toString();
     IClipboardPlugin* p = info.plugin;
-    QString fid = info.featureId;
+    QString asid = info.actionSetId;
 
     QWidget* row = new QWidget();
     QHBoxLayout* rowLayout = new QHBoxLayout(row);
@@ -284,7 +284,7 @@ void ClipboardAssistant::setupItemWidget(QListWidgetItem* item, FeatureInfo& inf
     btnLayout->addWidget(lbl);
     
     rowLayout->addWidget(bM);
-    connect(bM, &QPushButton::clicked, [this, p, fid]() { onRunFeature(p, fid); });
+    connect(bM, &QPushButton::clicked, [this, p, asid]() { onRunActionSet(p, asid); });
     
     info.mainButton = bM;
     info.lblContent = lbl;
@@ -293,32 +293,32 @@ void ClipboardAssistant::setupItemWidget(QListWidgetItem* item, FeatureInfo& inf
     sideLayout->setSpacing(1);
     
     if (p->isEditable()) {
-        QPushButton* bE = new QPushButton("E"); bE->setFixedSize(22,22); connect(bE, &QPushButton::clicked, [this, p, fid]() { onEditFeature(p, fid); });
-        QPushButton* bDel = new QPushButton("X"); bDel->setFixedSize(22,22); connect(bDel, &QPushButton::clicked, [this, p, fid]() { onDeleteFeature(p, fid); });
+        QPushButton* bE = new QPushButton("E"); bE->setFixedSize(22,22); connect(bE, &QPushButton::clicked, [this, p, asid]() { onEditActionSet(p, asid); });
+        QPushButton* bDel = new QPushButton("X"); bDel->setFixedSize(22,22); connect(bDel, &QPushButton::clicked, [this, p, asid]() { onDeleteActionSet(p, asid); });
         sideLayout->addWidget(bE); sideLayout->addWidget(bDel);
     }
     rowLayout->addLayout(sideLayout);
-    ui->listFeatures->setItemWidget(item, row);
+    ui->listActionSets->setItemWidget(item, row);
 }
-void ClipboardAssistant::onRunFeature(IClipboardPlugin* p, QString fid) {
+void ClipboardAssistant::onRunActionSet(IClipboardPlugin* p, QString asid) {
     ui->textOutput->clear(); ui->textOutput->setText("Processing..."); m_activePlugin = p;
     if (p->supportsStreaming()) ui->btnCancel->setVisible(true);
-    p->process(fid, QApplication::clipboard()->mimeData(), new PluginCallback(this));
+    p->process(asid, QApplication::clipboard()->mimeData(), new PluginCallback(this));
 }
-void ClipboardAssistant::onEditFeature(IClipboardPlugin* p, QString fid) { p->editFeature(fid, this); reloadFeatures(); }
-void ClipboardAssistant::onDeleteFeature(IClipboardPlugin* p, QString fid) { if (QMessageBox::question(this, "Confirm", "Delete?") == QMessageBox::Yes) { p->deleteFeature(fid); reloadFeatures(); } }
-void ClipboardAssistant::onBtnAddFeatureClicked() {
+void ClipboardAssistant::onEditActionSet(IClipboardPlugin* p, QString asid) { p->editActionSet(asid, this); reloadActionSets(); }
+void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin* p, QString asid) { if (QMessageBox::question(this, "Confirm", "Delete?") == QMessageBox::Yes) { p->deleteActionSet(asid); reloadActionSets(); } }
+void ClipboardAssistant::onBtnAddActionSetClicked() {
     QList<IClipboardPlugin*> eP; for (const auto& info : m_plugins) if (info.plugin->isEditable()) eP.append(info.plugin);
     if (eP.isEmpty()) return;
     IClipboardPlugin* target = (eP.size() == 1) ? eP.first() : nullptr;
     if (!target) { QStringList n; for(auto* p : eP) n << p->name(); bool ok; QString i = QInputDialog::getItem(this, "Select", "Add to:", n, 0, false, &ok);
         if (ok && !i.isEmpty()) for(auto* p : eP) if (p->name() == i) { target = p; break; }
     }
-    if (target && !target->createFeature(this).isEmpty()) reloadFeatures();
+    if (target && !target->createActionSet(this).isEmpty()) reloadActionSets();
 }
 void ClipboardAssistant::onBtnCopyOutputClicked() { QApplication::clipboard()->setText(ui->textOutput->toPlainText()); }
 void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide(); QTimer::singleShot(500, []() { sendCtrlV(); }); }
-void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) reloadFeatures(); }
+void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) reloadActionSets(); }
 void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->textOutput->append("\n[Cancelled]"); } }
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.jpg"));
@@ -326,19 +326,19 @@ void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon->setContextMenu(m_trayMenu); m_trayIcon->show(); connect(m_trayIcon, &QSystemTrayIcon::activated, this, &ClipboardAssistant::onTrayIconActivated);
 }
 void ClipboardAssistant::registerGlobalHotkey() {
-    QSettings s("Heresy", "ClipboardAssistant"); registerFeatureHotkey(100, QKeySequence(s.value("GlobalHotkey", "Ctrl+Alt+V").toString()));
+    QSettings s("Heresy", "ClipboardAssistant"); registerActionSetHotkey(100, QKeySequence(s.value("GlobalHotkey", "Ctrl+Alt+V").toString()));
     m_hotkeyMap.clear(); m_nextHotkeyId = 101;
-    for (int i = 0; i < ui->listFeatures->count(); ++i) {
-        QString uid = ui->listFeatures->item(i)->data(Qt::UserRole).toString();
-        if (!m_featureMap.contains(uid)) continue;
-        FeatureInfo& info = m_featureMap[uid];
+    for (int i = 0; i < ui->listActionSets->count(); ++i) {
+        QString uid = ui->listActionSets->item(i)->data(Qt::UserRole).toString();
+        if (!m_actionSetMap.contains(uid)) continue;
+        ActionSetInfo& info = m_actionSetMap[uid];
         if (!info.customShortcut.isEmpty() && info.isCustomShortcutGlobal) {
-            int id = m_nextHotkeyId++; registerFeatureHotkey(id, info.customShortcut);
-            m_hotkeyMap.insert(id, { info.plugin, info.featureId, info.mainButton, info.customShortcut, info.isCustomShortcutGlobal, info.name, info.lblContent });
+            int id = m_nextHotkeyId++; registerActionSetHotkey(id, info.customShortcut);
+            m_hotkeyMap.insert(id, { info.plugin, info.actionSetId, info.mainButton, info.customShortcut, info.isCustomShortcutGlobal, info.name, info.lblContent });
         }
     }
 }
-void ClipboardAssistant::registerFeatureHotkey(int id, const QKeySequence& ks) {
+void ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks) {
     if (ks.isEmpty()) return; QString ksStr = ks.toString(QKeySequence::PortableText); UINT m = 0;
     if (ksStr.contains("Ctrl")) m |= MOD_CONTROL; if (ksStr.contains("Alt")) m |= MOD_ALT; if (ksStr.contains("Shift")) m |= MOD_SHIFT; if (ksStr.contains("Meta")) m |= MOD_WIN;
     int k = 0; QStringList p = ksStr.split("+"); if (!p.isEmpty()) { QString kp = p.last();

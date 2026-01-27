@@ -7,7 +7,7 @@
 #include <QMimeData>
 #include <QWidget>
 
-struct PluginFeature {
+struct PluginActionSet {
     QString id;
     QString name;
     QString description;
@@ -47,8 +47,8 @@ public:
     // Return the plugin version
     virtual QString version() const { return "1.0.0"; }
     
-    // Return a list of features provided by this plugin
-    virtual QList<PluginFeature> features() const = 0;
+    // Return a list of ActionSets provided by this plugin
+    virtual QList<PluginActionSet> actionSets() const = 0;
     
     // Capabilities
     enum DataType {
@@ -67,8 +67,8 @@ public:
     // Abort current operation
     virtual void abort() {}
 
-    // Process the clipboard data using the specified feature
-    virtual void process(const QString& featureId, const QMimeData* data, IPluginCallback* callback) = 0;
+    // Process the clipboard data using the specified ActionSet
+    virtual void process(const QString& actionSetId, const QMimeData* data, IPluginCallback* callback) = 0;
     
     // Check if the plugin has a settings dialog
     virtual bool hasSettings() const = 0;
@@ -78,21 +78,21 @@ public:
 
     // -- New Methods for Dynamic Actions --
 
-    // Check if this plugin allows the user to add/remove features
+    // Check if this plugin allows the user to add/remove ActionSets
     virtual bool isEditable() const { return false; }
 
-    // Request the plugin to create a new feature (usually shows a dialog)
-    // Returns the ID of the new feature if successful, or empty string if cancelled.
-    virtual QString createFeature(QWidget* parent) { return QString(); }
+    // Request the plugin to create a new ActionSet (usually shows a dialog)
+    // Returns the ID of the new ActionSet if successful, or empty string if cancelled.
+    virtual QString createActionSet(QWidget* parent) { return QString(); }
 
-    // Request the plugin to edit an existing feature
-    virtual void editFeature(const QString& featureId, QWidget* parent) {}
+    // Request the plugin to edit an existing ActionSet
+    virtual void editActionSet(const QString& actionSetId, QWidget* parent) {}
 
-    // Request the plugin to delete a feature
-    virtual void deleteFeature(const QString& featureId) {}
+    // Request the plugin to delete an ActionSet
+    virtual void deleteActionSet(const QString& actionSetId) {}
 
-    // Update the display order of a feature
-    virtual void setFeatureOrder(const QString& featureId, int order) {}
+    // Update the display order of an ActionSet
+    virtual void setActionSetOrder(const QString& actionSetId, int order) {}
 };
 
 #define IClipboardPlugin_iid "org.gemini.ClipboardAssistant.IClipboardPlugin"

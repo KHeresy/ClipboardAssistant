@@ -39,17 +39,17 @@ void RegExAssistant::ensureDefaultActions()
     } else settings.endGroup();
 }
 
-QList<PluginFeature> RegExAssistant::features() const
+QList<PluginActionSet> RegExAssistant::actionSets() const
 {
-    QList<PluginFeature> list;
+    QList<PluginActionSet> list;
     QSettings settings("Heresy", "ClipboardAssistant");
     settings.beginGroup("RegEx/Actions");
     QStringList ids = settings.childGroups();
-    struct SortedFeature { PluginFeature f; int order; };
-    QList<SortedFeature> sortedList;
+    struct SortedActionSet { PluginActionSet f; int order; };
+    QList<SortedActionSet> sortedList;
     for (const QString& id : ids) {
         settings.beginGroup(id);
-        PluginFeature f; f.id = id; f.name = settings.value("Name").toString();
+        PluginActionSet f; f.id = id; f.name = settings.value("Name").toString();
         f.description = "Regex: " + settings.value("Pattern").toString();
         f.customShortcut = QKeySequence(settings.value("Shortcut").toString());
         f.isCustomShortcutGlobal = settings.value("IsGlobal", false).toBool();
@@ -58,16 +58,16 @@ QList<PluginFeature> RegExAssistant::features() const
         settings.endGroup();
     }
     settings.endGroup();
-    std::sort(sortedList.begin(), sortedList.end(), [](const SortedFeature& a, const SortedFeature& b) { return a.order < b.order; });
+    std::sort(sortedList.begin(), sortedList.end(), [](const SortedActionSet& a, const SortedActionSet& b) { return a.order < b.order; });
     for(const auto& sf : sortedList) list.append(sf.f);
     return list;
 }
 
-void RegExAssistant::process(const QString& featureId, const QMimeData* data, IPluginCallback* callback)
+void RegExAssistant::process(const QString& actionSetId, const QMimeData* data, IPluginCallback* callback)
 {
     if (!data->hasText()) { callback->onError("No text in clipboard"); return; }
     QSettings settings("Heresy", "ClipboardAssistant");
-    QString group = "RegEx/Actions/" + featureId;
+    QString group = "RegEx/Actions/" + actionSetId;
     QString pattern = settings.value(group + "/Pattern").toString();
     QString replacement = settings.value(group + "/Replacement").toString();
     QString text = data->text();
@@ -87,11 +87,10 @@ bool RegExAssistant::hasSettings() const { return false; }
 void RegExAssistant::showSettings(QWidget*) {}
 bool RegExAssistant::isEditable() const { return true; }
 
-QString RegExAssistant::createFeature(QWidget* parent)
+QString RegExAssistant::createActionSet(QWidget* parent)
 {
     QDialog dialog(parent); dialog.setWindowTitle("Add RegEx Action");
-    QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    QLineEdit* eName = new QLineEdit(&dialog); QLineEdit* ePattern = new QLineEdit(&dialog);
+    QVBoxLayout* layout = new QVBoxLayout(&dialog); QLineEdit* eName = new QLineEdit(&dialog); QLineEdit* ePattern = new QLineEdit(&dialog);
     QLineEdit* eReplace = new QLineEdit(&dialog); QKeySequenceEdit* eShortcut = new QKeySequenceEdit(&dialog);
     QCheckBox* cGlobal = new QCheckBox("Global", &dialog);
     layout->addWidget(new QLabel("Name:")); layout->addWidget(eName);
@@ -111,9 +110,9 @@ QString RegExAssistant::createFeature(QWidget* parent)
     return QString();
 }
 
-void RegExAssistant::editFeature(const QString& featureId, QWidget* parent)
+void RegExAssistant::editActionSet(const QString& actionSetId, QWidget* parent)
 {
-    QSettings s("Heresy", "ClipboardAssistant"); QString group = "RegEx/Actions/" + featureId;
+    QSettings s("Heresy", "ClipboardAssistant"); QString group = "RegEx/Actions/" + actionSetId;
     QDialog dialog(parent); dialog.setWindowTitle("Edit RegEx Action");
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
     QLineEdit* eName = new QLineEdit(&dialog); eName->setText(s.value(group + "/Name").toString());
@@ -136,5 +135,5 @@ void RegExAssistant::editFeature(const QString& featureId, QWidget* parent)
     }
 }
 
-void RegExAssistant::deleteFeature(const QString& featureId) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("RegEx/Actions/" + featureId); }
-void RegExAssistant::setFeatureOrder(const QString& fid, int order) { QSettings s("Heresy", "ClipboardAssistant"); s.setValue("RegEx/Actions/" + fid + "/Order", order); }
+void RegExAssistant::deleteActionSet(const QString& actionSetId) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("RegEx/Actions/" + actionSetId); }
+void RegExAssistant::setActionSetOrder(const QString& fid, int order) { QSettings s("Heresy", "ClipboardAssistant"); s.setValue("RegEx/Actions/" + fid + "/Order", order); }
