@@ -43,6 +43,9 @@ void sendCtrlV() { sendCtrlKey('V'); }
 ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(new Ui::ClipboardAssistantClass) {
     ui->setupUi(this);
     ui->textOutput->setReadOnly(true);
+    QFont defaultFont("Segoe UI", 10);
+    ui->textClipboard->setFont(defaultFont);
+    ui->textOutput->setFont(defaultFont);
     setWindowIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_networkManager = new QNetworkAccessManager(this);
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
