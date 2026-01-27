@@ -42,6 +42,7 @@ void sendCtrlV() { sendCtrlKey('V'); }
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(new Ui::ClipboardAssistantClass) {
     ui->setupUi(this);
+    ui->textOutput->setReadOnly(true);
     setWindowIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_networkManager = new QNetworkAccessManager(this);
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
@@ -413,7 +414,12 @@ void ClipboardAssistant::onBtnAddActionSetClicked() {
         }
     }
 }
-void ClipboardAssistant::onBtnCopyOutputClicked() { QApplication::clipboard()->setText(ui->textOutput->toPlainText()); }
+void ClipboardAssistant::onBtnCopyOutputClicked() { 
+    QMimeData* data = new QMimeData();
+    data->setText(ui->textOutput->toPlainText());
+    data->setHtml(ui->textOutput->toHtml());
+    QApplication::clipboard()->setMimeData(data);
+}
 void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide(); QTimer::singleShot(500, []() { sendCtrlV(); }); }
 void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) reloadActionSets(); }
 void ClipboardAssistant::onBtnCancelClicked() { 
@@ -461,7 +467,7 @@ void ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks)
 }
 void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = 100; i < m_nextHotkeyId + 20; ++i) UnregisterHotKey((HWND)winId(), i); }
 ClipboardAssistant::PluginCallback::PluginCallback(ClipboardAssistant* p) : m_parent(p) {}
-void ClipboardAssistant::PluginCallback::onTextData(const QString& t, bool f) { QMetaObject::invokeMethod(m_parent, [this, t, f]() { m_parent->handlePluginOutput(t, !m_firstChunk); if (m_firstChunk) m_firstChunk = false; }); }
+void ClipboardAssistant::PluginCallback::onTextData(const QString& t, bool f) { QMetaObject::invokeMethod(m_parent, [this, t, f]() { m_parent->handlePluginOutput(t, !m_firstChunk, f); if (m_firstChunk) m_firstChunk = false; }); }
 void ClipboardAssistant::PluginCallback::onError(const QString& m) { QMetaObject::invokeMethod(m_parent, [this, m]() { m_parent->handlePluginError(m); }); }
 void ClipboardAssistant::PluginCallback::onFinished() { 
     QMetaObject::invokeMethod(m_parent, [this]() {
@@ -472,7 +478,15 @@ void ClipboardAssistant::PluginCallback::onFinished() {
     });
     delete this; 
 }
-void ClipboardAssistant::handlePluginOutput(const QString& t, bool a) { if (!a) ui->textOutput->clear(); ui->textOutput->insertPlainText(t); ui->textOutput->moveCursor(QTextCursor::End); }
+void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) { 
+    if (!a) ui->textOutput->clear(); 
+    ui->textOutput->insertPlainText(t); 
+    if (f) {
+        QString fullText = ui->textOutput->toPlainText();
+        ui->textOutput->setMarkdown(fullText);
+    }
+    ui->textOutput->moveCursor(QTextCursor::End); 
+}
 void ClipboardAssistant::handlePluginError(const QString& m) { 
     ui->btnCancel->setVisible(false); 
     ui->labelStatus->setText("Error occurred.");

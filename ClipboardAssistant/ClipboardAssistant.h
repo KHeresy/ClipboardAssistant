@@ -106,6 +106,6 @@ private:
     friend class PluginCallback;
     
     // For callback access
-    void handlePluginOutput(const QString& text, bool append);
+    void handlePluginOutput(const QString& text, bool append, bool isFinal);
     void handlePluginError(const QString& msg);
 };
