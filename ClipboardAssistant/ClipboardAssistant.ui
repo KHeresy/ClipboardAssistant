@@ -104,6 +104,33 @@
         <item>
          <widget class="QTextEdit" name="textOutput"/>
         </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_status">
+          <item>
+           <widget class="QLabel" name="labelStatus">
+            <property name="text">
+             <string>Ready</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </widget>
      </widget>

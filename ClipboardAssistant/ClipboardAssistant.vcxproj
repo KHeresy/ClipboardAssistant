@@ -103,12 +103,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
 
+    <ClCompile Include="ActionSetSettings.cpp" />
     <ClCompile Include="RegExAssistant.cpp" />
     <ResourceCompile Include="ClipboardAssistant.rc" />
     <ClCompile Include="Setting.cpp" />
     <QtRcc Include="ClipboardAssistant.qrc" />
+    <QtUic Include="ActionSetSettings.ui" />
     <QtUic Include="ClipboardAssistant.ui" />
     <QtUic Include="Setting.ui" />
+    <QtMoc Include="ActionSetSettings.h" />
     <QtMoc Include="ClipboardAssistant.h" />
     <QtMoc Include="RegExAssistant.h" />
     <QtMoc Include="Setting.h" />

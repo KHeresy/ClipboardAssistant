@@ -87,53 +87,54 @@ bool RegExAssistant::hasSettings() const { return false; }
 void RegExAssistant::showSettings(QWidget*) {}
 bool RegExAssistant::isEditable() const { return true; }
 
-QString RegExAssistant::createActionSet(QWidget* parent)
-{
-    QDialog dialog(parent); dialog.setWindowTitle("Add RegEx Action");
-    QVBoxLayout* layout = new QVBoxLayout(&dialog); QLineEdit* eName = new QLineEdit(&dialog); QLineEdit* ePattern = new QLineEdit(&dialog);
-    QLineEdit* eReplace = new QLineEdit(&dialog); QKeySequenceEdit* eShortcut = new QKeySequenceEdit(&dialog);
-    QCheckBox* cGlobal = new QCheckBox("Global", &dialog);
-    layout->addWidget(new QLabel("Name:")); layout->addWidget(eName);
-    layout->addWidget(new QLabel("Pattern:")); layout->addWidget(ePattern);
-    layout->addWidget(new QLabel("Replacement:")); layout->addWidget(eReplace);
-    layout->addWidget(new QLabel("Shortcut:")); layout->addWidget(eShortcut); layout->addWidget(cGlobal);
-    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
-    layout->addWidget(buttons);
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    if (dialog.exec() == QDialog::Accepted) {
-        QString id = QUuid::createUuid().toString(QUuid::Id128); QSettings s("Heresy", "ClipboardAssistant");
-        s.beginGroup("RegEx/Actions/" + id); s.setValue("Name", eName->text()); s.setValue("Pattern", ePattern->text());
-        s.setValue("Replacement", eReplace->text()); s.setValue("Shortcut", eShortcut->keySequence().toString());
-        s.setValue("IsGlobal", cGlobal->isChecked()); s.setValue("Order", 999); s.endGroup(); return id;
+QWidget* RegExAssistant::getSettingsWidget(const QString& actionSetId, QWidget* parent) {
+    QWidget* content = new QWidget(parent);
+    QVBoxLayout* contentLayout = new QVBoxLayout(content);
+    contentLayout->setContentsMargins(0,0,0,0);
+
+    QLineEdit* ePattern = new QLineEdit(content);
+    QLineEdit* eReplace = new QLineEdit(content);
+    
+    // Store pointers for access in saveSettings? No, we can't easily. 
+    // We should name them or use object names.
+    ePattern->setObjectName("Pattern");
+    eReplace->setObjectName("Replacement");
+
+    if (!actionSetId.isEmpty()) {
+        QSettings s("Heresy", "ClipboardAssistant"); 
+        QString group = "RegEx/Actions/" + actionSetId;
+        ePattern->setText(s.value(group + "/Pattern").toString());
+        eReplace->setText(s.value(group + "/Replacement").toString());
     }
-    return QString();
+    
+    contentLayout->addWidget(new QLabel("Pattern:")); contentLayout->addWidget(ePattern);
+    contentLayout->addWidget(new QLabel("Replacement:")); contentLayout->addWidget(eReplace);
+    
+    return content;
 }
 
-void RegExAssistant::editActionSet(const QString& actionSetId, QWidget* parent)
-{
-    QSettings s("Heresy", "ClipboardAssistant"); QString group = "RegEx/Actions/" + actionSetId;
-    QDialog dialog(parent); dialog.setWindowTitle("Edit RegEx Action");
-    QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    QLineEdit* eName = new QLineEdit(&dialog); eName->setText(s.value(group + "/Name").toString());
-    QLineEdit* ePattern = new QLineEdit(&dialog); ePattern->setText(s.value(group + "/Pattern").toString());
-    QLineEdit* eReplace = new QLineEdit(&dialog); eReplace->setText(s.value(group + "/Replacement").toString());
-    QKeySequenceEdit* eShortcut = new QKeySequenceEdit(&dialog); eShortcut->setKeySequence(QKeySequence(s.value(group + "/Shortcut").toString()));
-    QCheckBox* cGlobal = new QCheckBox("Global", &dialog); cGlobal->setChecked(s.value(group + "/IsGlobal").toBool());
-    layout->addWidget(new QLabel("Name:")); layout->addWidget(eName);
-    layout->addWidget(new QLabel("Pattern:")); layout->addWidget(ePattern);
-    layout->addWidget(new QLabel("Replacement:")); layout->addWidget(eReplace);
-    layout->addWidget(new QLabel("Shortcut:")); layout->addWidget(eShortcut); layout->addWidget(cGlobal);
-    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
-    layout->addWidget(buttons);
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    if (dialog.exec() == QDialog::Accepted) {
-        s.beginGroup(group); s.setValue("Name", eName->text()); s.setValue("Pattern", ePattern->text());
-        s.setValue("Replacement", eReplace->text()); s.setValue("Shortcut", eShortcut->keySequence().toString());
-        s.setValue("IsGlobal", cGlobal->isChecked()); s.endGroup();
-    }
+QString RegExAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) {
+    QString id = actionSetId;
+    if (id.isEmpty()) id = QUuid::createUuid().toString(QUuid::Id128);
+    
+    QLineEdit* ePattern = widget->findChild<QLineEdit*>("Pattern");
+    QLineEdit* eReplace = widget->findChild<QLineEdit*>("Replacement");
+    
+    QSettings s("Heresy", "ClipboardAssistant");
+    s.beginGroup("RegEx/Actions/" + id);
+    s.setValue("Name", name);
+    s.setValue("Pattern", ePattern ? ePattern->text() : "");
+    s.setValue("Replacement", eReplace ? eReplace->text() : "");
+    s.setValue("Shortcut", shortcut.toString());
+    s.setValue("IsGlobal", isGlobal);
+    if (actionSetId.isEmpty()) s.setValue("Order", 999);
+    s.endGroup();
+    
+    return id;
 }
+
+QString RegExAssistant::createActionSet(QWidget* parent) { return QString(); }
+void RegExAssistant::editActionSet(const QString& actionSetId, QWidget* parent) {}
 
 void RegExAssistant::deleteActionSet(const QString& actionSetId) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("RegEx/Actions/" + actionSetId); }
 void RegExAssistant::setActionSetOrder(const QString& fid, int order) { QSettings s("Heresy", "ClipboardAssistant"); s.setValue("RegEx/Actions/" + fid + "/Order", order); }

@@ -93,7 +93,20 @@ public:
 
     // Update the display order of an ActionSet
     virtual void setActionSetOrder(const QString& actionSetId, int order) {}
+
+    // New Interface for separated settings
+    // Returns a widget for editing specific settings. If actionSetId is empty, it's for creating a new action.
+    virtual QWidget* getSettingsWidget(const QString& actionSetId, QWidget* parent) { return nullptr; }
+
+    // Saves the settings. 
+    // actionSetId: empty if creating new.
+    // widget: the widget returned by getSettingsWidget.
+    // name, shortcut, isGlobal: common settings handled by the host.
+    // Returns the ID of the action set (new or existing).
+    virtual QString saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) { return QString(); }
 };
+
+QT_END_NAMESPACE
 
 #define IClipboardPlugin_iid "org.gemini.ClipboardAssistant.IClipboardPlugin"
 Q_DECLARE_INTERFACE(IClipboardPlugin, IClipboardPlugin_iid)

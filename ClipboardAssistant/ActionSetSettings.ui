@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ActionSetSettings</class>
+ <widget class="QWidget" name="ActionSetSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ActionSetSettings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="groupAction">
+     <property name="title">
+      <string>General Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="labelName">
+        <property name="text">
+         <string>Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="editName"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelShortcut">
+        <property name="text">
+         <string>Shortcut:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QKeySequenceEdit" name="editShortcut"/>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkGlobal">
+        <property name="text">
+         <string>Global</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupActionSet">
+     <property name="title">
+      <string>Module Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_groupActionSet"/>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

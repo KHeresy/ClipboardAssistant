@@ -185,69 +185,53 @@ QComboBox* createAccCombo(QWidget* p, QString selId = "") {
     return c;
 }
 
-QString OpenAIAssistant::createActionSet(QWidget* p) {
-    QDialog d(p); d.setWindowTitle("Add Action");
-    QVBoxLayout* l = new QVBoxLayout(&d);
-    QLineEdit* eN = new QLineEdit(&d);
-    QComboBox* cA = createAccCombo(&d);
-    QTextEdit* eP = new QTextEdit(&d);
-    QKeySequenceEdit* eS = new QKeySequenceEdit(&d);
-    QCheckBox* cG = new QCheckBox("Global", &d);
-    l->addWidget(new QLabel("Name:")); l->addWidget(eN);
-    l->addWidget(new QLabel("Account:")); l->addWidget(cA);
-    l->addWidget(new QLabel("Prompt:")); l->addWidget(eP);
-    l->addWidget(new QLabel("Shortcut:")); l->addWidget(eS);
-    l->addWidget(cG);
-    QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &d);
-    l->addWidget(bb);
-    connect(bb, &QDialogButtonBox::accepted, &d, &QDialog::accept);
-    connect(bb, &QDialogButtonBox::rejected, &d, &QDialog::reject);
-    if (d.exec() == QDialog::Accepted) {
-        QString id = QUuid::createUuid().toString(QUuid::Id128);
+QWidget* OpenAIAssistant::getSettingsWidget(const QString& actionSetId, QWidget* parent) {
+    QWidget* content = new QWidget(parent);
+    QVBoxLayout* contentLayout = new QVBoxLayout(content);
+    contentLayout->setContentsMargins(0,0,0,0);
+    
+    QComboBox* cA = nullptr;
+    QTextEdit* eP = new QTextEdit(content);
+    eP->setObjectName("Prompt");
+
+    if (!actionSetId.isEmpty()) {
         QSettings s("Heresy", "ClipboardAssistant");
-        s.beginGroup("OpenAI/Actions/" + id);
-        s.setValue("Name", eN->text());
-        s.setValue("Prompt", eP->toPlainText());
-        s.setValue("AccountId", cA->currentData().toString());
-        s.setValue("Shortcut", eS->keySequence().toString());
-        s.setValue("IsGlobal", cG->isChecked());
-        s.setValue("Order", 999); // Will be sorted next time
-        s.endGroup();
-        return id;
+        QString g = "OpenAI/Actions/" + actionSetId;
+        cA = createAccCombo(content, s.value(g + "/AccountId").toString());
+        eP->setPlainText(s.value(g + "/Prompt").toString());
+    } else {
+        cA = createAccCombo(content);
     }
-    return "";
+    cA->setObjectName("Account");
+    
+    contentLayout->addWidget(new QLabel("Account:")); contentLayout->addWidget(cA);
+    contentLayout->addWidget(new QLabel("Prompt:")); contentLayout->addWidget(eP);
+
+    return content;
 }
 
-void OpenAIAssistant::editActionSet(const QString& asid, QWidget* p) {
+QString OpenAIAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal) {
+    QString id = actionSetId;
+    if (id.isEmpty()) id = QUuid::createUuid().toString(QUuid::Id128);
+
+    QComboBox* cA = widget->findChild<QComboBox*>("Account");
+    QTextEdit* eP = widget->findChild<QTextEdit*>("Prompt");
+
     QSettings s("Heresy", "ClipboardAssistant");
-    QString g = "OpenAI/Actions/" + asid;
-    QDialog d(p);
-    d.setWindowTitle("Edit Action");
-    QVBoxLayout* l = new QVBoxLayout(&d);
-    QLineEdit* eN = new QLineEdit(&d); eN->setText(s.value(g + "/Name").toString());
-    QComboBox* cA = createAccCombo(&d, s.value(g + "/AccountId").toString());
-    QTextEdit* eP = new QTextEdit(&d); eP->setPlainText(s.value(g + "/Prompt").toString());
-    QKeySequenceEdit* eS = new QKeySequenceEdit(&d); eS->setKeySequence(QKeySequence(s.value(g + "/Shortcut").toString()));
-    QCheckBox* cG = new QCheckBox("Global", &d); cG->setChecked(s.value(g + "/IsGlobal").toBool());
-    l->addWidget(new QLabel("Name:")); l->addWidget(eN);
-    l->addWidget(new QLabel("Account:")); l->addWidget(cA);
-    l->addWidget(new QLabel("Prompt:")); l->addWidget(eP);
-    l->addWidget(new QLabel("Shortcut:")); l->addWidget(eS);
-    l->addWidget(cG);
-    QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &d);
-    l->addWidget(bb);
-    connect(bb, &QDialogButtonBox::accepted, &d, &QDialog::accept);
-    connect(bb, &QDialogButtonBox::rejected, &d, &QDialog::reject);
-    if (d.exec() == QDialog::Accepted) {
-        s.beginGroup(g);
-        s.setValue("Name", eN->text());
-        s.setValue("Prompt", eP->toPlainText());
-        s.setValue("AccountId", cA->currentData().toString());
-        s.setValue("Shortcut", eS->keySequence().toString());
-        s.setValue("IsGlobal", cG->isChecked());
-        s.endGroup();
-    }
+    s.beginGroup("OpenAI/Actions/" + id);
+    s.setValue("Name", name);
+    s.setValue("Prompt", eP ? eP->toPlainText() : "");
+    s.setValue("AccountId", cA ? cA->currentData().toString() : "");
+    s.setValue("Shortcut", shortcut.toString());
+    s.setValue("IsGlobal", isGlobal);
+    if (actionSetId.isEmpty()) s.setValue("Order", 999);
+    s.endGroup();
+
+    return id;
 }
+
+QString OpenAIAssistant::createActionSet(QWidget* p) { return QString(); }
+void OpenAIAssistant::editActionSet(const QString& asid, QWidget* p) {}
 
 void OpenAIAssistant::deleteActionSet(const QString& asid) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("OpenAI/Actions/" + asid); }
 
