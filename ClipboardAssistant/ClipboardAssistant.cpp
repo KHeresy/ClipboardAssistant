@@ -41,7 +41,9 @@ void sendCtrlC() { sendCtrlKey('C'); }
 void sendCtrlV() { sendCtrlKey('V'); }
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(new Ui::ClipboardAssistantClass) {
-    ui->setupUi(this); m_networkManager = new QNetworkAccessManager(this);
+    ui->setupUi(this);
+    setWindowIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
+    m_networkManager = new QNetworkAccessManager(this);
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
     onClipboardChanged();
     connect(ui->btnCopyOutput, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCopyOutputClicked);
@@ -321,7 +323,7 @@ void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide();
 void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) reloadActionSets(); }
 void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->textOutput->append("\n[Cancelled]"); } }
 void ClipboardAssistant::setupTrayIcon() {
-    m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.jpg"));
+    m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_trayMenu = new QMenu(this); m_trayMenu->addAction("Show", this, &QWidget::show); m_trayMenu->addAction("Quit", qApp, &QCoreApplication::quit);
     m_trayIcon->setContextMenu(m_trayMenu); m_trayIcon->show(); connect(m_trayIcon, &QSystemTrayIcon::activated, this, &ClipboardAssistant::onTrayIconActivated);
 }

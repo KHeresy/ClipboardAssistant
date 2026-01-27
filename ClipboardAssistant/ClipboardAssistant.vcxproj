@@ -104,6 +104,7 @@
   <ItemGroup>
 
     <ClCompile Include="RegExAssistant.cpp" />
+    <ResourceCompile Include="ClipboardAssistant.rc" />
     <ClCompile Include="Setting.cpp" />
     <QtRcc Include="ClipboardAssistant.qrc" />
     <QtUic Include="ClipboardAssistant.ui" />
