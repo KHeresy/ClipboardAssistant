@@ -129,6 +129,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btnCancel">
+            <property name="text">
+             <string>Cancel</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -217,16 +227,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnCancel">
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-       <property name="visible">
-        <bool>false</bool>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnCopyOutput">

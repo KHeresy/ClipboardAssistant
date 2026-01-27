@@ -318,6 +318,7 @@ void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetIn
 
 void ClipboardAssistant::onRunActionSet(IClipboardPlugin* p, QString asid) {
     if (!p) return;
+    ui->textOutput->clear();
     m_activePlugin = p;
     ui->btnCancel->setVisible(true);
     ui->labelStatus->setText(QString("Processing (%1)...").arg(p->name()));
