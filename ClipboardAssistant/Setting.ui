@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<UI version="4.0">
+<ui version="4.0">
  <class>SettingClass</class>
  <widget class="QDialog" name="SettingClass">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>400</height>
+    <width>536</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,41 +15,74 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBoxGeneral">
-     <property name="title">
-      <string>General</string>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="topMargin">
+      <number>0</number>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_general">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QGroupBox" name="groupBoxGeneral">
+       <property name="title">
+        <string>General</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_general">
         <item>
-         <widget class="QLabel" name="labelHotkey">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="labelHotkey">
+            <property name="text">
+             <string>Global Hotkey:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QKeySequenceEdit" name="keySequenceEdit"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxAutoCopy">
           <property name="text">
-           <string>Global Hotkey:</string>
+           <string>Auto-copy (Send Ctrl+C) when activated via hotkey</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QKeySequenceEdit" name="keySequenceEdit"/>
+         <widget class="QCheckBox" name="checkBoxCloseOnEsc">
+          <property name="text">
+           <string>Close main window with Esc key</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxAutoStart">
+          <property name="text">
+           <string>Auto-start on boot</string>
+          </property>
+         </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="checkBoxAutoCopy">
-        <property name="text">
-         <string>Auto-copy (Send Ctrl+C) when activated via hotkey</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="checkBoxCloseOnEsc">
-        <property name="text">
-         <string>Close main window with Esc key</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBoxAbout">
+       <property name="title">
+        <string>About</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_about">
+        <item>
+         <widget class="QLabel" name="labelAbout">
+          <property name="text">
+           <string>Clipboard Assistant v0.1.0&lt;br/&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;GitHub Project Page&lt;/a&gt;</string>
+          </property>
+          <property name="openExternalLinks">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBoxPlugins">
@@ -78,13 +111,13 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <layoutDefault spacing="6" margin="11"/>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections>
   <connection>
@@ -92,12 +125,32 @@
    <signal>accepted()</signal>
    <receiver>SettingClass</receiver>
    <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>SettingClass</receiver>
    <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
  </connections>
-</UI>
+</ui>

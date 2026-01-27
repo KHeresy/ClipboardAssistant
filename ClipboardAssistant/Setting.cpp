@@ -4,6 +4,9 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
+#include <QCoreApplication>
+#include <QDir>
+
 Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::SettingClass)
@@ -16,6 +19,10 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     ui->keySequenceEdit->setKeySequence(QKeySequence(hotkeyStr));
     ui->checkBoxAutoCopy->setChecked(settings.value("AutoCopy", false).toBool());
     ui->checkBoxCloseOnEsc->setChecked(settings.value("CloseOnEsc", false).toBool());
+
+    // Auto-start check
+    QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    ui->checkBoxAutoStart->setChecked(bootSettings.contains("ClipboardAssistant"));
 
     // Setup Plugins
     ui->listPlugins->clear();
@@ -107,5 +114,15 @@ void Setting::accept()
     settings.setValue("GlobalHotkey", ui->keySequenceEdit->keySequence().toString());
     settings.setValue("AutoCopy", ui->checkBoxAutoCopy->isChecked());
     settings.setValue("CloseOnEsc", ui->checkBoxCloseOnEsc->isChecked());
+
+    // Save Auto-start
+    QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    if (ui->checkBoxAutoStart->isChecked()) {
+        QString appPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+        bootSettings.setValue("ClipboardAssistant", "\"" + appPath + "\"");
+    } else {
+        bootSettings.remove("ClipboardAssistant");
+    }
+
     QDialog::accept();
 }

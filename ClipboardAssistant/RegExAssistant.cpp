@@ -19,7 +19,7 @@ RegExAssistant::RegExAssistant(QObject* parent) : QObject(parent)
 }
 
 QString RegExAssistant::name() const { return "RegEx Assistant"; }
-QString RegExAssistant::version() const { return "1.0.0"; }
+QString RegExAssistant::version() const { return "0.1.0"; }
 
 void RegExAssistant::ensureDefaultActions()
 {

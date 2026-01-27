@@ -416,7 +416,11 @@ void ClipboardAssistant::onBtnCancelClicked() {
 }
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
-    m_trayMenu = new QMenu(this); m_trayMenu->addAction("Show", this, &QWidget::show); m_trayMenu->addAction("Quit", qApp, &QCoreApplication::quit);
+    m_trayMenu = new QMenu(this); 
+    m_trayMenu->addAction("Show", this, &QWidget::show); 
+    m_trayMenu->addAction("Settings", this, &ClipboardAssistant::onBtnSettingsClicked);
+    m_trayMenu->addSeparator();
+    m_trayMenu->addAction("Quit", qApp, &QCoreApplication::quit);
     m_trayIcon->setContextMenu(m_trayMenu); m_trayIcon->show(); connect(m_trayIcon, &QSystemTrayIcon::activated, this, &ClipboardAssistant::onTrayIconActivated);
 }
 void ClipboardAssistant::registerGlobalHotkey() {

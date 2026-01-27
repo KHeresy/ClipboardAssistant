@@ -45,7 +45,7 @@ public:
     virtual QString name() const = 0;
 
     // Return the plugin version
-    virtual QString version() const { return "1.0.0"; }
+    virtual QString version() const = 0;
     
     // Return a list of ActionSets provided by this plugin
     virtual QList<PluginActionSet> actionSets() const = 0;
