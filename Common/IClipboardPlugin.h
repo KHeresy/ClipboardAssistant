@@ -90,6 +90,9 @@ public:
 
     // Request the plugin to delete a feature
     virtual void deleteFeature(const QString& featureId) {}
+
+    // Update the display order of a feature
+    virtual void setFeatureOrder(const QString& featureId, int order) {}
 };
 
 #define IClipboardPlugin_iid "org.gemini.ClipboardAssistant.IClipboardPlugin"

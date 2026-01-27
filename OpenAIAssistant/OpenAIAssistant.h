@@ -34,6 +34,7 @@ public:
     QString createFeature(QWidget* parent) override;
     void editFeature(const QString& featureId, QWidget* parent) override;
     void deleteFeature(const QString& featureId) override;
+    void setFeatureOrder(const QString& featureId, int order) override;
 
 private:
     QNetworkAccessManager* m_networkManager;

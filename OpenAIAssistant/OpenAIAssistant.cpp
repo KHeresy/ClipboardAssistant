@@ -25,6 +25,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <algorithm>
 
 OpenAIAssistant::OpenAIAssistant() {
     m_networkManager = new QNetworkAccessManager(this);
@@ -48,16 +49,17 @@ void OpenAIAssistant::ensureDefaultActions() {
     s.endGroup();
     s.beginGroup("OpenAI/Actions");
     if (s.childGroups().isEmpty()) {
-        auto add = [&](const QString& n, const QString& p) {
+        auto add = [&](const QString& n, const QString& p, int o) {
             QString id = QUuid::createUuid().toString(QUuid::Id128);
             s.beginGroup(id);
             s.setValue("Name", n);
             s.setValue("Prompt", p);
             s.setValue("AccountId", defId);
+            s.setValue("Order", o);
             s.endGroup();
         };
-        add("Summarize", "Summarize text:");
-        add("Translate to English", "Translate to English:");
+        add("Summarize", "Summarize text:", 0);
+        add("Translate to English", "Translate to English:", 1);
     }
     s.endGroup();
 }
@@ -66,7 +68,15 @@ QList<PluginFeature> OpenAIAssistant::features() const {
     QList<PluginFeature> list;
     QSettings s("Heresy", "ClipboardAssistant");
     s.beginGroup("OpenAI/Actions");
-    for (const QString& id : s.childGroups()) {
+    QStringList ids = s.childGroups();
+    
+    struct SortedFeature {
+        PluginFeature f;
+        int order;
+    };
+    QList<SortedFeature> sortedList;
+
+    for (const QString& id : ids) {
         s.beginGroup(id);
         PluginFeature f;
         f.id = id;
@@ -74,10 +84,18 @@ QList<PluginFeature> OpenAIAssistant::features() const {
         f.description = s.value("Prompt").toString();
         f.customShortcut = QKeySequence(s.value("Shortcut").toString());
         f.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
-        list.append(f);
+        int order = s.value("Order", 999).toInt();
+        sortedList.append({f, order});
         s.endGroup();
     }
-    s.endGroup();
+    s.endGroup(); 
+
+    // Sort by order
+    std::sort(sortedList.begin(), sortedList.end(), [](const SortedFeature& a, const SortedFeature& b) {
+        return a.order < b.order;
+    });
+
+    for(const auto& sf : sortedList) list.append(sf.f);
     return list;
 }
 
@@ -126,7 +144,10 @@ void OpenAIAssistant::process(const QString& featureId, const QMimeData* data, I
                 QJsonDocument doc = QJsonDocument::fromJson(d);
                 if (doc.isObject()) {
                     QJsonArray choices = doc.object()["choices"].toArray();
-                    if (!choices.isEmpty()) callback->onTextData(choices[0].toObject()["delta"].toObject()["content"].toString(), false);
+                    if (!choices.isEmpty()) {
+                        QString content = choices[0].toObject()["delta"].toObject()["content"].toString();
+                        callback->onTextData(content, false);
+                    }
                 }
             } else buf->append(line);
         }
@@ -190,6 +211,7 @@ QString OpenAIAssistant::createFeature(QWidget* p) {
         s.setValue("AccountId", cA->currentData().toString());
         s.setValue("Shortcut", eS->keySequence().toString());
         s.setValue("IsGlobal", cG->isChecked());
+        s.setValue("Order", 999); // Will be sorted next time
         s.endGroup();
         return id;
     }
@@ -199,7 +221,8 @@ QString OpenAIAssistant::createFeature(QWidget* p) {
 void OpenAIAssistant::editFeature(const QString& fid, QWidget* p) {
     QSettings s("Heresy", "ClipboardAssistant");
     QString g = "OpenAI/Actions/" + fid;
-    QDialog d(p); d.setWindowTitle("Edit Action");
+    QDialog d(p);
+    d.setWindowTitle("Edit Action");
     QVBoxLayout* l = new QVBoxLayout(&d);
     QLineEdit* eN = new QLineEdit(&d); eN->setText(s.value(g + "/Name").toString());
     QComboBox* cA = createAccCombo(&d, s.value(g + "/AccountId").toString());
@@ -227,3 +250,8 @@ void OpenAIAssistant::editFeature(const QString& fid, QWidget* p) {
 }
 
 void OpenAIAssistant::deleteFeature(const QString& fid) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("OpenAI/Actions/" + fid); }
+
+void OpenAIAssistant::setFeatureOrder(const QString& fid, int order) {
+    QSettings s("Heresy", "ClipboardAssistant");
+    s.setValue("OpenAI/Actions/" + fid + "/Order", order);
+}

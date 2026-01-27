@@ -10,6 +10,7 @@
 #include <QNetworkReply>
 #include <QSet>
 #include <QShortcut>
+#include <QPointer>
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardPlugin.h"
 
@@ -53,7 +54,6 @@ private:
     void loadSettings();
     void saveSettings();
     void clearLayout(QLayout* layout);
-    void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature, int defaultIndex);
     void updateButtonsState();
     void setupTrayIcon();
     void registerGlobalHotkey();
@@ -76,8 +76,16 @@ private:
     struct FeatureInfo {
         IClipboardPlugin* plugin;
         QString featureId;
-        QPushButton* mainButton;
+        QPointer<QPushButton> mainButton;
+        QKeySequence customShortcut;
+        bool isCustomShortcutGlobal;
+        QString name;
+        QPointer<QLabel> lblContent;
     };
+
+    void updateFeatureShortcuts();
+    void addFeatureWidget(IClipboardPlugin* plugin, const PluginFeature& feature, int defaultIndex);
+    void setupItemWidget(QListWidgetItem* item, FeatureInfo& info);
     QMap<QString, FeatureInfo> m_featureMap;
     // Map WinAPI Hotkey ID to FeatureInfo
     QMap<int, FeatureInfo> m_hotkeyMap;
