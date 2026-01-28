@@ -26,6 +26,20 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_general">
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_lang">
+          <item>
+           <widget class="QLabel" name="labelLanguage">
+            <property name="text">
+             <string>Language:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBoxLanguage"/>
+          </item>
+         </layout>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QLabel" name="labelHotkey">

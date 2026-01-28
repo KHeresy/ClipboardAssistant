@@ -12,6 +12,8 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QProcess>
+#include <QMessageBox>
 
 Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     : QDialog(parent)
@@ -26,6 +28,21 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     ui->checkBoxAutoCopy->setChecked(settings.value("AutoCopy", false).toBool());
     ui->checkBoxCloseOnEsc->setChecked(settings.value("CloseOnEsc", false).toBool());
     ui->checkBoxStartMinimized->setChecked(settings.value("StartMinimized", false).toBool());
+
+    // Language selection
+    ui->comboBoxLanguage->addItem(tr("System Default"), "");
+    ui->comboBoxLanguage->addItem(tr("English"), "en");
+    QDir transDir(QApplication::applicationDirPath() + "/translations");
+    for (const QString& f : transDir.entryList({"ClipboardAssistant_*.qm"}, QDir::Files)) {
+        QString langCode = f.mid(QString("ClipboardAssistant_").length());
+        langCode.chop(3); // remove .qm
+        if (langCode == "en") continue; // Avoid duplicate English
+        QLocale loc(langCode);
+        ui->comboBoxLanguage->addItem(loc.nativeLanguageName(), langCode);
+    }
+    QString currentLang = settings.value("Language", "").toString();
+    int langIdx = ui->comboBoxLanguage->findData(currentLang);
+    if (langIdx >= 0) ui->comboBoxLanguage->setCurrentIndex(langIdx);
 
     // Auto-start check
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
@@ -165,10 +182,15 @@ void Setting::onPluginSelected(int row)
 void Setting::accept()
 {
     QSettings settings("Heresy", "ClipboardAssistant");
+    
+    QString oldLang = settings.value("Language", "").toString();
+    QString newLang = ui->comboBoxLanguage->currentData().toString();
+
     settings.setValue("GlobalHotkey", ui->keySequenceEdit->keySequence().toString());
     settings.setValue("AutoCopy", ui->checkBoxAutoCopy->isChecked());
     settings.setValue("CloseOnEsc", ui->checkBoxCloseOnEsc->isChecked());
     settings.setValue("StartMinimized", ui->checkBoxStartMinimized->isChecked());
+    settings.setValue("Language", newLang);
 
     // Save Auto-start
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
@@ -208,6 +230,14 @@ void Setting::accept()
             settings.setValue(def.id, val);
         }
         settings.endGroup();
+    }
+
+    if (oldLang != newLang) {
+        if (QMessageBox::question(this, tr("Restart Required"),
+            tr("Language changed. Do you want to restart the application now to apply changes?")) == QMessageBox::Yes) {
+            QProcess::startDetached(QCoreApplication::applicationFilePath(), QCoreApplication::arguments());
+            QCoreApplication::quit();
+        }
     }
 
     QDialog::accept();

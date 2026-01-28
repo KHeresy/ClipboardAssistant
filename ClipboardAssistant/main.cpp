@@ -3,14 +3,32 @@
 #include <QSharedMemory>
 #include <QMessageBox>
 #include <QSettings>
+#include <QTranslator>
+#include <QLibraryInfo>
 #include <windows.h>
 
 int main(int argc, char *argv[])
 {
-    // QApplication 必須在 QSettings 之前，因為 QSettings 會用到 Organization Name
+    // QApplication 必須在 QSettings 之前
     QApplication app(argc, argv);
     app.setOrganizationName("Heresy");
     app.setApplicationName("ClipboardAssistant");
+
+    QSettings settings("Heresy", "ClipboardAssistant");
+    QString lang = settings.value("Language", "").toString();
+    QLocale locale = lang.isEmpty() ? QLocale::system() : QLocale(lang);
+
+    // 載入 Qt 標準元件翻譯 (如 QMessageBox 的 OK/Cancel)
+    QTranslator qtTranslator;
+    if (qtTranslator.load(locale, "qt", "_", QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+        app.installTranslator(&qtTranslator);
+    }
+
+    // 載入應用程式翻譯
+    QTranslator appTranslator;
+    if (appTranslator.load(locale, "ClipboardAssistant", "_", QApplication::applicationDirPath() + "/translations")) {
+        app.installTranslator(&appTranslator);
+    }
 
     // 使用唯一的 Key 建立共享記憶體
     QSharedMemory shared("org.gemini.ClipboardAssistant.SingleInstanceKey");
@@ -34,10 +52,6 @@ int main(int argc, char *argv[])
         ClipboardAssistant window;
 
         window.setWindowTitle(QObject::tr("ClipboardAssistant"));
-
-        
-
-        QSettings settings("Heresy", "ClipboardAssistant");
 
         if (!settings.value("StartMinimized", false).toBool()) {
 

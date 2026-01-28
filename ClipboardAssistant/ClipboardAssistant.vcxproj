@@ -102,7 +102,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-
     <ClCompile Include="ActionSetSettings.cpp" />
     <ClCompile Include="RegExAssistant.cpp" />
     <ClCompile Include="ExternalAppAssistant.cpp" />
@@ -128,7 +127,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IClipboardPlugin.h" />
-
+  </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="translations\ClipboardAssistant_zh_TW.ts">
+      <BuildAction Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">lupdate_lrelease</BuildAction>
+      <BuildAction Condition="'$(Configuration)|$(Platform)'=='Release|x64'">lupdate_lrelease</BuildAction>
+    </QtTranslation>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
