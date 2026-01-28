@@ -246,10 +246,18 @@ void ClipboardAssistant::updateButtonsState() {
         for (const QUrl& u : d->urls()) if (db.mimeTypeForFile(u.toLocalFile()).name().startsWith("image/")) { cT |= IClipboardPlugin::Image; break; }
     }
     for (auto it = m_actionSetMap.begin(); it != m_actionSetMap.end(); ++it) {
-        if (it.value().mainButton && !it.value().actions.isEmpty()) {
+        if (it.value().mainButton) {
+            if (it.value().actions.isEmpty()) {
+                it.value().mainButton->setEnabled(false);
+                continue;
+            }
             IClipboardPlugin* firstPlugin = nullptr;
             for(auto& pi : m_plugins) if(pi.plugin->name() == it.value().actions[0].pluginName) { firstPlugin = pi.plugin; break; }
-            if (firstPlugin) it.value().mainButton->setEnabled((firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None);
+            if (firstPlugin) {
+                it.value().mainButton->setEnabled((firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None);
+            } else {
+                it.value().mainButton->setEnabled(false);
+            }
         }
     }
 }
@@ -424,7 +432,10 @@ void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetIn
 void ClipboardAssistant::onRunActionSet(IClipboardPlugin*, QString asid) {
     if (!m_actionSetMap.contains(asid)) return;
     const ActionSetInfo& info = m_actionSetMap[asid];
-    if (info.actions.isEmpty()) return;
+    if (info.actions.isEmpty()) {
+        ui->labelStatus->setText(tr("No actions in this set."));
+        return;
+    }
     if (m_currentExecutor) m_currentExecutor->stop();
     ui->textOutput->clear();
     ui->btnCancel->setVisible(true);

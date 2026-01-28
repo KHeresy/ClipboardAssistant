@@ -6,7 +6,7 @@ RegExAssistant::RegExAssistant(QObject* parent) : QObject(parent)
 {
 }
 
-QString RegExAssistant::name() const { return tr("RegEx Assistant"); }
+QString RegExAssistant::name() const { return "RegEx Assistant"; }
 QString RegExAssistant::version() const { return "0.1.0"; }
 
 QList<ParameterDefinition> RegExAssistant::actionParameterDefinitions() const

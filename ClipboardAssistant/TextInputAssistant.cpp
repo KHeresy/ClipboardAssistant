@@ -32,15 +32,15 @@ TextInputAssistant::TextInputAssistant(QObject* parent) : QObject(parent)
 {
 }
 
-QString TextInputAssistant::name() const { return tr("Text Input Assistant"); }
+QString TextInputAssistant::name() const { return "Text Input Assistant"; }
 QString TextInputAssistant::version() const { return "0.1.0"; }
 
 QList<ParameterDefinition> TextInputAssistant::actionParameterDefinitions() const
 {
     return {
-        {"Mode", tr("Input Mode"), ParameterType::Choice, "Static Content", {tr("Static Content"), tr("Ask at Runtime")}, tr("Choose how to get the text.")},
+        {"Mode", tr("Input Mode"), ParameterType::Choice, "Static Content", {"Static Content", "Ask at Runtime"}, tr("Choose how to get the text.")},
         {"Content", tr("Text Content"), ParameterType::Text, "", {}, tr("The text to insert (for Static Content mode).")},
-        {"Position", tr("Placement"), ParameterType::Choice, "Replace", {tr("Replace"), tr("Append"), tr("Prepend")}, tr("Where to put the new text relative to current content.")}
+        {"Position", tr("Placement"), ParameterType::Choice, "Replace", {"Replace", "Append", "Prepend"}, tr("Where to put the new text relative to current content.")}
     };
 }
 
