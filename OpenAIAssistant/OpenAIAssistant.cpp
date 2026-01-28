@@ -44,13 +44,9 @@ QList<ParameterDefinition> OpenAIAssistant::globalParameterDefinitions() const {
     return {};
 }
 
-QList<PluginActionSet> OpenAIAssistant::defaultActionSets() const {
-    QList<PluginActionSet> list;
-    {
-        PluginActionSet f; f.id = "summarize"; f.name = "Summarize";
-        f.parameters["Prompt"] = "Summarize text:";
-        list.append(f);
-    }
+QList<PluginActionTemplate> OpenAIAssistant::actionTemplates() const {
+    QList<PluginActionTemplate> list;
+    list.append({"summarize", "Summarize", {{"Prompt", "Summarize text:"}}});
     return list;
 }
 

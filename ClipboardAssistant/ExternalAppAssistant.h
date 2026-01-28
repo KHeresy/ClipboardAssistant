@@ -16,7 +16,7 @@ public:
     QString version() const override;
 
     QList<ParameterDefinition> actionParameterDefinitions() const override;
-    QList<PluginActionSet> defaultActionSets() const override;
+    QList<PluginActionTemplate> actionTemplates() const override;
 
     DataTypes supportedInputs() const override { return Text; }
     DataTypes supportedOutputs() const override { return Text; }

@@ -74,21 +74,21 @@ private:
     QImage m_currentImage;
     QSet<QString> m_pendingDownloads;
 
-    // Map list item unique ID to Plugin* and ActionSetID
+    // Map list item unique ID to ActionSet configuration
     struct ActionSetInfo {
-        IClipboardPlugin* plugin;
-        QString actionSetId;
-        QPointer<QPushButton> mainButton;
+        QString actionSetId; // Internal UID
+        QString name;
         QKeySequence customShortcut;
         bool isCustomShortcutGlobal;
         bool isAutoCopy;
-        QString name;
+        QList<PluginActionInstance> actions;
+        
+        QPointer<QPushButton> mainButton;
         QPointer<QLabel> lblContent;
-        QVariantMap parameters;
     };
 
     void updateActionSetShortcuts();
-    void addActionSetWidget(IClipboardPlugin* plugin, const PluginActionSet& actionSet, const QString& internalId);
+    void addActionSetWidget(const ActionSetInfo& info);
     void setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info);
     QMap<QString, ActionSetInfo> m_actionSetMap;
     // Plugin Name -> Global Settings
@@ -109,7 +109,16 @@ private:
     };
     friend class PluginCallback;
     
-    // For callback access
-    void handlePluginOutput(const QString& text, bool append, bool isFinal);
-    void handlePluginError(const QString& msg);
-};
+        friend class PipelineExecutor;
+    
+        
+    
+        // For callback access
+    
+        void handlePluginOutput(const QString& text, bool append, bool isFinal);
+    
+        void handlePluginError(const QString& msg);
+    
+    };
+    
+    

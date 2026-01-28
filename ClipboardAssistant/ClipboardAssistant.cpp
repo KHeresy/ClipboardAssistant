@@ -29,6 +29,7 @@
 #include "RegExAssistant.h"
 #include "ExternalAppAssistant.h"
 #include "ActionSetSettings.h"
+#include "PipelineExecutor.h"
 #include <QDialogButtonBox>
 
 void sendCtrlKey(char key) {
@@ -66,7 +67,7 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(ne
     
     connect(ui->listActionSets->model(), &QAbstractItemModel::rowsMoved, this, [this](const QModelIndex &, int, int, const QModelIndex &, int) {
         QTimer::singleShot(0, this, [this]() {
-            saveSettings(); // Save new order
+            saveSettings();
             updateActionSetShortcuts();
         });
     });
@@ -93,20 +94,14 @@ void ClipboardAssistant::updateActionSetShortcuts() {
             QString ks = QString("Ctrl+%1").arg(dIdx);
             shortcuts << ks;
             QShortcut* sc = new QShortcut(QKeySequence(ks), this);
-            connect(sc, &QShortcut::activated, [this, uid]() {
-                ActionSetInfo i = m_actionSetMap[uid];
-                onRunActionSet(i.plugin, i.actionSetId);
-            });
+            connect(sc, &QShortcut::activated, [this, uid]() { onRunActionSet(nullptr, uid); });
             m_localShortcuts.append(sc); dIdx++;
         }
         if (!info.customShortcut.isEmpty()) {
             shortcuts << (info.customShortcut.toString() + (info.isCustomShortcutGlobal ? " (G)" : " (L)"));
             if (!info.isCustomShortcutGlobal) {
                 QShortcut* sc = new QShortcut(info.customShortcut, this);
-                connect(sc, &QShortcut::activated, [this, uid]() {
-                    ActionSetInfo i = m_actionSetMap[uid];
-                    onRunActionSet(i.plugin, i.actionSetId);
-                });
+                connect(sc, &QShortcut::activated, [this, uid]() { onRunActionSet(nullptr, uid); });
                 m_localShortcuts.append(sc);
             }
         }
@@ -145,29 +140,31 @@ void ClipboardAssistant::saveSettings() {
     s.setValue("splitter_horizontal", ui->splitter_horizontal->saveState()); s.setValue("splitter_vertical", ui->splitter->saveState());
     s.setValue("AlwaysOnTop", ui->checkAlwaysOnTop->isChecked()); s.setValue("InputFontSize", ui->spinInputFontSize->value()); s.setValue("OutputFontSize", ui->spinOutputFontSize->value());
 
-    // Save Action Sets
     s.remove("Actions");
     s.beginWriteArray("Actions");
     for (int i = 0; i < ui->listActionSets->count(); ++i) {
         s.setArrayIndex(i);
         QString uid = ui->listActionSets->item(i)->data(Qt::UserRole).toString();
         ActionSetInfo& info = m_actionSetMap[uid];
-        s.setValue("Plugin", info.plugin->name());
-        s.setValue("ActionId", info.actionSetId);
+        s.setValue("ActionSetId", info.actionSetId);
         s.setValue("Name", info.name);
         s.setValue("Shortcut", info.customShortcut.toString());
         s.setValue("IsGlobal", info.isCustomShortcutGlobal);
         s.setValue("IsAutoCopy", info.isAutoCopy);
         
-        s.beginGroup("Params");
-        for (auto it = info.parameters.begin(); it != info.parameters.end(); ++it) {
-            s.setValue(it.key(), it.value());
+        s.beginWriteArray("Steps");
+        for (int j = 0; j < info.actions.size(); ++j) {
+            s.setArrayIndex(j);
+            s.setValue("Plugin", info.actions[j].pluginName);
+            s.beginGroup("Params");
+            for (auto it = info.actions[j].parameters.begin(); it != info.actions[j].parameters.end(); ++it) {
+                s.setValue(it.key(), it.value());
+            }
+            s.endGroup();
         }
-        s.endGroup();
+        s.endArray();
     }
     s.endArray();
-
-    // Global settings are saved in Setting::accept or whenever modified
 }
 
 void ClipboardAssistant::onCheckAlwaysOnTopToggled(bool c) { setWindowFlags(c ? (windowFlags() | Qt::WindowStaysOnTopHint) : (windowFlags() & ~Qt::WindowStaysOnTopHint)); show(); }
@@ -196,7 +193,7 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
                 show(); activateWindow();
                 if (m_hotkeyMap.contains(id)) {
                     ActionSetInfo info = m_hotkeyMap[id];
-                    if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(info.plugin, info.actionSetId);
+                    if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(nullptr, info.actionSetId);
                 }
             };
             
@@ -241,12 +238,16 @@ void ClipboardAssistant::updateButtonsState() {
         for (const QUrl& u : d->urls()) if (db.mimeTypeForFile(u.toLocalFile()).name().startsWith("image/")) { cT |= IClipboardPlugin::Image; break; }
     }
     for (auto it = m_actionSetMap.begin(); it != m_actionSetMap.end(); ++it) {
-        if (it.value().mainButton) it.value().mainButton->setEnabled((it.value().plugin->supportedInputs() & cT) != IClipboardPlugin::None);
+        if (it.value().mainButton && !it.value().actions.isEmpty()) {
+            IClipboardPlugin* firstPlugin = nullptr;
+            for(auto& pi : m_plugins) if(pi.plugin->name() == it.value().actions[0].pluginName) { firstPlugin = pi.plugin; break; }
+            if (firstPlugin) it.value().mainButton->setEnabled((firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None);
+        }
     }
 }
 
 void ClipboardAssistant::processHtmlImages(QString h) {
-    QRegularExpression r("<img\\s+[^>]*src=[\"'](http[^\"']+)[\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression r("<img\s+[^>]*src=[\"'](http[^\"']+)[\"'][^>]*>", QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatchIterator i = r.globalMatch(h);
     while (i.hasNext()) {
         QString u = i.next().captured(1);
@@ -273,7 +274,6 @@ void ClipboardAssistant::loadPlugins() {
     m_plugins.clear(); 
     m_regexAssistant = new RegExAssistant(this); 
     m_plugins.append({m_regexAssistant, true, "Built-in"});
-    
     m_externalAppAssistant = new ExternalAppAssistant(this);
     m_plugins.append({m_externalAppAssistant, true, "Built-in"});
     
@@ -287,7 +287,6 @@ void ClipboardAssistant::loadPlugins() {
         }
     }
 
-    // Load Global Settings for all plugins
     QSettings s("Heresy", "ClipboardAssistant");
     for (const auto& info : m_plugins) {
         s.beginGroup("Plugins/" + info.plugin->name() + "/Global");
@@ -312,69 +311,67 @@ void ClipboardAssistant::reloadActionSets() {
     if (size > 0) {
         for (int i = 0; i < size; ++i) {
             s.setArrayIndex(i);
-            QString pluginName = s.value("Plugin").toString();
-            IClipboardPlugin* target = nullptr;
-            for (const auto& info : m_plugins) { if (info.plugin->name() == pluginName) { target = info.plugin; break; } }
-            if (!target) continue;
-
-            PluginActionSet f;
-            f.id = s.value("ActionId").toString();
-            f.name = s.value("Name").toString();
-            f.customShortcut = QKeySequence(s.value("Shortcut").toString());
-            f.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
-            f.isAutoCopy = s.value("IsAutoCopy", false).toBool();
+            ActionSetInfo info;
+            info.actionSetId = s.value("ActionSetId").toString();
+            if (info.actionSetId.isEmpty()) info.actionSetId = QUuid::createUuid().toString();
+            info.name = s.value("Name").toString();
+            info.customShortcut = QKeySequence(s.value("Shortcut").toString());
+            info.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
+            info.isAutoCopy = s.value("IsAutoCopy", false).toBool();
             
-            s.beginGroup("Params");
-            for (const QString& key : s.childKeys()) {
-                f.parameters[key] = s.value(key);
+            int stepsSize = s.beginReadArray("Steps");
+            for (int j = 0; j < stepsSize; ++j) {
+                s.setArrayIndex(j);
+                PluginActionInstance step;
+                step.pluginName = s.value("Plugin").toString();
+                s.beginGroup("Params");
+                for (const QString& key : s.childKeys()) {
+                    step.parameters[key] = s.value(key);
+                }
+                s.endGroup();
+                info.actions.append(step);
             }
-            s.endGroup();
-
-            addActionSetWidget(target, f, QUuid::createUuid().toString());
+            s.endArray();
+            addActionSetWidget(info);
         }
     } else {
-        // Import defaults
-        for (const auto& info : m_plugins) {
-            for (const auto& f : info.plugin->defaultActionSets()) {
-                addActionSetWidget(info.plugin, f, QUuid::createUuid().toString());
+        for (const auto& pi : m_plugins) {
+            for (const auto& tmpl : pi.plugin->actionTemplates()) {
+                ActionSetInfo info;
+                info.actionSetId = QUuid::createUuid().toString();
+                info.name = tmpl.name;
+                info.actions.append({pi.plugin->name(), tmpl.defaultParameters});
+                addActionSetWidget(info);
             }
         }
     }
     s.endArray();
-
     updateActionSetShortcuts();
     updateButtonsState();
 }
 
-void ClipboardAssistant::addActionSetWidget(IClipboardPlugin* p, const PluginActionSet& f, const QString& internalId) {
+void ClipboardAssistant::addActionSetWidget(const ActionSetInfo& f) {
     QListWidgetItem* item = new QListWidgetItem(ui->listActionSets);
     item->setSizeHint(QSize(0, 75));
-    item->setData(Qt::UserRole, internalId);
-    
-    m_actionSetMap.insert(internalId, { p, f.id, nullptr, f.customShortcut, f.isCustomShortcutGlobal, f.isAutoCopy, f.name, nullptr, f.parameters });
-    setupActionSetWidget(item, m_actionSetMap[internalId]);
+    item->setData(Qt::UserRole, f.actionSetId);
+    m_actionSetMap.insert(f.actionSetId, f);
+    setupActionSetWidget(item, m_actionSetMap[f.actionSetId]);
 }
 
 void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info) {
-    QString uid = item->data(Qt::UserRole).toString();
-    IClipboardPlugin* p = info.plugin;
     QString asid = info.actionSetId;
-
     QWidget* row = new QWidget();
     QHBoxLayout* rowLayout = new QHBoxLayout(row);
     rowLayout->setContentsMargins(2,2,2,2);
-    
-    QLabel* dragHandle = new QLabel("≡");
+    QLabel* dragHandle = new QLabel("=");
     dragHandle->setFixedWidth(20);
     dragHandle->setAlignment(Qt::AlignCenter);
     dragHandle->setStyleSheet("background-color: #E0E0E0; color: #555555; border-radius: 2px; font-weight: bold;");
     dragHandle->setCursor(Qt::SizeAllCursor);
     dragHandle->setAttribute(Qt::WA_TransparentForMouseEvents);
     rowLayout->addWidget(dragHandle);
-
     QPushButton* bM = new QPushButton();
     bM->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    
     QVBoxLayout* btnLayout = new QVBoxLayout(bM);
     btnLayout->setContentsMargins(0,0,0,0);
     QLabel* lbl = new QLabel();
@@ -382,133 +379,88 @@ void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetIn
     lbl->setTextFormat(Qt::RichText);
     lbl->setAttribute(Qt::WA_TransparentForMouseEvents);
     btnLayout->addWidget(lbl);
-    
     rowLayout->addWidget(bM);
-    connect(bM, &QPushButton::clicked, [this, uid]() { 
-        ActionSetInfo i = m_actionSetMap[uid];
-        onRunActionSet(i.plugin, i.actionSetId); 
-    });
-    
+    connect(bM, &QPushButton::clicked, [this, asid]() { onRunActionSet(nullptr, asid); });
     info.mainButton = bM;
     info.lblContent = lbl;
-
     QVBoxLayout* sideLayout = new QVBoxLayout();
     sideLayout->setSpacing(1);
-    
-    QPushButton* bE = new QPushButton("E"); bE->setFixedSize(22,22); connect(bE, &QPushButton::clicked, [this, uid]() { onEditActionSet(m_actionSetMap[uid].plugin, uid); });
-    QPushButton* bDel = new QPushButton("X"); bDel->setFixedSize(22,22); connect(bDel, &QPushButton::clicked, [this, uid]() { onDeleteActionSet(m_actionSetMap[uid].plugin, uid); });
+    QPushButton* bE = new QPushButton("E"); bE->setFixedSize(22,22); connect(bE, &QPushButton::clicked, [this, asid]() { onEditActionSet(nullptr, asid); });
+    QPushButton* bDel = new QPushButton("X"); bDel->setFixedSize(22,22); connect(bDel, &QPushButton::clicked, [this, asid]() { onDeleteActionSet(nullptr, asid); });
     sideLayout->addWidget(bE); sideLayout->addWidget(bDel);
-    
     rowLayout->addLayout(sideLayout);
     ui->listActionSets->setItemWidget(item, row);
 }
 
-void ClipboardAssistant::onRunActionSet(IClipboardPlugin* p, QString asid) {
-    // Note: asid here is the plugin-specific ID, but we need to find the ActionSetInfo by UID if we want params.
-    // Actually, onRunActionSet should probably take the UID. 
-    // Let's find the UID from asid and plugin.
-    ActionSetInfo* info = nullptr;
-    for (auto& i : m_actionSetMap) {
-        if (i.plugin == p && i.actionSetId == asid) { info = &i; break; }
-    }
-    if (!info) return;
-
+void ClipboardAssistant::onRunActionSet(IClipboardPlugin*, QString asid) {
+    if (!m_actionSetMap.contains(asid)) return;
+    const ActionSetInfo& info = m_actionSetMap[asid];
+    if (info.actions.isEmpty()) return;
     ui->textOutput->clear();
-    m_activePlugin = p;
     ui->btnCancel->setVisible(true);
-    ui->labelStatus->setText(QString("Processing (%1)...").arg(p->name()));
     ui->progressBar->setVisible(true);
     ui->progressBar->setRange(0, 0);
-
-    QMimeData* data = new QMimeData();
-    data->setText(ui->textClipboard->toPlainText());
-    if (!m_currentHtml.isEmpty()) data->setHtml(m_currentHtml);
-    if (!m_currentImage.isNull()) data->setImageData(m_currentImage);
-    
-    p->process(data, info->parameters, m_globalSettingsMap[p->name()], new PluginCallback(this));
-    delete data;
+    const QMimeData* data = QApplication::clipboard()->mimeData();
+    PipelineExecutor* executor = new PipelineExecutor(this, info, data);
+    executor->start();
 }
 
-void ClipboardAssistant::onEditActionSet(IClipboardPlugin* p, QString uid) { 
-    if (!m_actionSetMap.contains(uid)) return;
-    ActionSetInfo& info = m_actionSetMap[uid];
-
-    QDialog dialog(this); dialog.setWindowTitle("Edit Action");
+void ClipboardAssistant::onEditActionSet(IClipboardPlugin*, QString asid) { 
+    if (!m_actionSetMap.contains(asid)) return;
+    ActionSetInfo& info = m_actionSetMap[asid];
+    QDialog dialog(this); dialog.setWindowTitle("Edit Action Set");
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    
-    ActionSetSettings* editor = new ActionSetSettings(&dialog);
+    ActionSetSettings* editor = new ActionSetSettings(m_plugins, &dialog);
     editor->setName(info.name);
     editor->setShortcut(info.customShortcut);
     editor->setIsGlobal(info.isCustomShortcutGlobal);
     editor->setIsAutoCopy(info.isAutoCopy);
-    editor->setParameters(p->actionParameterDefinitions(), info.parameters);
-    
+    editor->setActions(info.actions);
     layout->addWidget(editor);
-    
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     layout->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    
     if (dialog.exec() == QDialog::Accepted) {
         info.name = editor->name();
         info.customShortcut = editor->shortcut();
         info.isCustomShortcutGlobal = editor->isGlobal();
         info.isAutoCopy = editor->isAutoCopy();
-        info.parameters = editor->getParameters();
-        saveSettings();
-        updateActionSetShortcuts();
-        updateButtonsState();
+        info.actions = editor->getActions();
+        saveSettings(); updateActionSetShortcuts(); updateButtonsState();
     }
 }
 
-void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin* p, QString uid) { 
-    if (QMessageBox::question(this, "Confirm", "Delete?") == QMessageBox::Yes) { 
+void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin*, QString asid) { 
+    if (QMessageBox::question(this, "Confirm", "Delete pipeline?") == QMessageBox::Yes) { 
         for (int i = 0; i < ui->listActionSets->count(); ++i) {
-            if (ui->listActionSets->item(i)->data(Qt::UserRole).toString() == uid) {
-                delete ui->listActionSets->takeItem(i);
-                break;
+            if (ui->listActionSets->item(i)->data(Qt::UserRole).toString() == asid) {
+                delete ui->listActionSets->takeItem(i); break;
             }
         }
-        m_actionSetMap.remove(uid);
-        saveSettings();
-        updateActionSetShortcuts();
+        m_actionSetMap.remove(asid); saveSettings(); updateActionSetShortcuts();
     } 
 }
 
 void ClipboardAssistant::onBtnAddActionSetClicked() {
-    QStringList n; for(auto& info : m_plugins) n << info.plugin->name(); 
-    bool ok; QString i = QInputDialog::getItem(this, "Select", "Plugin:", n, 0, false, &ok);
-    if (!ok || i.isEmpty()) return;
-    
-    IClipboardPlugin* target = nullptr;
-    for(auto& info : m_plugins) if (info.plugin->name() == i) { target = info.plugin; break; }
-    if (!target) return;
-
-    QDialog dialog(this); dialog.setWindowTitle("Add Action");
+    QDialog dialog(this); dialog.setWindowTitle("Add Action Set");
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    
-    ActionSetSettings* editor = new ActionSetSettings(&dialog);
-    editor->setParameters(target->actionParameterDefinitions(), {});
+    ActionSetSettings* editor = new ActionSetSettings(m_plugins, &dialog);
     layout->addWidget(editor);
-    
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     layout->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    
     if (dialog.exec() == QDialog::Accepted) {
-         PluginActionSet f;
-         f.id = QUuid::createUuid().toString(QUuid::Id128);
-         f.name = editor->name();
-         f.customShortcut = editor->shortcut();
-         f.isCustomShortcutGlobal = editor->isGlobal();
-         f.isAutoCopy = editor->isAutoCopy();
-         f.parameters = editor->getParameters();
-         addActionSetWidget(target, f, QUuid::createUuid().toString());
-         saveSettings();
-         updateActionSetShortcuts();
-         updateButtonsState();
+         ActionSetInfo info;
+         info.actionSetId = QUuid::createUuid().toString();
+         info.name = editor->name();
+         info.customShortcut = editor->shortcut();
+         info.isCustomShortcutGlobal = editor->isGlobal();
+         info.isAutoCopy = editor->isAutoCopy();
+         info.actions = editor->getActions();
+         addActionSetWidget(info);
+         saveSettings(); updateActionSetShortcuts(); updateButtonsState();
     }
 }
 
@@ -519,26 +471,8 @@ void ClipboardAssistant::onBtnCopyOutputClicked() {
     QApplication::clipboard()->setMimeData(data);
 }
 void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide(); QTimer::singleShot(500, []() { sendCtrlV(); }); }
-
-void ClipboardAssistant::onBtnSettingsClicked() { 
-    Setting dlg(m_plugins, this); 
-    if (dlg.exec() == QDialog::Accepted) {
-        // Refresh global settings
-        loadPlugins(); // This reloads global settings into m_globalSettingsMap
-        reloadActionSets(); 
-    }
-}
-
-void ClipboardAssistant::onBtnCancelClicked() { 
-    if (m_activePlugin) { 
-        m_activePlugin->abort(); 
-        ui->btnCancel->setVisible(false); 
-        ui->labelStatus->setText("Cancelled.");
-        ui->progressBar->setVisible(false);
-        ui->textOutput->append("\n[Cancelled]"); 
-        m_activePlugin = nullptr;
-    } 
-}
+void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) { loadPlugins(); reloadActionSets(); } }
+void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText("Cancelled."); ui->progressBar->setVisible(false); ui->textOutput->append("\n[Cancelled]"); m_activePlugin = nullptr; } }
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_trayMenu = new QMenu(this); 
@@ -573,31 +507,5 @@ void ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks)
     if (k != 0) RegisterHotKey((HWND)winId(), id, m, k);
 }
 void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = 100; i < m_nextHotkeyId + 20; ++i) UnregisterHotKey((HWND)winId(), i); }
-ClipboardAssistant::PluginCallback::PluginCallback(ClipboardAssistant* p) : m_parent(p) {}
-void ClipboardAssistant::PluginCallback::onTextData(const QString& t, bool f) { QMetaObject::invokeMethod(m_parent, [this, t, f]() { m_parent->handlePluginOutput(t, !m_firstChunk, f); if (m_firstChunk) m_firstChunk = false; }); }
-void ClipboardAssistant::PluginCallback::onError(const QString& m) { QMetaObject::invokeMethod(m_parent, [this, m]() { m_parent->handlePluginError(m); }); }
-void ClipboardAssistant::PluginCallback::onFinished() { 
-    QMetaObject::invokeMethod(m_parent, [this]() {
-        m_parent->ui->btnCancel->setVisible(false); 
-        m_parent->ui->labelStatus->setText("Done.");
-        m_parent->ui->progressBar->setVisible(false);
-        m_parent->m_activePlugin = nullptr;
-    });
-    delete this; 
-}
-void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) { 
-    if (!a) ui->textOutput->clear(); 
-    ui->textOutput->insertPlainText(t); 
-    if (f) {
-        QString fullText = ui->textOutput->toPlainText();
-        ui->textOutput->setMarkdown(fullText);
-    }
-    ui->textOutput->moveCursor(QTextCursor::End); 
-}
-void ClipboardAssistant::handlePluginError(const QString& m) { 
-    ui->btnCancel->setVisible(false); 
-    ui->labelStatus->setText("Error occurred.");
-    ui->progressBar->setVisible(false);
-    m_activePlugin = nullptr;
-    QMessageBox::critical(this, "Plugin Error", m); 
-}
+void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) { if (!a) ui->textOutput->clear(); ui->textOutput->insertPlainText(t); if (f) { ui->textOutput->setMarkdown(ui->textOutput->toPlainText()); } ui->textOutput->moveCursor(QTextCursor::End); }
+void ClipboardAssistant::handlePluginError(const QString& m) { ui->btnCancel->setVisible(false); ui->labelStatus->setText("Error."); ui->progressBar->setVisible(false); m_activePlugin = nullptr; QMessageBox::critical(this, "Error", m); }

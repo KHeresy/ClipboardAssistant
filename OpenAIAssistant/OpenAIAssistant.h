@@ -21,7 +21,7 @@ public:
     
     QList<ParameterDefinition> actionParameterDefinitions() const override;
     QList<ParameterDefinition> globalParameterDefinitions() const override;
-    QList<PluginActionSet> defaultActionSets() const override;
+    QList<PluginActionTemplate> actionTemplates() const override;
 
     DataTypes supportedInputs() const override { return Text | Image | File; }
     DataTypes supportedOutputs() const override { return Text; }

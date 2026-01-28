@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QKeySequence>
 #include <QMap>
+#include <QListWidget>
 #include "../Common/IClipboardPlugin.h"
 
 namespace Ui {
@@ -14,7 +15,7 @@ class ActionSetSettings : public QWidget
     Q_OBJECT
 
 public:
-    explicit ActionSetSettings(QWidget *parent = nullptr);
+    explicit ActionSetSettings(const QList<PluginInfo>& plugins, QWidget *parent = nullptr);
     ~ActionSetSettings();
 
     QString name() const;
@@ -29,29 +30,36 @@ public:
     bool isAutoCopy() const;
     void setIsAutoCopy(bool isAutoCopy);
 
-        // Adds a custom widget to the layout, below the general settings
+    void setActions(const QList<PluginActionInstance>& actions);
+    QList<PluginActionInstance> getActions() const;
 
-        void setContent(QWidget *content);
+private slots:
+    void onAddAction();
+    void onRemoveAction();
+    void onMoveUp();
+    void onMoveDown();
+    void onActionSelected(int row);
 
-    
-
-        // Initialize parameter widgets based on definitions
-
-        void setParameters(const QList<ParameterDefinition>& defs, const QVariantMap& values);
-
-        // Get current parameter values
-
-        QVariantMap getParameters() const;
-
-    
-
-    private:
+private:
+    void updateActionList();
+    void saveCurrentParams();
+    void loadParamsForAction(int row);
 
         Ui::ActionSetSettings *ui;
 
+        QList<PluginInfo> m_plugins;
+
+        QList<PluginActionInstance> m_actions;
+
+        
+
+        class QScrollArea* m_scrollArea = nullptr;
+
         QMap<QString, QWidget*> m_paramWidgets;
 
-        QList<ParameterDefinition> m_paramDefs;
+        QList<ParameterDefinition> m_currentDefs;
+
+        int m_lastRow = -1;
 
     };
 

@@ -19,18 +19,10 @@ QList<ParameterDefinition> ExternalAppAssistant::actionParameterDefinitions() co
     };
 }
 
-QList<PluginActionSet> ExternalAppAssistant::defaultActionSets() const
+QList<PluginActionTemplate> ExternalAppAssistant::actionTemplates() const
 {
-    QList<PluginActionSet> list;
-    {
-        PluginActionSet f;
-        f.id = "notepad";
-        f.name = "Open in Notepad";
-        f.parameters["Executable"] = "notepad.exe";
-        f.parameters["Arguments"] = "{text}";
-        f.parameters["CaptureOutput"] = false;
-        list.append(f);
-    }
+    QList<PluginActionTemplate> list;
+    list.append({"notepad", "Open in Notepad", {{"Executable", "notepad.exe"}, {"Arguments", "{text}"}, {"CaptureOutput", false}}});
     return list;
 }
 

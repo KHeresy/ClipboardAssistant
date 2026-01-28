@@ -17,25 +17,11 @@ QList<ParameterDefinition> RegExAssistant::actionParameterDefinitions() const
     };
 }
 
-QList<PluginActionSet> RegExAssistant::defaultActionSets() const
+QList<PluginActionTemplate> RegExAssistant::actionTemplates() const
 {
-    QList<PluginActionSet> list;
-    {
-        PluginActionSet f;
-        f.id = "remove_extra_spaces";
-        f.name = "Remove Extra Spaces";
-        f.parameters["Pattern"] = "\\s+";
-        f.parameters["Replacement"] = " ";
-        list.append(f);
-    }
-    {
-        PluginActionSet f;
-        f.id = "extract_email";
-        f.name = "Extract Email";
-        f.parameters["Pattern"] = "[\\w\\.-]+@[\\w\\.-]+\\.[\\w]+";
-        f.parameters["Replacement"] = "";
-        list.append(f);
-    }
+    QList<PluginActionTemplate> list;
+    list.append({"remove_extra_spaces", "Remove Extra Spaces", {{"Pattern", "\\s+"}, {"Replacement", " "}}});
+    list.append({"extract_email", "Extract Email", {{"Pattern", "[\\w\\.-]+@[\\w\\.-]+\\.[\\w]+"}, {"Replacement", ""}}});
     return list;
 }
 
