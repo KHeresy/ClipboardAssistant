@@ -32,23 +32,23 @@ TextInputAssistant::TextInputAssistant(QObject* parent) : QObject(parent)
 {
 }
 
-QString TextInputAssistant::name() const { return "Text Input Assistant"; }
+QString TextInputAssistant::name() const { return tr("Text Input Assistant"); }
 QString TextInputAssistant::version() const { return "0.1.0"; }
 
 QList<ParameterDefinition> TextInputAssistant::actionParameterDefinitions() const
 {
     return {
-        {"Mode", "Input Mode", ParameterType::Choice, "Static Content", {"Static Content", "Ask at Runtime"}, "Choose how to get the text."},
-        {"Content", "Text Content", ParameterType::Text, "", {}, "The text to insert (for Static Content mode)."},
-        {"Position", "Placement", ParameterType::Choice, "Replace", {"Replace", "Append", "Prepend"}, "Where to put the new text relative to current content."}
+        {"Mode", tr("Input Mode"), ParameterType::Choice, "Static Content", {tr("Static Content"), tr("Ask at Runtime")}, tr("Choose how to get the text.")},
+        {"Content", tr("Text Content"), ParameterType::Text, "", {}, tr("The text to insert (for Static Content mode).")},
+        {"Position", tr("Placement"), ParameterType::Choice, "Replace", {tr("Replace"), tr("Append"), tr("Prepend")}, tr("Where to put the new text relative to current content.")}
     };
 }
 
 QList<PluginActionTemplate> TextInputAssistant::actionTemplates() const
 {
     QList<PluginActionTemplate> list;
-    list.append({"fixed_text", "Insert Fixed Text", {{"Mode", "Static Content"}, {"Position", "Append"}}});
-    list.append({"ask_text", "Prompt for Input", {{"Mode", "Ask at Runtime"}, {"Position", "Replace"}}});
+    list.append({"fixed_text", tr("Insert Fixed Text"), {{"Mode", "Static Content"}, {"Position", "Append"}}});
+    list.append({"ask_text", tr("Prompt for Input"), {{"Mode", "Ask at Runtime"}, {"Position", "Replace"}}});
     return list;
 }
 
@@ -74,8 +74,8 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
         }
 
         QInputDialog dlg(parentWidget);
-        dlg.setWindowTitle("Manual Input");
-        dlg.setLabelText("Enter text for the pipeline:<br/>(Ctrl+Enter to Finish, Esc to Cancel)");
+        dlg.setWindowTitle(tr("Manual Input"));
+        dlg.setLabelText(tr("Enter text for the pipeline:<br/>(Ctrl+Enter to Finish, Esc to Cancel)"));
         dlg.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
         
         // 確保它是個 Dialog 並在最上層

@@ -64,7 +64,7 @@ void PipelineExecutor::executeNext() {
         QMetaObject::invokeMethod(m_parent, [this]() {
             if (m_cancelled) return;
             m_parent->ui->btnCancel->setVisible(false);
-            m_parent->ui->labelStatus->setText("Pipeline Done.");
+            m_parent->ui->labelStatus->setText(tr("Pipeline Done."));
             m_parent->ui->progressBar->setVisible(false);
             m_parent->m_activePlugin = nullptr;
             if (m_parent->m_currentExecutor == this) m_parent->m_currentExecutor = nullptr;
@@ -83,7 +83,7 @@ void PipelineExecutor::executeNext() {
     }
     
     if (!plugin) {
-        onError("Plugin not found: " + action.pluginName);
+        onError(tr("Plugin not found: ") + action.pluginName);
         return;
     }
 

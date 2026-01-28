@@ -229,10 +229,10 @@ void ClipboardAssistant::onClipboardChanged() {
         if (!m_currentImage.isNull()) {
             QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); m_currentImage.save(&buf, "PNG");
             ui->textClipboard->setHtml(QString("<img src='data:image/png;base64,%1' />").arg(QString::fromLatin1(ba.toBase64())));
-        } else ui->textClipboard->setText("[Invalid Image]");
+        } else ui->textClipboard->setText(tr("[Invalid Image]"));
     } else if (d->hasHtml()) { m_currentHtml = d->html(); ui->textClipboard->setHtml(m_currentHtml); processHtmlImages(m_currentHtml); } 
     else if (d->hasText()) ui->textClipboard->setText(d->text());
-    else ui->textClipboard->setText("[Unknown]");
+    else ui->textClipboard->setText(tr("[Unknown]"));
     updateButtonsState();
 }
 
@@ -405,13 +405,13 @@ void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetIn
         return b;
     };
 
-    QPushButton* bE = createBtn("E", "Edit"); 
+    QPushButton* bE = createBtn("E", tr("Edit")); 
     connect(bE, &QPushButton::clicked, [this, asid]() { onEditActionSet(nullptr, asid); });
     
-    QPushButton* bExp = createBtn("↑", "Export"); 
+    QPushButton* bExp = createBtn("↑", tr("Export")); 
     connect(bExp, &QPushButton::clicked, [this, asid]() { onExportActionSet(asid); });
     
-    QPushButton* bDel = createBtn("X", "Delete"); 
+    QPushButton* bDel = createBtn("X", tr("Delete")); 
     connect(bDel, &QPushButton::clicked, [this, asid]() { onDeleteActionSet(nullptr, asid); });
     
     sideLayout->addWidget(bE); 
@@ -438,7 +438,7 @@ void ClipboardAssistant::onRunActionSet(IClipboardPlugin*, QString asid) {
 void ClipboardAssistant::onEditActionSet(IClipboardPlugin*, QString asid) { 
     if (!m_actionSetMap.contains(asid)) return;
     ActionSetInfo& info = m_actionSetMap[asid];
-    QDialog dialog(this); dialog.setWindowTitle("Edit Action Set");
+    QDialog dialog(this); dialog.setWindowTitle(tr("Edit Action Set"));
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
     ActionSetSettings* editor = new ActionSetSettings(m_plugins, &dialog);
     editor->setName(info.name);
@@ -462,7 +462,7 @@ void ClipboardAssistant::onEditActionSet(IClipboardPlugin*, QString asid) {
 }
 
 void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin*, QString asid) { 
-    if (QMessageBox::question(this, "Confirm", "Delete pipeline?") == QMessageBox::Yes) { 
+    if (QMessageBox::question(this, tr("Confirm"), tr("Delete pipeline?")) == QMessageBox::Yes) { 
         for (int i = 0; i < ui->listActionSets->count(); ++i) {
             if (ui->listActionSets->item(i)->data(Qt::UserRole).toString() == asid) {
                 delete ui->listActionSets->takeItem(i); break;
@@ -473,7 +473,7 @@ void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin*, QString asid) {
 }
 
 void ClipboardAssistant::onBtnAddActionSetClicked() {
-    QDialog dialog(this); dialog.setWindowTitle("Add Action Set");
+    QDialog dialog(this); dialog.setWindowTitle(tr("Add Action Set"));
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
     ActionSetSettings* editor = new ActionSetSettings(m_plugins, &dialog);
     layout->addWidget(editor);
@@ -495,13 +495,13 @@ void ClipboardAssistant::onBtnAddActionSetClicked() {
 }
 
 void ClipboardAssistant::onBtnImportActionSetClicked() {
-    QString path = QFileDialog::getOpenFileName(this, "Import Action Set", "", "JSON Files (*.json)");
+    QString path = QFileDialog::getOpenFileName(this, tr("Import Action Set"), "", tr("JSON Files (*.json)"));
     if (path.isEmpty()) return;
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) return;
     
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (doc.isNull()) { QMessageBox::critical(this, "Error", "Invalid JSON format."); return; }
+    if (doc.isNull()) { QMessageBox::critical(this, tr("Error"), tr("Invalid JSON format.")); return; }
     
     QStringList reports;
     
@@ -509,7 +509,7 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         ActionSetInfo info;
         info.actionSetId = QUuid::createUuid().toString();
         info.name = obj["Name"].toString();
-        if (info.name.isEmpty()) { reports << "Skipped: Missing 'Name' field."; return; }
+        if (info.name.isEmpty()) { reports << tr("Skipped: Missing 'Name' field."); return; }
         info.customShortcut = QKeySequence(obj["Shortcut"].toString());
         info.isCustomShortcutGlobal = obj["IsGlobal"].toBool();
         info.isAutoCopy = obj["IsAutoCopy"].toBool();
@@ -522,7 +522,7 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
             bool pluginExists = false;
             for(auto& pi : m_plugins) if(pi.plugin->name() == pluginName) { pluginExists = true; break; }
             
-            if (!pluginExists) { reports << QString("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, pluginName); continue; }
+            if (!pluginExists) { reports << tr("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, pluginName); continue; }
             
             PluginActionInstance step;
             step.pluginName = pluginName;
@@ -530,7 +530,7 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
             info.actions.append(step);
         }
         
-        if (info.actions.isEmpty()) { reports << QString("Action '%1' has no valid steps and was not imported.").arg(info.name); }
+        if (info.actions.isEmpty()) { reports << tr("Action '%1' has no valid steps and was not imported.").arg(info.name); }
         else { addActionSetWidget(info); }
     };
 
@@ -551,22 +551,22 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
     updateActionSetShortcuts();
     
     if (!reports.isEmpty()) {
-        QDialog dlg(this); dlg.setWindowTitle("Import Report");
+        QDialog dlg(this); dlg.setWindowTitle(tr("Import Report"));
         QVBoxLayout* l = new QVBoxLayout(&dlg);
-        l->addWidget(new QLabel("Issues found during import:"));
+        l->addWidget(new QLabel(tr("Issues found during import:")));
         QTextEdit* te = new QTextEdit(&dlg); te->setPlainText(reports.join("\n")); te->setReadOnly(true);
         l->addWidget(te);
         QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok, &dlg); connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
         l->addWidget(bb); dlg.exec();
     } else {
-        QMessageBox::information(this, "Success", "Import completed successfully.");
+        QMessageBox::information(this, tr("Success"), tr("Import completed successfully."));
     }
 }
 
 void ClipboardAssistant::onBtnExportAllClicked() {
     if (m_actionSetMap.isEmpty()) return;
 
-    QString path = QFileDialog::getSaveFileName(this, "Export All Action Sets", "AllActionSets.json", "JSON Files (*.json)");
+    QString path = QFileDialog::getSaveFileName(this, tr("Export All Action Sets"), "AllActionSets.json", tr("JSON Files (*.json)"));
     if (path.isEmpty()) return;
 
     QJsonArray array;
@@ -596,7 +596,7 @@ void ClipboardAssistant::onBtnExportAllClicked() {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(QJsonDocument(array).toJson());
-        QMessageBox::information(this, "Export All", "All Action Sets exported successfully.");
+        QMessageBox::information(this, tr("Export All"), tr("All Action Sets exported successfully."));
     }
 }
 
@@ -604,7 +604,7 @@ void ClipboardAssistant::onExportActionSet(const QString& asid) {
     if (!m_actionSetMap.contains(asid)) return;
     const ActionSetInfo& info = m_actionSetMap[asid];
     
-    QString path = QFileDialog::getSaveFileName(this, "Export Action Set", info.name + ".json", "JSON Files (*.json)");
+    QString path = QFileDialog::getSaveFileName(this, tr("Export Action Set"), info.name + ".json", tr("JSON Files (*.json)"));
     if (path.isEmpty()) return;
     
     QJsonObject obj;
@@ -625,7 +625,7 @@ void ClipboardAssistant::onExportActionSet(const QString& asid) {
     QFile file(path);
     if (file.open(QIODevice::WriteOnly)) {
         file.write(QJsonDocument(obj).toJson());
-        QMessageBox::information(this, "Export", "Action Set exported successfully.");
+        QMessageBox::information(this, tr("Export"), tr("Action Set exported successfully."));
     }
 }
 
@@ -637,14 +637,14 @@ void ClipboardAssistant::onBtnCopyOutputClicked() {
 }
 void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide(); QTimer::singleShot(500, []() { sendCtrlV(); }); }
 void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) { loadPlugins(); reloadActionSets(); } }
-void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText("Cancelled."); ui->progressBar->setVisible(false); ui->textOutput->append("\n[Cancelled]"); m_activePlugin = nullptr; } }
+void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText(tr("Cancelled.")); ui->progressBar->setVisible(false); ui->textOutput->append(tr("\n[Cancelled]")); m_activePlugin = nullptr; } }
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_trayMenu = new QMenu(this); 
-    m_trayMenu->addAction("Show", this, &QWidget::show); 
-    m_trayMenu->addAction("Settings", this, &ClipboardAssistant::onBtnSettingsClicked);
+    m_trayMenu->addAction(tr("Show"), this, &QWidget::show); 
+    m_trayMenu->addAction(tr("Settings"), this, &ClipboardAssistant::onBtnSettingsClicked);
     m_trayMenu->addSeparator();
-    m_trayMenu->addAction("Quit", qApp, &QCoreApplication::quit);
+    m_trayMenu->addAction(tr("Quit"), qApp, &QCoreApplication::quit);
     m_trayIcon->setContextMenu(m_trayMenu); m_trayIcon->show(); connect(m_trayIcon, &QSystemTrayIcon::activated, this, &ClipboardAssistant::onTrayIconActivated);
 }
 void ClipboardAssistant::registerGlobalHotkey() {
@@ -675,8 +675,8 @@ void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = 100; i < m_next
 void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) { if (!a) ui->textOutput->clear(); ui->textOutput->insertPlainText(t); if (f) { ui->textOutput->setMarkdown(ui->textOutput->toPlainText()); } ui->textOutput->moveCursor(QTextCursor::End); }
 void ClipboardAssistant::handlePluginError(const QString& m) { 
     ui->btnCancel->setVisible(false); 
-    ui->labelStatus->setText(m.isEmpty() ? "Cancelled." : "Error."); 
+    ui->labelStatus->setText(m.isEmpty() ? tr("Cancelled.") : tr("Error.")); 
     ui->progressBar->setVisible(false); 
     m_activePlugin = nullptr; 
-    if (!m.isEmpty()) QMessageBox::critical(this, "Error", m); 
+    if (!m.isEmpty()) QMessageBox::critical(this, tr("Error"), m); 
 }

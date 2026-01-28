@@ -46,7 +46,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
         layout->addWidget(title);
 
         // Source Info
-        QString sourceText = info.isInternal ? "<i>Built-in Module</i>" : QString("<i>External Plugin: %1</i>").arg(info.filePath);
+        QString sourceText = info.isInternal ? tr("<i>Built-in Module</i>") : tr("<i>External Plugin: %1</i>").arg(info.filePath);
         QLabel* sourceLabel = new QLabel(sourceText);
         sourceLabel->setStyleSheet("color: gray;");
         layout->addWidget(sourceLabel);
@@ -56,19 +56,19 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
         // Capabilities
         auto dataTypeToString = [](IClipboardPlugin::DataTypes types) {
             QStringList parts;
-            if (types.testFlag(IClipboardPlugin::Text)) parts << "Text";
-            if (types.testFlag(IClipboardPlugin::Image)) parts << "Image";
-            if (types.testFlag(IClipboardPlugin::Rtf)) parts << "RTF";
-            if (types.testFlag(IClipboardPlugin::File)) parts << "File";
-            return parts.isEmpty() ? "None" : parts.join(", ");
+            if (types.testFlag(IClipboardPlugin::Text)) parts << tr("Text");
+            if (types.testFlag(IClipboardPlugin::Image)) parts << tr("Image");
+            if (types.testFlag(IClipboardPlugin::Rtf)) parts << tr("RTF");
+            if (types.testFlag(IClipboardPlugin::File)) parts << tr("File");
+            return parts.isEmpty() ? tr("None") : parts.join(", ");
         };
 
-        QLabel* capTitle = new QLabel("<b>Module Capabilities:</b>");
+        QLabel* capTitle = new QLabel(tr("<b>Module Capabilities:</b>"));
         layout->addWidget(capTitle);
         
-        layout->addWidget(new QLabel(QString(" - Inputs: %1").arg(dataTypeToString(plugin->supportedInputs()))));
-        layout->addWidget(new QLabel(QString(" - Outputs: %1").arg(dataTypeToString(plugin->supportedOutputs()))));
-        layout->addWidget(new QLabel(QString(" - Streaming: %1").arg(plugin->supportsStreaming() ? "Yes" : "No")));
+        layout->addWidget(new QLabel(tr(" - Inputs: %1").arg(dataTypeToString(plugin->supportedInputs()))));
+        layout->addWidget(new QLabel(tr(" - Outputs: %1").arg(dataTypeToString(plugin->supportedOutputs()))));
+        layout->addWidget(new QLabel(tr(" - Streaming: %1").arg(plugin->supportsStreaming() ? tr("Yes") : tr("No"))));
 
         layout->addSpacing(10);
 
@@ -76,7 +76,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
         QList<ParameterDefinition> gDefs = plugin->globalParameterDefinitions();
         if (!gDefs.isEmpty()) {
             m_paramDefs[plugin] = gDefs;
-            QLabel* gTitle = new QLabel("<b>Module Configuration:</b>");
+            QLabel* gTitle = new QLabel(tr("<b>Module Configuration:</b>"));
             layout->addWidget(gTitle);
 
             QFormLayout* form = new QFormLayout();
@@ -112,7 +112,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
 
                 if (widget) {
                     widget->setToolTip(def.description);
-                    form->addRow(def.name + ":", widget);
+                    form->addRow(tr("%1:").arg(def.name), widget);
                     widgets.insert(def.id, widget);
                 }
             }
@@ -122,7 +122,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
         }
 
         if (plugin->hasConfiguration()) {
-            QPushButton* btn = new QPushButton("Advanced Configuration", page);
+            QPushButton* btn = new QPushButton(tr("Advanced Configuration"), page);
             connect(btn, &QPushButton::clicked, [plugin, this]() {
                 plugin->showConfiguration(this);
             });

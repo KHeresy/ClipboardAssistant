@@ -79,7 +79,7 @@ void ActionSetSettings::onAddAction() {
     QMenu menu(this);
     for (const auto& info : m_plugins) {
         QMenu* sub = menu.addMenu(info.plugin->name());
-        QAction* actNew = sub->addAction("New " + info.plugin->name() + " Action");
+        QAction* actNew = sub->addAction(tr("New %1 Action").arg(info.plugin->name()));
         connect(actNew, &QAction::triggered, [this, info]() {
             saveCurrentParams();
             m_actions.append({info.plugin->name(), {}});
@@ -197,7 +197,7 @@ void ActionSetSettings::loadParamsForAction(int row) {
                 QLineEdit* e = new QLineEdit(c); e->setText(val.toString()); e->setObjectName("PathEdit");
                 QPushButton* b = new QPushButton("...", c); b->setFixedWidth(30); h->addWidget(e); h->addWidget(b);
                 connect(b, &QPushButton::clicked, [this, e, def]() {
-                    QString p = (def.type == ParameterType::File) ? QFileDialog::getOpenFileName(this, "Select File", e->text()) : QFileDialog::getExistingDirectory(this, "Select Directory", e->text());
+                    QString p = (def.type == ParameterType::File) ? QFileDialog::getOpenFileName(this, tr("Select File"), e->text()) : QFileDialog::getExistingDirectory(this, tr("Select Directory"), e->text());
                     if (!p.isEmpty()) e->setText(QDir::toNativeSeparators(p));
                 });
                 widget = c; break;
@@ -205,7 +205,7 @@ void ActionSetSettings::loadParamsForAction(int row) {
         }
         if (widget) { 
             widget->setToolTip(def.description);
-            form->addRow(def.name + ":", widget); 
+            form->addRow(tr("%1:").arg(def.name), widget); 
             m_paramWidgets.insert(def.id, widget); 
         }
     }

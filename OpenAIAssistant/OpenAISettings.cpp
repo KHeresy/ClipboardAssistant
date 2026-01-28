@@ -63,7 +63,7 @@ void OpenAISettings::onAddAccount()
     QString id = QUuid::createUuid().toString(QUuid::Id128);
     OpenAIAccount acc;
     acc.id = id;
-    acc.displayName = "New Account";
+    acc.displayName = tr("New Account");
     acc.isAzure = false;
     acc.model = "gpt-3.5-turbo";
     acc.baseUrl = "https://api.openai.com/v1";
@@ -125,9 +125,9 @@ void OpenAISettings::onFieldChanged()
 void OpenAISettings::updateHelp()
 {
     if (ui->checkAzure->isChecked()) {
-        ui->labelHelp->setText("Azure URL: https://{res}.openai.azure.com/openai/deployments/{dep}/chat/completions?api-version=2024-05-01-preview");
+        ui->labelHelp->setText(tr("Azure URL: ") + "https://{res}.openai.azure.com/openai/deployments/{dep}/chat/completions?api-version=2024-05-01-preview");
     } else {
-        ui->labelHelp->setText("OpenAI URL: https://api.openai.com/v1");
+        ui->labelHelp->setText(tr("OpenAI URL: ") + "https://api.openai.com/v1");
     }
 }
 

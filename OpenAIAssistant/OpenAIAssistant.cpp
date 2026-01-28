@@ -14,7 +14,7 @@ OpenAIAssistant::OpenAIAssistant() {
     m_networkManager = new QNetworkAccessManager(this);
 }
 OpenAIAssistant::~OpenAIAssistant() {}
-QString OpenAIAssistant::name() const { return "OpenAI Assistant"; }
+QString OpenAIAssistant::name() const { return tr("OpenAI Assistant"); }
 QString OpenAIAssistant::version() const { return "0.1.0"; }
 
 void OpenAIAssistant::showConfiguration(QWidget* parent) {
@@ -30,12 +30,12 @@ QList<ParameterDefinition> OpenAIAssistant::actionParameterDefinitions() const {
     }
     s.endGroup();
 
-    if (accounts.isEmpty()) accounts << "Default (Not Configured)";
+    if (accounts.isEmpty()) accounts << tr("Default (Not Configured)");
 
     return {
-        {"Account", "Account", ParameterType::Choice, accounts.first(), accounts, "Select which OpenAI account to use"},
-        {"Prompt", "System Prompt", ParameterType::Text, "Summarize text:", {}, "The prompt to send to the AI"},
-        {"OverrideModel", "Override Model", ParameterType::String, "", {}, "Leave empty to use account default model"}
+        {"Account", tr("Account"), ParameterType::Choice, accounts.first(), accounts, tr("Select which OpenAI account to use")},
+        {"Prompt", tr("System Prompt"), ParameterType::Text, "Summarize text:", {}, tr("The prompt to send to the AI")},
+        {"OverrideModel", tr("Override Model"), ParameterType::String, "", {}, tr("Leave empty to use account default model")}
     };
 }
 
@@ -46,7 +46,7 @@ QList<ParameterDefinition> OpenAIAssistant::globalParameterDefinitions() const {
 
 QList<PluginActionTemplate> OpenAIAssistant::actionTemplates() const {
     QList<PluginActionTemplate> list;
-    list.append({"summarize", "Summarize", {{"Prompt", "Summarize text:"}}});
+    list.append({"summarize", tr("Summarize"), {{"Prompt", "Summarize text:"}}});
     return list;
 }
 
@@ -85,7 +85,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     s.endGroup();
 
     if (!found) {
-        callback->onError("Account not found or not configured. Please check Plugin Settings.");
+        callback->onError(tr("Account not found or not configured. Please check Plugin Settings."));
         return;
     }
 
@@ -93,7 +93,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QString overrideModel = actionParams.value("OverrideModel").toString();
     if (!overrideModel.isEmpty()) model = overrideModel;
     
-    if (key.isEmpty()) { callback->onError("API Key is empty for the selected account."); return; }
+    if (key.isEmpty()) { callback->onError(tr("API Key is empty for the selected account.")); return; }
     
     QJsonArray content;
     if (data->hasText() && !data->text().isEmpty()) { 
@@ -109,7 +109,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         }
     }
     
-    if (content.isEmpty()) { callback->onError("No content to process"); return; }
+    if (content.isEmpty()) { callback->onError(tr("No content to process")); return; }
     
     QJsonArray msgs;
     QJsonObject sys; sys["role"]="system"; sys["content"]=prompt; msgs.append(sys);

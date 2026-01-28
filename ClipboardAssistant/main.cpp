@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
         ClipboardAssistant window;
 
-        window.setWindowTitle("ClipboardAssistant");
+        window.setWindowTitle(QObject::tr("ClipboardAssistant"));
 
         
 
