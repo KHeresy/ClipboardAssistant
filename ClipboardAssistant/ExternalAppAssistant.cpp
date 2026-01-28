@@ -26,6 +26,16 @@ QList<PluginActionTemplate> ExternalAppAssistant::actionTemplates() const
     return list;
 }
 
+void ExternalAppAssistant::abort() {
+    if (m_process) {
+        // 重要：切斷所有可能回傳給 callback 的訊號連線
+        m_process->disconnect(); 
+        m_process->kill();
+        m_process->deleteLater();
+        m_process = nullptr;
+    }
+}
+
 void ExternalAppAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback)
 {
     if (!data->hasText()) { callback->onError("No text in clipboard"); return; }
@@ -38,20 +48,17 @@ void ExternalAppAssistant::process(const QMimeData* data, const QVariantMap& act
 
     if (exe.isEmpty()) { callback->onError("Executable path is empty"); return; }
 
-    // Replace placeholder
     argsStr.replace("{text}", text);
 
-    if (m_process) {
-        m_process->kill();
-        m_process->deleteLater();
-    }
+    // 啟動前先清理舊的
+    abort();
 
     m_process = new QProcess(this);
-    if (!workingDir.isEmpty()) {
-        m_process->setWorkingDirectory(workingDir);
-    }
+    if (!workingDir.isEmpty()) m_process->setWorkingDirectory(workingDir);
 
     connect(m_process, &QProcess::finished, [this, callback, captureOutput](int exitCode, QProcess::ExitStatus status) {
+        if (!m_process) return; // 已經被 abort 清理
+        
         if (status == QProcess::CrashExit) {
             callback->onError("External app crashed.");
         } else {
@@ -67,6 +74,7 @@ void ExternalAppAssistant::process(const QMimeData* data, const QVariantMap& act
     });
 
     connect(m_process, &QProcess::errorOccurred, [this, callback](QProcess::ProcessError error) {
+        if (!m_process) return;
         callback->onError("Process error: " + m_process->errorString());
     });
 
@@ -78,6 +86,8 @@ void ExternalAppAssistant::process(const QMimeData* data, const QVariantMap& act
         if (captureOutput) {
             callback->onTextData("Started external application...\n", false);
         } else {
+            // 重要：如果不捕捉輸出，啟動後就斷開所有訊號，避免進程結束時再次觸發 callback
+            m_process->disconnect();
             callback->onTextData("External application started.", true);
             callback->onFinished();
         }

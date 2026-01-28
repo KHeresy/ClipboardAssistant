@@ -66,6 +66,7 @@ private:
     QMenu* m_trayMenu;
     QList<PluginInfo> m_plugins;
     IClipboardPlugin* m_activePlugin = nullptr;
+    class PipelineExecutor* m_currentExecutor = nullptr;
     class RegExAssistant* m_regexAssistant;
     class ExternalAppAssistant* m_externalAppAssistant;
     QList<QShortcut*> m_localShortcuts;

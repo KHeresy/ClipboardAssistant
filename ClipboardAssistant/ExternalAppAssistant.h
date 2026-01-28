@@ -22,6 +22,7 @@ public:
     DataTypes supportedOutputs() const override { return Text; }
     bool supportsStreaming() const override { return false; }
 
+    void abort() override;
     void process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) override;
 
 private:

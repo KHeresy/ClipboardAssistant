@@ -50,7 +50,14 @@ QList<PluginActionTemplate> OpenAIAssistant::actionTemplates() const {
     return list;
 }
 
-void OpenAIAssistant::abort() { if (m_currentReply) { m_currentReply->abort(); m_currentReply = nullptr; } }
+void OpenAIAssistant::abort() { 
+    if (m_currentReply) { 
+        m_currentReply->disconnect();
+        m_currentReply->abort(); 
+        m_currentReply->deleteLater();
+        m_currentReply = nullptr; 
+    } 
+}
 
 void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) {
     abort();
@@ -139,6 +146,10 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
 
     connect(reply, &QNetworkReply::finished, [this, reply, callback, buf]() {
         if (m_currentReply == reply) m_currentReply = nullptr;
+        
+        // 先斷開連線防止任何重複觸發
+        reply->disconnect();
+
         if (reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::OperationCanceledError) {
             callback->onError(reply->errorString() + "\n" + QString::fromUtf8(*buf));
         } else {
@@ -147,8 +158,10 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
                 QJsonArray choices = doc.object()["choices"].toArray();
                 if (!choices.isEmpty()) callback->onTextData(choices[0].toObject()["message"].toObject()["content"].toString(), true);
             }
-            callback->onTextData("", true); callback->onFinished();
+            callback->onTextData("", true); 
+            callback->onFinished();
         }
-        delete buf; reply->deleteLater();
+        delete buf; 
+        reply->deleteLater();
     });
 }

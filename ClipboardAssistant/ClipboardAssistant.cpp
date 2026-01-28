@@ -396,13 +396,18 @@ void ClipboardAssistant::onRunActionSet(IClipboardPlugin*, QString asid) {
     if (!m_actionSetMap.contains(asid)) return;
     const ActionSetInfo& info = m_actionSetMap[asid];
     if (info.actions.isEmpty()) return;
+
+    if (m_currentExecutor) {
+        m_currentExecutor->stop();
+    }
+
     ui->textOutput->clear();
     ui->btnCancel->setVisible(true);
     ui->progressBar->setVisible(true);
     ui->progressBar->setRange(0, 0);
     const QMimeData* data = QApplication::clipboard()->mimeData();
-    PipelineExecutor* executor = new PipelineExecutor(this, info, data);
-    executor->start();
+    m_currentExecutor = new PipelineExecutor(this, info, data);
+    m_currentExecutor->start();
 }
 
 void ClipboardAssistant::onEditActionSet(IClipboardPlugin*, QString asid) { 
@@ -472,7 +477,20 @@ void ClipboardAssistant::onBtnCopyOutputClicked() {
 }
 void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide(); QTimer::singleShot(500, []() { sendCtrlV(); }); }
 void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) { loadPlugins(); reloadActionSets(); } }
-void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText("Cancelled."); ui->progressBar->setVisible(false); ui->textOutput->append("\n[Cancelled]"); m_activePlugin = nullptr; } }
+void ClipboardAssistant::onBtnCancelClicked() { 
+    if (m_currentExecutor) {
+        m_currentExecutor->stop();
+        m_currentExecutor = nullptr;
+    }
+    if (m_activePlugin) { 
+        m_activePlugin->abort(); 
+        ui->btnCancel->setVisible(false); 
+        ui->labelStatus->setText("Cancelled."); 
+        ui->progressBar->setVisible(false); 
+        ui->textOutput->append("\n[Cancelled]"); 
+        m_activePlugin = nullptr; 
+    } 
+}
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_trayMenu = new QMenu(this); 
