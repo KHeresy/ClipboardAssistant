@@ -83,12 +83,15 @@ private:
         bool isAutoCopy;
         QString name;
         QPointer<QLabel> lblContent;
+        QVariantMap parameters;
     };
 
     void updateActionSetShortcuts();
-    void addActionSetWidget(IClipboardPlugin* plugin, const PluginActionSet& actionSet, int defaultIndex);
+    void addActionSetWidget(IClipboardPlugin* plugin, const PluginActionSet& actionSet, const QString& internalId);
     void setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info);
     QMap<QString, ActionSetInfo> m_actionSetMap;
+    // Plugin Name -> Global Settings
+    QMap<QString, QVariantMap> m_globalSettingsMap;
     // Map WinAPI Hotkey ID to ActionSetInfo
     QMap<int, ActionSetInfo> m_hotkeyMap;
     int m_nextHotkeyId = 101; // Start after 100 (main app hotkey)

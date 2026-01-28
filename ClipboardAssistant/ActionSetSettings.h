@@ -2,6 +2,8 @@
 
 #include <QWidget>
 #include <QKeySequence>
+#include <QMap>
+#include "../Common/IClipboardPlugin.h"
 
 namespace Ui {
 class ActionSetSettings;
@@ -27,9 +29,30 @@ public:
     bool isAutoCopy() const;
     void setIsAutoCopy(bool isAutoCopy);
 
-    // Adds a custom widget to the layout, below the general settings
-    void setContent(QWidget *content);
+        // Adds a custom widget to the layout, below the general settings
 
-private:
-    Ui::ActionSetSettings *ui;
-};
+        void setContent(QWidget *content);
+
+    
+
+        // Initialize parameter widgets based on definitions
+
+        void setParameters(const QList<ParameterDefinition>& defs, const QVariantMap& values);
+
+        // Get current parameter values
+
+        QVariantMap getParameters() const;
+
+    
+
+    private:
+
+        Ui::ActionSetSettings *ui;
+
+        QMap<QString, QWidget*> m_paramWidgets;
+
+        QList<ParameterDefinition> m_paramDefs;
+
+    };
+
+    

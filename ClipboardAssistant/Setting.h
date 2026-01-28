@@ -26,6 +26,13 @@ private slots:
     void onPluginSelected(int row);
 
 private:
+
     Ui::SettingClass *ui;
+
     QList<IClipboardPlugin*> m_plugins;
+
+    QMap<IClipboardPlugin*, QMap<QString, QWidget*>> m_paramWidgets;
+
+    QMap<IClipboardPlugin*, QList<ParameterDefinition>> m_paramDefs;
+
 };

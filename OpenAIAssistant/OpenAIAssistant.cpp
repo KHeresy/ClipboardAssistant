@@ -1,139 +1,125 @@
 #include "OpenAIAssistant.h"
 #include "OpenAISettings.h"
-#include <QSettings>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QTextEdit>
-#include <QKeySequenceEdit>
-#include <QPushButton>
-#include <QMessageBox>
-#include <QCoreApplication>
 #include <QUrl>
 #include <QNetworkRequest>
-#include <QUuid>
 #include <QBuffer>
-#include <QMimeDatabase>
-#include <QMimeType>
-#include <QFile>
-#include <QFileInfo>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QDialogButtonBox>
-#include <algorithm>
+#include <QMimeData>
+#include <QImage>
+#include <QSettings>
 
 OpenAIAssistant::OpenAIAssistant() {
     m_networkManager = new QNetworkAccessManager(this);
-    ensureDefaultActions();
 }
 OpenAIAssistant::~OpenAIAssistant() {}
 QString OpenAIAssistant::name() const { return "OpenAI Assistant"; }
 QString OpenAIAssistant::version() const { return "0.1.0"; }
 
-void OpenAIAssistant::ensureDefaultActions() {
-    QSettings s("Heresy", "ClipboardAssistant");
-    s.beginGroup("OpenAI/Accounts");
-    QString defId;
-    if (s.childGroups().isEmpty()) {
-        defId = QUuid::createUuid().toString(QUuid::Id128);
-        s.beginGroup(defId);
-        s.setValue("Name", "Default OpenAI"); s.setValue("Key", ""); s.setValue("Model", "gpt-3.5-turbo");
-        s.setValue("Url", "https://api.openai.com/v1"); s.setValue("IsAzure", false);
-        s.endGroup();
-    } else defId = s.childGroups().first();
-    s.endGroup();
-    s.beginGroup("OpenAI/Actions");
-    if (s.childGroups().isEmpty()) {
-        auto add = [&](const QString& n, const QString& p, int o) {
-            QString id = QUuid::createUuid().toString(QUuid::Id128);
-            s.beginGroup(id);
-            s.setValue("Name", n);
-            s.setValue("Prompt", p);
-            s.setValue("AccountId", defId);
-            s.setValue("Order", o);
-            s.endGroup();
-        };
-        add("Summarize", "Summarize text:", 0);
-        add("Translate to English", "Translate to English:", 1);
-    }
-    s.endGroup();
+void OpenAIAssistant::showConfiguration(QWidget* parent) {
+    OpenAISettings(parent).exec();
 }
 
-QList<PluginActionSet> OpenAIAssistant::actionSets() const {
-    QList<PluginActionSet> list;
+QList<ParameterDefinition> OpenAIAssistant::actionParameterDefinitions() const {
+    QStringList accounts;
     QSettings s("Heresy", "ClipboardAssistant");
-    s.beginGroup("OpenAI/Actions");
-    QStringList ids = s.childGroups();
-    
-    struct SortedActionSet {
-        PluginActionSet f;
-        int order;
-    };
-    QList<SortedActionSet> sortedList;
-
-    for (const QString& id : ids) {
-        s.beginGroup(id);
-        PluginActionSet f;
-        f.id = id;
-        f.name = s.value("Name").toString();
-        f.description = s.value("Prompt").toString();
-        f.customShortcut = QKeySequence(s.value("Shortcut").toString());
-        f.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
-        f.isAutoCopy = s.value("IsAutoCopy", false).toBool();
-        int order = s.value("Order", 999).toInt();
-        sortedList.append({f, order});
-        s.endGroup();
+    s.beginGroup("OpenAI/Accounts");
+    for (const QString& id : s.childGroups()) {
+        accounts << s.value(id + "/Name").toString();
     }
-    s.endGroup(); 
+    s.endGroup();
 
-    // Sort by order
-    std::sort(sortedList.begin(), sortedList.end(), [](const SortedActionSet& a, const SortedActionSet& b) {
-        return a.order < b.order;
-    });
+    if (accounts.isEmpty()) accounts << "Default (Not Configured)";
 
-    for(const auto& sf : sortedList) list.append(sf.f);
+    return {
+        {"Account", "Account", ParameterType::Choice, accounts.first(), accounts, "Select which OpenAI account to use"},
+        {"Prompt", "System Prompt", ParameterType::Text, "Summarize text:", {}, "The prompt to send to the AI"},
+        {"OverrideModel", "Override Model", ParameterType::String, "", {}, "Leave empty to use account default model"}
+    };
+}
+
+QList<ParameterDefinition> OpenAIAssistant::globalParameterDefinitions() const {
+    // We use the internal account management instead of global host-managed params
+    return {};
+}
+
+QList<PluginActionSet> OpenAIAssistant::defaultActionSets() const {
+    QList<PluginActionSet> list;
+    {
+        PluginActionSet f; f.id = "summarize"; f.name = "Summarize";
+        f.parameters["Prompt"] = "Summarize text:";
+        list.append(f);
+    }
     return list;
 }
 
 void OpenAIAssistant::abort() { if (m_currentReply) { m_currentReply->abort(); m_currentReply = nullptr; } }
 
-void OpenAIAssistant::process(const QString& actionSetId, const QMimeData* data, IPluginCallback* callback) {
+void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) {
     abort();
+    
+    QString targetAccount = actionParams.value("Account").toString();
+    QString prompt = actionParams.value("Prompt").toString();
+    
+    // Find account info in internal settings
+    QString key, model, urlStr;
+    bool isAz = false;
+    bool found = false;
+
     QSettings s("Heresy", "ClipboardAssistant");
-    QString aG = "OpenAI/Actions/" + actionSetId;
-    QString prompt = s.value(aG + "/Prompt").toString();
-    QString accId = s.value(aG + "/AccountId").toString();
-    if (accId.isEmpty()) { s.beginGroup("OpenAI/Accounts"); if (!s.childGroups().isEmpty()) accId = s.childGroups().first(); s.endGroup(); }
-    QString acG = "OpenAI/Accounts/" + accId;
-    QString key = s.value(acG + "/Key").toString();
-    QString model = s.value(acG + "/Model").toString();
-    QString urlStr = s.value(acG + "/Url").toString();
-    bool isAz = s.value(acG + "/IsAzure").toBool();
-    if (key.isEmpty()) { callback->onError("API Key empty"); return; }
+    s.beginGroup("OpenAI/Accounts");
+    for (const QString& id : s.childGroups()) {
+        if (s.value(id + "/Name").toString() == targetAccount) {
+            key = s.value(id + "/Key").toString();
+            model = s.value(id + "/Model").toString();
+            urlStr = s.value(id + "/Url").toString();
+            isAz = s.value(id + "/IsAzure").toBool();
+            found = true;
+            break;
+        }
+    }
+    s.endGroup();
+
+    if (!found) {
+        callback->onError("Account not found or not configured. Please check Plugin Settings.");
+        return;
+    }
+
+    // Override model if specified in action
+    QString overrideModel = actionParams.value("OverrideModel").toString();
+    if (!overrideModel.isEmpty()) model = overrideModel;
+    
+    if (key.isEmpty()) { callback->onError("API Key is empty for the selected account."); return; }
+    
     QJsonArray content;
-    if (data->hasText() && !data->text().isEmpty()) { QJsonObject o; o["type"]="text"; o["text"]=data->text(); content.append(o); }
+    if (data->hasText() && !data->text().isEmpty()) { 
+        QJsonObject o; o["type"]="text"; o["text"]=data->text(); content.append(o); 
+    }
     if (data->hasImage()) {
         QImage img = qvariant_cast<QImage>(data->imageData());
         if (!img.isNull()) {
             QByteArray ba; QBuffer buf(&ba); buf.open(QIODevice::WriteOnly); img.save(&buf, "PNG");
-            QJsonObject o; o["type"]="image_url"; QJsonObject u; u["url"]="data:image/png;base64,"+QString::fromLatin1(ba.toBase64());
+            QJsonObject o; o["type"]="image_url"; 
+            QJsonObject u; u["url"]="data:image/png;base64,"+QString::fromLatin1(ba.toBase64());
             o["image_url"]=u; content.append(o);
         }
     }
+    
     if (content.isEmpty()) { callback->onError("No content to process"); return; }
+    
     QJsonArray msgs;
     QJsonObject sys; sys["role"]="system"; sys["content"]=prompt; msgs.append(sys);
     QJsonObject usr; usr["role"]="user"; usr["content"]=content; msgs.append(usr);
+    
     QJsonObject json; json["model"]=model; json["messages"]=msgs; json["stream"]=true;
+    
     QUrl url = isAz ? QUrl(urlStr) : QUrl(urlStr + "/chat/completions");
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    if (isAz) req.setRawHeader("api-key", key.toUtf8()); else req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
+    if (isAz) req.setRawHeader("api-key", key.toUtf8()); 
+    else req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
+    
     m_currentReply = m_networkManager->post(req, QJsonDocument(json).toJson());
     QNetworkReply* reply = m_currentReply;
     QByteArray* buf = new QByteArray();
@@ -169,76 +155,4 @@ void OpenAIAssistant::process(const QString& actionSetId, const QMimeData* data,
         }
         delete buf; reply->deleteLater();
     });
-}
-
-bool OpenAIAssistant::hasSettings() const { return true; }
-void OpenAIAssistant::showSettings(QWidget* parent) { OpenAISettings(parent).exec(); }
-bool OpenAIAssistant::isEditable() const { return true; }
-
-QComboBox* createAccCombo(QWidget* p, QString selId = "") {
-    QComboBox* c = new QComboBox(p);
-    QSettings s("Heresy", "ClipboardAssistant");
-    s.beginGroup("OpenAI/Accounts");
-    for (const QString& id : s.childGroups()) {
-        c->addItem(s.value(id + "/Name").toString(), id);
-        if (id == selId) c->setCurrentIndex(c->count() - 1);
-    }
-    s.endGroup();
-    return c;
-}
-
-QWidget* OpenAIAssistant::getSettingsWidget(const QString& actionSetId, QWidget* parent) {
-    QWidget* content = new QWidget(parent);
-    QVBoxLayout* contentLayout = new QVBoxLayout(content);
-    contentLayout->setContentsMargins(0,0,0,0);
-    
-    QComboBox* cA = nullptr;
-    QTextEdit* eP = new QTextEdit(content);
-    eP->setObjectName("Prompt");
-
-    if (!actionSetId.isEmpty()) {
-        QSettings s("Heresy", "ClipboardAssistant");
-        QString g = "OpenAI/Actions/" + actionSetId;
-        cA = createAccCombo(content, s.value(g + "/AccountId").toString());
-        eP->setPlainText(s.value(g + "/Prompt").toString());
-    } else {
-        cA = createAccCombo(content);
-    }
-    cA->setObjectName("Account");
-    
-    contentLayout->addWidget(new QLabel("Account:")); contentLayout->addWidget(cA);
-    contentLayout->addWidget(new QLabel("Prompt:")); contentLayout->addWidget(eP);
-
-    return content;
-}
-
-QString OpenAIAssistant::saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal, bool isAutoCopy) {
-    QString id = actionSetId;
-    if (id.isEmpty()) id = QUuid::createUuid().toString(QUuid::Id128);
-
-    QComboBox* cA = widget->findChild<QComboBox*>("Account");
-    QTextEdit* eP = widget->findChild<QTextEdit*>("Prompt");
-
-    QSettings s("Heresy", "ClipboardAssistant");
-    s.beginGroup("OpenAI/Actions/" + id);
-    s.setValue("Name", name);
-    s.setValue("Prompt", eP ? eP->toPlainText() : "");
-    s.setValue("AccountId", cA ? cA->currentData().toString() : "");
-    s.setValue("Shortcut", shortcut.toString());
-    s.setValue("IsGlobal", isGlobal);
-    s.setValue("IsAutoCopy", isAutoCopy);
-    if (actionSetId.isEmpty()) s.setValue("Order", 999);
-    s.endGroup();
-
-    return id;
-}
-
-QString OpenAIAssistant::createActionSet(QWidget* p) { return QString(); }
-void OpenAIAssistant::editActionSet(const QString& asid, QWidget* p) {}
-
-void OpenAIAssistant::deleteActionSet(const QString& asid) { QSettings s("Heresy", "ClipboardAssistant"); s.remove("OpenAI/Actions/" + asid); }
-
-void OpenAIAssistant::setActionSetOrder(const QString& asid, int order) {
-    QSettings s("Heresy", "ClipboardAssistant");
-    s.setValue("OpenAI/Actions/" + asid + "/Order", order);
 }

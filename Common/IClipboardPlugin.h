@@ -6,6 +6,26 @@
 #include <QKeySequence>
 #include <QMimeData>
 #include <QWidget>
+#include <QVariant>
+#include <QMap>
+
+enum class ParameterType {
+    String,
+    Text,
+    Choice,
+    Bool,
+    Password,
+    Number
+};
+
+struct ParameterDefinition {
+    QString id;
+    QString name;
+    ParameterType type;
+    QVariant defaultValue;
+    QStringList options; // For Choice type
+    QString description;
+};
 
 struct PluginActionSet {
     QString id;
@@ -15,6 +35,7 @@ struct PluginActionSet {
     QKeySequence customShortcut;
     bool isCustomShortcutGlobal = false;
     bool isAutoCopy = false;
+    QVariantMap parameters;
 };
 
 struct PluginInfo {
@@ -48,9 +69,15 @@ public:
     // Return the plugin version
     virtual QString version() const = 0;
     
-    // Return a list of ActionSets provided by this plugin
-    virtual QList<PluginActionSet> actionSets() const = 0;
-    
+    // Parameters for an action
+    virtual QList<ParameterDefinition> actionParameterDefinitions() const = 0;
+
+    // Global parameters for the plugin (shared across actions)
+    virtual QList<ParameterDefinition> globalParameterDefinitions() const { return {}; }
+
+    // Return a list of default ActionSets provided by this plugin
+    virtual QList<PluginActionSet> defaultActionSets() const { return {}; }
+
     // Capabilities
     enum DataType {
         None = 0,
@@ -68,43 +95,14 @@ public:
     // Abort current operation
     virtual void abort() {}
 
-    // Process the clipboard data using the specified ActionSet
-    virtual void process(const QString& actionSetId, const QMimeData* data, IPluginCallback* callback) = 0;
+    // Process the clipboard data using the specified parameters
+    virtual void process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) = 0;
     
-    // Check if the plugin has a settings dialog
-    virtual bool hasSettings() const = 0;
+    // Check if the plugin has its own configuration dialog (optional, preferred to use globalParameterDefinitions)
+    virtual bool hasConfiguration() const { return false; }
     
-    // Show the settings dialog
-    virtual void showSettings(QWidget* parent) = 0;
-
-    // -- New Methods for Dynamic Actions --
-
-    // Check if this plugin allows the user to add/remove ActionSets
-    virtual bool isEditable() const { return false; }
-
-    // Request the plugin to create a new ActionSet (usually shows a dialog)
-    // Returns the ID of the new ActionSet if successful, or empty string if cancelled.
-    virtual QString createActionSet(QWidget* parent) { return QString(); }
-
-    // Request the plugin to edit an existing ActionSet
-    virtual void editActionSet(const QString& actionSetId, QWidget* parent) {}
-
-    // Request the plugin to delete an ActionSet
-    virtual void deleteActionSet(const QString& actionSetId) {}
-
-    // Update the display order of an ActionSet
-    virtual void setActionSetOrder(const QString& actionSetId, int order) {}
-
-    // New Interface for separated settings
-    // Returns a widget for editing specific settings. If actionSetId is empty, it's for creating a new action.
-    virtual QWidget* getSettingsWidget(const QString& actionSetId, QWidget* parent) { return nullptr; }
-
-    // Saves the settings. 
-    // actionSetId: empty if creating new.
-    // widget: the widget returned by getSettingsWidget.
-    // name, shortcut, isGlobal: common settings handled by the host.
-    // Returns the ID of the action set (new or existing).
-    virtual QString saveSettings(const QString& actionSetId, QWidget* widget, const QString& name, const QKeySequence& shortcut, bool isGlobal, bool isAutoCopy) { return QString(); }
+    // Show the configuration dialog
+    virtual void showConfiguration(QWidget* parent) {}
 };
 
 QT_END_NAMESPACE
