@@ -8,6 +8,9 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QFileDialog>
+#include <QDir>
+#include <QPushButton>
 
 ActionSetSettings::ActionSetSettings(QWidget *parent) :
     QWidget(parent),
@@ -75,7 +78,6 @@ void ActionSetSettings::setParameters(const QList<ParameterDefinition>& defs, co
     m_paramDefs = defs;
     m_paramWidgets.clear();
 
-    // Remove existing widgets if any
     QLayoutItem* item;
     while ((item = ui->verticalLayout_groupActionSet->takeAt(0)) != nullptr) {
         if (item->widget()) delete item->widget();
@@ -130,6 +132,33 @@ void ActionSetSettings::setParameters(const QList<ParameterDefinition>& defs, co
             widget = s;
             break;
         }
+        case ParameterType::File:
+        case ParameterType::Directory: {
+            QWidget* container = new QWidget(this);
+            QHBoxLayout* h = new QHBoxLayout(container);
+            h->setContentsMargins(0, 0, 0, 0);
+            QLineEdit* e = new QLineEdit(container);
+            e->setText(val.toString());
+            e->setObjectName("PathEdit");
+            QPushButton* b = new QPushButton("...", container);
+            b->setFixedWidth(30);
+            h->addWidget(e);
+            h->addWidget(b);
+            
+            bool isFile = (def.type == ParameterType::File);
+            connect(b, &QPushButton::clicked, [this, e, isFile]() {
+                QString path;
+                if (isFile) {
+                    path = QFileDialog::getOpenFileName(this, "Select File", e->text());
+                } else {
+                    path = QFileDialog::getExistingDirectory(this, "Select Directory", e->text());
+                }
+                if (!path.isEmpty()) e->setText(QDir::toNativeSeparators(path));
+            });
+            
+            widget = container;
+            break;
+        }
         }
 
         if (widget) {
@@ -164,6 +193,10 @@ QVariantMap ActionSetSettings::getParameters() const
             break;
         case ParameterType::Number:
             val = qobject_cast<QSpinBox*>(widget)->value();
+            break;
+        case ParameterType::File:
+        case ParameterType::Directory:
+            val = widget->findChild<QLineEdit*>("PathEdit")->text();
             break;
         }
         values.insert(def.id, val);

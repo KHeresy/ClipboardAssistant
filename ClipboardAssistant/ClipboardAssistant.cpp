@@ -27,6 +27,7 @@
 #include <QWheelEvent>
 #include <QUuid>
 #include "RegExAssistant.h"
+#include "ExternalAppAssistant.h"
 #include "ActionSetSettings.h"
 #include <QDialogButtonBox>
 
@@ -272,6 +273,9 @@ void ClipboardAssistant::loadPlugins() {
     m_plugins.clear(); 
     m_regexAssistant = new RegExAssistant(this); 
     m_plugins.append({m_regexAssistant, true, "Built-in"});
+    
+    m_externalAppAssistant = new ExternalAppAssistant(this);
+    m_plugins.append({m_externalAppAssistant, true, "Built-in"});
     
     QDir dir(QCoreApplication::applicationDirPath());
     for (const QString& f : dir.entryList({"*.dll"}, QDir::Files)) {

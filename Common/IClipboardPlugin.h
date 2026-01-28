@@ -15,7 +15,9 @@ enum class ParameterType {
     Choice,
     Bool,
     Password,
-    Number
+    Number,
+    File,
+    Directory
 };
 
 struct ParameterDefinition {

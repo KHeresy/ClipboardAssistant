@@ -105,7 +105,7 @@
 
     <ClCompile Include="ActionSetSettings.cpp" />
     <ClCompile Include="RegExAssistant.cpp" />
-    <ResourceCompile Include="ClipboardAssistant.rc" />
+    <ClCompile Include="ExternalAppAssistant.cpp" />
     <ClCompile Include="Setting.cpp" />
     <QtRcc Include="ClipboardAssistant.qrc" />
     <QtUic Include="ActionSetSettings.ui" />
@@ -114,6 +114,7 @@
     <QtMoc Include="ActionSetSettings.h" />
     <QtMoc Include="ClipboardAssistant.h" />
     <QtMoc Include="RegExAssistant.h" />
+    <QtMoc Include="ExternalAppAssistant.h" />
     <QtMoc Include="Setting.h" />
     <ClCompile Include="ClipboardAssistant.cpp" />
     <ClCompile Include="main.cpp" />

@@ -49,6 +49,9 @@
     <ClCompile Include="ActionSetSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ExternalAppAssistant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IClipboardPlugin.h">
@@ -73,10 +76,8 @@
     <QtMoc Include="ActionSetSettings.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ClipboardAssistant.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <QtMoc Include="ExternalAppAssistant.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

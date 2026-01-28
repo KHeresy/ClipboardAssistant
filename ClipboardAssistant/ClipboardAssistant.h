@@ -67,6 +67,7 @@ private:
     QList<PluginInfo> m_plugins;
     IClipboardPlugin* m_activePlugin = nullptr;
     class RegExAssistant* m_regexAssistant;
+    class ExternalAppAssistant* m_externalAppAssistant;
     QList<QShortcut*> m_localShortcuts;
     QNetworkAccessManager* m_networkManager;
     QString m_currentHtml;
