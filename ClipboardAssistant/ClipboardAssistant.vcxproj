@@ -122,7 +122,9 @@
     <QtMoc Include="Setting.h" />
     <ClCompile Include="ClipboardAssistant.cpp" />
     <ClCompile Include="main.cpp" />
-
+    <ResourceCompile Include="ClipboardAssistant.rc" />
+    <Image Include="app_icon.ico" />
+    <None Include="app_icon.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IClipboardPlugin.h" />
