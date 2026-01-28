@@ -75,6 +75,19 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="btnExportAll">
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Export All</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer_left">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>

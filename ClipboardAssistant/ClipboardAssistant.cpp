@@ -66,6 +66,7 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(ne
     connect(ui->btnSettings, &QPushButton::clicked, this, &ClipboardAssistant::onBtnSettingsClicked);
     connect(ui->btnAddActionSet, &QPushButton::clicked, this, &ClipboardAssistant::onBtnAddActionSetClicked);
     connect(ui->btnImportActionSet, &QPushButton::clicked, this, &ClipboardAssistant::onBtnImportActionSetClicked);
+    connect(ui->btnExportAll, &QPushButton::clicked, this, &ClipboardAssistant::onBtnExportAllClicked);
     connect(ui->btnCancel, &QPushButton::clicked, this, &ClipboardAssistant::onBtnCancelClicked);
     connect(ui->checkAlwaysOnTop, &QCheckBox::toggled, this, &ClipboardAssistant::onCheckAlwaysOnTopToggled);
     connect(ui->spinInputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinInputFontSizeChanged);
@@ -500,9 +501,8 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
     if (!file.open(QIODevice::ReadOnly)) return;
     
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (!doc.isObject()) { QMessageBox::critical(this, "Error", "Invalid JSON format."); return; }
+    if (doc.isNull()) { QMessageBox::critical(this, "Error", "Invalid JSON format."); return; }
     
-    QJsonObject root = doc.object();
     QStringList reports;
     
     auto processObj = [&](const QJsonObject& obj) {
@@ -534,11 +534,17 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         else { addActionSetWidget(info); }
     };
 
-    if (root.contains("Actions") && root["Actions"].isArray()) {
-        QJsonArray arr = root["Actions"].toArray();
+    if (doc.isArray()) {
+        QJsonArray arr = doc.array();
         for (int i = 0; i < arr.size(); ++i) processObj(arr[i].toObject());
-    } else {
-        processObj(root);
+    } else if (doc.isObject()) {
+        QJsonObject root = doc.object();
+        if (root.contains("Actions") && root["Actions"].isArray()) {
+            QJsonArray arr = root["Actions"].toArray();
+            for (int i = 0; i < arr.size(); ++i) processObj(arr[i].toObject());
+        } else {
+            processObj(root);
+        }
     }
     
     saveSettings();
@@ -554,6 +560,43 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         l->addWidget(bb); dlg.exec();
     } else {
         QMessageBox::information(this, "Success", "Import completed successfully.");
+    }
+}
+
+void ClipboardAssistant::onBtnExportAllClicked() {
+    if (m_actionSetMap.isEmpty()) return;
+
+    QString path = QFileDialog::getSaveFileName(this, "Export All Action Sets", "AllActionSets.json", "JSON Files (*.json)");
+    if (path.isEmpty()) return;
+
+    QJsonArray array;
+    // Iterate through listActionSets to keep the order
+    for (int i = 0; i < ui->listActionSets->count(); ++i) {
+        QString asid = ui->listActionSets->item(i)->data(Qt::UserRole).toString();
+        if (!m_actionSetMap.contains(asid)) continue;
+        const ActionSetInfo& info = m_actionSetMap[asid];
+
+        QJsonObject obj;
+        obj["Name"] = info.name;
+        obj["Shortcut"] = info.customShortcut.toString();
+        obj["IsGlobal"] = info.isCustomShortcutGlobal;
+        obj["IsAutoCopy"] = info.isAutoCopy;
+
+        QJsonArray steps;
+        for (const auto& step : info.actions) {
+            QJsonObject sObj;
+            sObj["Plugin"] = step.pluginName;
+            sObj["Params"] = QJsonObject::fromVariantMap(step.parameters);
+            steps.append(sObj);
+        }
+        obj["Steps"] = steps;
+        array.append(obj);
+    }
+
+    QFile file(path);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(QJsonDocument(array).toJson());
+        QMessageBox::information(this, "Export All", "All Action Sets exported successfully.");
     }
 }
 
