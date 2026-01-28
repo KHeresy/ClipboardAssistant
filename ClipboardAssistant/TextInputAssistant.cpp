@@ -2,6 +2,7 @@
 #include <QMimeData>
 #include <QInputDialog>
 #include <QApplication>
+#include <QWindow>
 
 TextInputAssistant::TextInputAssistant(QObject* parent) : QObject(parent)
 {
@@ -35,12 +36,34 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
     QString currentText = data->text();
 
     if (mode == "Ask at Runtime") {
-        bool ok;
-        // 在主執行緒彈出輸入框
-        QString val = QInputDialog::getMultiLineText(nullptr, "Manual Input", "Enter text for the pipeline:", "", &ok);
-        if (ok) {
-            inputText = val;
-        } else {
+        bool ok = false;
+        
+        // 尋找主視窗作為 Parent
+        QWidget* parentWidget = QApplication::activeWindow();
+        if (!parentWidget) {
+            for (QWidget* w : QApplication::topLevelWidgets()) {
+                if (w->isVisible() && w->objectName() == "ClipboardAssistantClass") {
+                    parentWidget = w;
+                    break;
+                }
+            }
+        }
+
+        QInputDialog dlg(parentWidget);
+        dlg.setWindowTitle("Manual Input");
+        dlg.setLabelText("Enter text for the pipeline:");
+        dlg.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
+        
+        // 修正：只保留 WindowStaysOnTopHint，移除衝突的 BottomHint
+        // 同時確保它是個 Dialog 並在最上層
+        dlg.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
+
+        if (dlg.exec() == QDialog::Accepted) {
+            inputText = dlg.textValue();
+            ok = true;
+        }
+
+        if (!ok) {
             callback->onError("User cancelled input.");
             return;
         }

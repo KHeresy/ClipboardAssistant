@@ -44,6 +44,8 @@ private slots:
     
     // New slots for dynamic ActionSets
     void onBtnAddActionSetClicked();
+    void onBtnImportActionSetClicked();
+    void onExportActionSet(const QString& asid);
     void onRunActionSet(IClipboardPlugin* plugin, QString actionSetId);
     void onEditActionSet(IClipboardPlugin* plugin, QString actionSetId);
     void onDeleteActionSet(IClipboardPlugin* plugin, QString actionSetId);

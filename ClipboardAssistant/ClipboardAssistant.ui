@@ -62,6 +62,19 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="btnImportActionSet">
+           <property name="maximumSize">
+            <size>
+             <width>60</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Import</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer_left">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>

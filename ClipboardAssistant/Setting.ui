@@ -60,6 +60,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxStartMinimized">
+          <property name="text">
+           <string>Start minimized to tray</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

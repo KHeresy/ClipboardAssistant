@@ -25,6 +25,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     ui->keySequenceEdit->setKeySequence(QKeySequence(hotkeyStr));
     ui->checkBoxAutoCopy->setChecked(settings.value("AutoCopy", false).toBool());
     ui->checkBoxCloseOnEsc->setChecked(settings.value("CloseOnEsc", false).toBool());
+    ui->checkBoxStartMinimized->setChecked(settings.value("StartMinimized", false).toBool());
 
     // Auto-start check
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
@@ -167,6 +168,7 @@ void Setting::accept()
     settings.setValue("GlobalHotkey", ui->keySequenceEdit->keySequence().toString());
     settings.setValue("AutoCopy", ui->checkBoxAutoCopy->isChecked());
     settings.setValue("CloseOnEsc", ui->checkBoxCloseOnEsc->isChecked());
+    settings.setValue("StartMinimized", ui->checkBoxStartMinimized->isChecked());
 
     // Save Auto-start
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
