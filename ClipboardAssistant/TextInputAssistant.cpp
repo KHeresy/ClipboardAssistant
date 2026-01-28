@@ -3,6 +3,30 @@
 #include <QInputDialog>
 #include <QApplication>
 #include <QWindow>
+#include <QKeyEvent>
+#include <QPlainTextEdit>
+
+class TextInputEventFilter : public QObject {
+public:
+    TextInputEventFilter(QDialog* dlg) : QObject(dlg), m_dlg(dlg) {}
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Return && (keyEvent->modifiers() & Qt::ControlModifier)) {
+                m_dlg->accept();
+                return true;
+            }
+            if (keyEvent->key() == Qt::Key_Escape) {
+                m_dlg->reject();
+                return true;
+            }
+        }
+        return QObject::eventFilter(obj, event);
+    }
+private:
+    QDialog* m_dlg;
+};
 
 TextInputAssistant::TextInputAssistant(QObject* parent) : QObject(parent)
 {
@@ -51,12 +75,19 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
 
         QInputDialog dlg(parentWidget);
         dlg.setWindowTitle("Manual Input");
-        dlg.setLabelText("Enter text for the pipeline:");
+        dlg.setLabelText("Enter text for the pipeline:<br/>(Ctrl+Enter to Finish, Esc to Cancel)");
         dlg.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
         
-        // 修正：只保留 WindowStaysOnTopHint，移除衝突的 BottomHint
-        // 同時確保它是個 Dialog 並在最上層
+        // 確保它是個 Dialog 並在最上層
         dlg.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint);
+
+        // 安裝事件過濾器以處理 Ctrl+Enter 和 Esc
+        TextInputEventFilter* filter = new TextInputEventFilter(&dlg);
+        dlg.installEventFilter(filter);
+        // 也需要安裝在輸入框上，因為 QInputDialog 的內容通常是它的子元件
+        if (QPlainTextEdit* edit = dlg.findChild<QPlainTextEdit*>()) {
+            edit->installEventFilter(filter);
+        }
 
         if (dlg.exec() == QDialog::Accepted) {
             inputText = dlg.textValue();
@@ -64,7 +95,8 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
         }
 
         if (!ok) {
-            callback->onError("User cancelled input.");
+            // 中斷流程且不彈出錯誤
+            callback->onError("");
             return;
         }
     }
@@ -77,3 +109,4 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
     callback->onTextData(result, true);
     callback->onFinished();
 }
+

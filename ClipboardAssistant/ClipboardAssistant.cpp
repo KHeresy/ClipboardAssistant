@@ -673,4 +673,10 @@ void ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks)
 }
 void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = 100; i < m_nextHotkeyId + 20; ++i) UnregisterHotKey((HWND)winId(), i); }
 void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) { if (!a) ui->textOutput->clear(); ui->textOutput->insertPlainText(t); if (f) { ui->textOutput->setMarkdown(ui->textOutput->toPlainText()); } ui->textOutput->moveCursor(QTextCursor::End); }
-void ClipboardAssistant::handlePluginError(const QString& m) { ui->btnCancel->setVisible(false); ui->labelStatus->setText("Error."); ui->progressBar->setVisible(false); m_activePlugin = nullptr; QMessageBox::critical(this, "Error", m); }
+void ClipboardAssistant::handlePluginError(const QString& m) { 
+    ui->btnCancel->setVisible(false); 
+    ui->labelStatus->setText(m.isEmpty() ? "Cancelled." : "Error."); 
+    ui->progressBar->setVisible(false); 
+    m_activePlugin = nullptr; 
+    if (!m.isEmpty()) QMessageBox::critical(this, "Error", m); 
+}
