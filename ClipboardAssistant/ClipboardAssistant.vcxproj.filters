@@ -52,6 +52,12 @@
     <ClCompile Include="ExternalAppAssistant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PipelineExecutor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextInputAssistant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IClipboardPlugin.h">
@@ -77,6 +83,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ExternalAppAssistant.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="PipelineExecutor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="TextInputAssistant.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -106,6 +106,7 @@
     <ClCompile Include="ActionSetSettings.cpp" />
     <ClCompile Include="RegExAssistant.cpp" />
     <ClCompile Include="ExternalAppAssistant.cpp" />
+    <ClCompile Include="TextInputAssistant.cpp" />
     <ClCompile Include="PipelineExecutor.cpp" />
     <ClCompile Include="Setting.cpp" />
     <QtRcc Include="ClipboardAssistant.qrc" />
@@ -115,6 +116,7 @@
     <QtMoc Include="ActionSetSettings.h" />
     <QtMoc Include="ClipboardAssistant.h" />
     <QtMoc Include="RegExAssistant.h" />
+    <QtMoc Include="TextInputAssistant.h" />
     <QtMoc Include="ExternalAppAssistant.h" />
     <QtMoc Include="PipelineExecutor.h" />
     <QtMoc Include="Setting.h" />

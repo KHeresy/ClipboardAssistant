@@ -69,6 +69,7 @@ private:
     class PipelineExecutor* m_currentExecutor = nullptr;
     class RegExAssistant* m_regexAssistant;
     class ExternalAppAssistant* m_externalAppAssistant;
+    class TextInputAssistant* m_textInputAssistant;
     QList<QShortcut*> m_localShortcuts;
     QNetworkAccessManager* m_networkManager;
     QString m_currentHtml;
