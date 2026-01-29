@@ -46,6 +46,9 @@
     <ClCompile Include="RegExAssistant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScreenCaptureAssistant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ActionSetSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -77,6 +80,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="RegExAssistant.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ScreenCaptureAssistant.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ActionSetSettings.h">

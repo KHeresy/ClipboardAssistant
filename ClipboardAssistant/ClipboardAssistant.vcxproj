@@ -103,11 +103,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActionSetSettings.cpp" />
-    <ClCompile Include="RegExAssistant.cpp" />
     <ClCompile Include="ExternalAppAssistant.cpp" />
-    <ClCompile Include="TextInputAssistant.cpp" />
     <ClCompile Include="PipelineExecutor.cpp" />
+    <ClCompile Include="RegExAssistant.cpp" />
+    <ClCompile Include="ScreenCaptureAssistant.cpp" />
     <ClCompile Include="Setting.cpp" />
+    <ClCompile Include="TextInputAssistant.cpp" />
     <QtRcc Include="ClipboardAssistant.qrc" />
     <QtUic Include="ActionSetSettings.ui" />
     <QtUic Include="ClipboardAssistant.ui" />
@@ -115,6 +116,7 @@
     <QtMoc Include="ActionSetSettings.h" />
     <QtMoc Include="ClipboardAssistant.h" />
     <QtMoc Include="RegExAssistant.h" />
+    <QtMoc Include="ScreenCaptureAssistant.h" />
     <QtMoc Include="TextInputAssistant.h" />
     <QtMoc Include="ExternalAppAssistant.h" />
     <QtMoc Include="PipelineExecutor.h" />

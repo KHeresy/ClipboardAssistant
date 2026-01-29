@@ -35,6 +35,7 @@
 #include "RegExAssistant.h"
 #include "ExternalAppAssistant.h"
 #include "TextInputAssistant.h"
+#include "ScreenCaptureAssistant.h"
 #include "ActionSetSettings.h"
 #include "PipelineExecutor.h"
 #include <QDialogButtonBox>
@@ -344,8 +345,11 @@ void ClipboardAssistant::loadPlugins() {
     m_externalAppAssistant = new ExternalAppAssistant(this);
     m_plugins.append({m_externalAppAssistant, true, "Built-in"});
     m_textInputAssistant = new TextInputAssistant(this);
-    m_plugins.append({m_textInputAssistant, true, "Built-in"});
-    
+    m_plugins.append({ m_textInputAssistant, true, "" });
+
+    m_plugins.append({ new ScreenCaptureAssistant(this), true, "" });
+
+    // Load external plugins (DLLs)
     QDir dir(QCoreApplication::applicationDirPath());
     for (const QString& f : dir.entryList({"*.dll"}, QDir::Files)) {
         QPluginLoader l(dir.absoluteFilePath(f)); 
