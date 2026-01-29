@@ -52,6 +52,7 @@ class IPluginCallback {
 public:
     virtual ~IPluginCallback() = default;
     virtual void onTextData(const QString& text, bool isFinal) = 0;
+    virtual void onMimeData(const QMimeData* data) {} // Allow passing full mime data
     virtual void onError(const QString& message) = 0;
     virtual void onFinished() = 0;
 };

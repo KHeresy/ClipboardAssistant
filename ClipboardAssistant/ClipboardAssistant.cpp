@@ -31,6 +31,7 @@
 #include <QJsonArray>
 #include <QFileDialog>
 #include <QFile>
+#include <QGraphicsOpacityEffect>
 #include "RegExAssistant.h"
 #include "ExternalAppAssistant.h"
 #include "TextInputAssistant.h"
@@ -54,9 +55,9 @@ void sendCtrlV() { sendCtrlKey('V'); }
 ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(new Ui::ClipboardAssistantClass) {
     ui->setupUi(this);
     ui->textOutput->setReadOnly(true);
-    QFont defaultFont("Segoe UI", 10);
-    ui->textClipboard->setFont(defaultFont);
-    ui->textOutput->setFont(defaultFont);
+    //QFont defaultFont("Segoe UI", 10);
+    //ui->textClipboard->setFont(defaultFont);
+    //ui->textOutput->setFont(defaultFont);
     setWindowIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_networkManager = new QNetworkAccessManager(this);
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
@@ -254,9 +255,29 @@ void ClipboardAssistant::updateButtonsState() {
             IClipboardPlugin* firstPlugin = nullptr;
             for(auto& pi : m_plugins) if(pi.plugin->name() == it.value().actions[0].pluginName) { firstPlugin = pi.plugin; break; }
             if (firstPlugin) {
-                it.value().mainButton->setEnabled((firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None);
+                bool isEnabled = (firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None;
+                it.value().mainButton->setEnabled(isEnabled);
+                
+                QGraphicsOpacityEffect* effect = qobject_cast<QGraphicsOpacityEffect*>(it.value().mainButton->graphicsEffect());
+                if (!isEnabled) {
+                    if (!effect) {
+                        effect = new QGraphicsOpacityEffect(it.value().mainButton);
+                        it.value().mainButton->setGraphicsEffect(effect);
+                    }
+                    effect->setOpacity(0.33);
+                } else {
+                    if (effect) {
+                        effect->setOpacity(1.0);
+                    }
+                }
             } else {
                 it.value().mainButton->setEnabled(false);
+                QGraphicsOpacityEffect* effect = qobject_cast<QGraphicsOpacityEffect*>(it.value().mainButton->graphicsEffect());
+                if (!effect) {
+                    effect = new QGraphicsOpacityEffect(it.value().mainButton);
+                    it.value().mainButton->setGraphicsEffect(effect);
+                }
+                effect->setOpacity(0.5);
             }
         }
     }

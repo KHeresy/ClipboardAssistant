@@ -40,6 +40,16 @@ void PipelineExecutor::onTextData(const QString& text, bool isFinal) {
     });
 }
 
+void PipelineExecutor::onMimeData(const QMimeData* data) {
+    if (m_cancelled) return;
+    if (m_nextData) delete m_nextData;
+    m_nextData = new QMimeData();
+    if (data->hasText()) m_nextData->setText(data->text());
+    if (data->hasHtml()) m_nextData->setHtml(data->html());
+    if (data->hasImage()) m_nextData->setImageData(data->imageData());
+    if (data->hasUrls()) m_nextData->setUrls(data->urls());
+}
+
 void PipelineExecutor::onError(const QString& msg) {
     if (m_cancelled) return;
     m_cancelled = true; // 發生錯誤，整個 Pipeline 停止
@@ -96,8 +106,15 @@ void PipelineExecutor::executeNext() {
 
     if (m_currentIdx > 1) {
         delete m_currentData;
-        m_currentData = new QMimeData();
-        m_currentData->setText(m_accumulatedText);
+        if (m_nextData) {
+            m_currentData = m_nextData;
+            m_nextData = nullptr;
+            // Update accumulated text from the new data object to ensure consistency if checked elsewhere
+            if (m_currentData->hasText()) m_accumulatedText = m_currentData->text(); 
+        } else {
+            m_currentData = new QMimeData();
+            m_currentData->setText(m_accumulatedText);
+        }
         m_accumulatedText.clear();
     }
 

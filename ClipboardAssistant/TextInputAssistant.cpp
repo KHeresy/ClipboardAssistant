@@ -106,7 +106,16 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
     else if (position == "Prepend") result = inputText + currentText;
     else result = inputText; // Replace
 
+    // Create a new mime data object preserving original data (like images)
+    QMimeData* newData = new QMimeData();
+    if (data->hasImage()) newData->setImageData(data->imageData());
+    if (data->hasHtml()) newData->setHtml(data->html());
+    if (data->hasUrls()) newData->setUrls(data->urls());
+    newData->setText(result);
+
     callback->onTextData(result, true);
+    callback->onMimeData(newData);
+    delete newData; // PipelineExecutor makes a copy
     callback->onFinished();
 }
 

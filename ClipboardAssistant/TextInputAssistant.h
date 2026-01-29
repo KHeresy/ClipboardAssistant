@@ -17,7 +17,7 @@ public:
     QList<ParameterDefinition> actionParameterDefinitions() const override;
     QList<PluginActionTemplate> actionTemplates() const override;
 
-    DataTypes supportedInputs() const override { return Text; }
+    DataTypes supportedInputs() const override { return Text | Image | Rtf | File; }
     DataTypes supportedOutputs() const override { return Text; }
     bool supportsStreaming() const override { return false; }
 
