@@ -111,6 +111,7 @@ void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actio
     if (data->hasImage()) newData->setImageData(data->imageData());
     if (data->hasHtml()) newData->setHtml(data->html());
     if (data->hasUrls()) newData->setUrls(data->urls());
+    if (data->hasFormat("text/rtf")) newData->setData("text/rtf", data->data("text/rtf"));
     newData->setText(result);
 
     callback->onTextData(result, true);

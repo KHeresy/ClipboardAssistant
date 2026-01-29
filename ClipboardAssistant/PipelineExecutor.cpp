@@ -9,6 +9,7 @@ PipelineExecutor::PipelineExecutor(ClipboardAssistant* parent, const ClipboardAs
     m_currentData->setText(initialData->text());
     if (initialData->hasHtml()) m_currentData->setHtml(initialData->html());
     if (initialData->hasImage()) m_currentData->setImageData(initialData->imageData());
+    if (initialData->hasFormat("text/rtf")) m_currentData->setData("text/rtf", initialData->data("text/rtf"));
 }
 
 PipelineExecutor::~PipelineExecutor() {
@@ -48,6 +49,7 @@ void PipelineExecutor::onMimeData(const QMimeData* data) {
     if (data->hasHtml()) m_nextData->setHtml(data->html());
     if (data->hasImage()) m_nextData->setImageData(data->imageData());
     if (data->hasUrls()) m_nextData->setUrls(data->urls());
+    if (data->hasFormat("text/rtf")) m_nextData->setData("text/rtf", data->data("text/rtf"));
 }
 
 void PipelineExecutor::onError(const QString& msg) {

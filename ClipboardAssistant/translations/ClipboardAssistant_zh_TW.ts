@@ -424,12 +424,12 @@ Error:
 <context>
     <name>PipelineExecutor</name>
     <message>
-        <location filename="../PipelineExecutor.cpp" line="77"/>
+        <location filename="../PipelineExecutor.cpp" line="79"/>
         <source>Pipeline Done.</source>
         <translation>流程執行完畢。</translation>
     </message>
     <message>
-        <location filename="../PipelineExecutor.cpp" line="96"/>
+        <location filename="../PipelineExecutor.cpp" line="98"/>
         <source>Plugin not found: </source>
         <translation>找不到插件：</translation>
     </message>
