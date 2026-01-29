@@ -38,6 +38,10 @@
 #include "ActionSetSettings.h"
 #include "PipelineExecutor.h"
 #include <QDialogButtonBox>
+#include <QTextCursor>
+#include <QTextBlock>
+#include <QTextFragment>
+#include <QTextImageFormat>
 
 void sendCtrlKey(char key) {
     INPUT inputs[10]; ZeroMemory(inputs, sizeof(inputs)); int n = 0;
@@ -73,6 +77,7 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(ne
     connect(ui->spinInputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinInputFontSizeChanged);
     connect(ui->spinOutputFontSize, &QSpinBox::valueChanged, this, &ClipboardAssistant::onSpinOutputFontSizeChanged);
     ui->textClipboard->installEventFilter(this); ui->textOutput->installEventFilter(this);
+    ui->textClipboard->viewport()->installEventFilter(this); ui->textOutput->viewport()->installEventFilter(this);
     
     connect(ui->listActionSets->model(), &QAbstractItemModel::rowsMoved, this, [this](const QModelIndex &, int, int, const QModelIndex &, int) {
         QTimer::singleShot(0, this, [this]() {
@@ -177,7 +182,32 @@ void ClipboardAssistant::saveSettings() {
 }
 
 void ClipboardAssistant::onCheckAlwaysOnTopToggled(bool c) { setWindowFlags(c ? (windowFlags() | Qt::WindowStaysOnTopHint) : (windowFlags() & ~Qt::WindowStaysOnTopHint)); show(); }
-void ClipboardAssistant::onSpinInputFontSizeChanged(int s) { QFont f = ui->textClipboard->font(); f.setPointSize(s); ui->textClipboard->setFont(f); }
+void ClipboardAssistant::onSpinInputFontSizeChanged(int s) {
+    if (!m_currentImage.isNull()) {
+        QTextBlock block = ui->textClipboard->document()->begin();
+        while (block.isValid()) {
+            for (QTextBlock::iterator it = block.begin(); !it.atEnd(); ++it) {
+                QTextFragment fragment = it.fragment();
+                if (fragment.isValid()) {
+                    QTextImageFormat fmt = fragment.charFormat().toImageFormat();
+                    if (fmt.isValid()) {
+                        double scale = s / 10.0;
+                        fmt.setWidth(m_currentImage.width() * scale);
+                        fmt.setHeight(m_currentImage.height() * scale);
+                        QTextCursor helper(block);
+                        helper.setPosition(fragment.position());
+                        helper.setPosition(fragment.position() + fragment.length(), QTextCursor::KeepAnchor);
+                        helper.setCharFormat(fmt);
+                    }
+                }
+            }
+            block = block.next();
+        }
+    }
+    QFont f = ui->textClipboard->font();
+    f.setPointSize(s);
+    ui->textClipboard->setFont(f);
+}
 void ClipboardAssistant::onSpinOutputFontSizeChanged(int s) { QFont f = ui->textOutput->font(); f.setPointSize(s); ui->textOutput->setFont(f); }
 
 bool ClipboardAssistant::eventFilter(QObject *w, QEvent *e) {
@@ -185,8 +215,8 @@ bool ClipboardAssistant::eventFilter(QObject *w, QEvent *e) {
         QWheelEvent *we = static_cast<QWheelEvent*>(e);
         if (we->modifiers() & Qt::ControlModifier) {
             int d = we->angleDelta().y() > 0 ? 1 : -1;
-            if (w == ui->textClipboard) ui->spinInputFontSize->setValue(ui->spinInputFontSize->value() + d);
-            else if (w == ui->textOutput) ui->spinOutputFontSize->setValue(ui->spinOutputFontSize->value() + d);
+            if (w == ui->textClipboard || w == ui->textClipboard->viewport()) ui->spinInputFontSize->setValue(ui->spinInputFontSize->value() + d);
+            else if (w == ui->textOutput || w == ui->textOutput->viewport()) ui->spinOutputFontSize->setValue(ui->spinOutputFontSize->value() + d);
             return true;
         }
     }
