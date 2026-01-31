@@ -4,6 +4,8 @@
   </Configurations>
   <Project Path="ClipboardAssistant/ClipboardAssistant.vcxproj" Id="d55463c8-2f17-4bcb-942e-ae9bbf2f2da4">
     <BuildDependency Project="OpenAIAssistant/OpenAIAssistant.vcxproj" />
+    <BuildDependency Project="ScriptAssistant/ScriptAssistant.vcxproj" />
   </Project>
   <Project Path="OpenAIAssistant/OpenAIAssistant.vcxproj" Id="c1fc2268-1d53-4b74-ab85-23114caaef3d" />
+  <Project Path="ScriptAssistant/ScriptAssistant.vcxproj" Id="e8f90632-6a8d-4e9a-9533-33c6f7779354" />
 </Solution>
