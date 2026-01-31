@@ -62,22 +62,23 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     ui->checkBoxAutoStart->setChecked(bootSettings.contains("ClipboardAssistant"));
 
-    // Setup Plugins
     ui->listPlugins->clear();
     for (const auto& info : plugins) {
         IClipboardPlugin* plugin = info.plugin;
         m_plugins.append(plugin);
-        ui->listPlugins->addItem(plugin->name());
+        QListWidgetItem* item = new QListWidgetItem(plugin->name(), ui->listPlugins);
+        item->setToolTip(tr("ID: %1").arg(plugin->id()));
         
         QWidget* page = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout(page);
         
-        // Header: Name and Version
-        QLabel* title = new QLabel(QString("<b>%1</b> v%2").arg(plugin->name(), plugin->version()));
+        // Header: Name, ID and Version
+        QLabel* title = new QLabel(QString("<b>%1</b> v%3").arg(plugin->name(), plugin->version()));
         layout->addWidget(title);
 
         // Source Info
         QString sourceText = info.isInternal ? tr("<i>Built-in Module</i>") : tr("<i>External Plugin: %1</i>").arg(info.filePath);
+        sourceText += QString("<br />ID: %1").arg(plugin->id());
         QLabel* sourceLabel = new QLabel(sourceText);
         sourceLabel->setStyleSheet("color: gray;");
         layout->addWidget(sourceLabel);

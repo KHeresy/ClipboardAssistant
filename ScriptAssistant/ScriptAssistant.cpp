@@ -3,14 +3,14 @@
 #include <QJSValue>
 #include <QCoreApplication>
 
-ScriptAssistant::ScriptAssistant() {
-    m_engine = new QJSEngine(this);
+ScriptAssistant::ScriptAssistant()
+{
 }
 
-ScriptAssistant::~ScriptAssistant() {}
+QString ScriptAssistant::id() const { return "kheresy.ScriptAssistant"; }
 
-QString ScriptAssistant::name() const { return "Script Assistant"; }
-QString ScriptAssistant::version() const { return "0.1.0"; }
+QString ScriptAssistant::name() const { return tr("Script Assistant"); }
+QString ScriptAssistant::version() const { return "0.2.0"; }
 
 QList<ParameterDefinition> ScriptAssistant::actionParameterDefinitions() const
 {

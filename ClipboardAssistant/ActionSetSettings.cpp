@@ -68,7 +68,14 @@ void ActionSetSettings::updateActionList() {
     int current = ui->listActions->currentRow();
     ui->listActions->clear();
     for (int i = 0; i < m_actions.size(); ++i) {
-        QListWidgetItem* item = new QListWidgetItem(QString("%1. %2").arg(i + 1).arg(m_actions[i].pluginName), ui->listActions);
+        QString displayName = m_actions[i].pluginId;
+        for (const auto& info : m_plugins) {
+            if (info.plugin->id() == m_actions[i].pluginId) {
+                displayName = info.plugin->name();
+                break;
+            }
+        }
+        QListWidgetItem* item = new QListWidgetItem(QString("%1. %2").arg(i + 1).arg(displayName), ui->listActions);
         item->setData(Qt::UserRole, i);
     }
     ui->listActions->setCurrentRow(current);
@@ -82,7 +89,7 @@ void ActionSetSettings::onAddAction() {
         QAction* actNew = sub->addAction(tr("New %1 Action").arg(info.plugin->name()));
         connect(actNew, &QAction::triggered, [this, info]() {
             saveCurrentParams();
-            m_actions.append({info.plugin->name(), {}});
+            m_actions.append({info.plugin->id(), {}});
             updateActionList();
             ui->listActions->setCurrentRow(m_actions.size() - 1);
         });
@@ -93,7 +100,7 @@ void ActionSetSettings::onAddAction() {
                 QAction* act = sub->addAction(tmpl.name);
                 connect(act, &QAction::triggered, [this, info, tmpl]() {
                     saveCurrentParams();
-                    m_actions.append({info.plugin->name(), tmpl.defaultParameters});
+                    m_actions.append({info.plugin->id(), tmpl.defaultParameters});
                     updateActionList();
                     ui->listActions->setCurrentRow(m_actions.size() - 1);
                 });
@@ -174,7 +181,7 @@ void ActionSetSettings::loadParamsForAction(int row) {
     
     PluginActionInstance& action = m_actions[row];
     IClipboardPlugin* plugin = nullptr;
-    for (const auto& info : m_plugins) { if (info.plugin->name() == action.pluginName) { plugin = info.plugin; break; } }
+    for (const auto& info : m_plugins) { if (info.plugin->id() == action.pluginId) { plugin = info.plugin; break; } }
     if (!plugin) return;
 
     QWidget* container = new QWidget();

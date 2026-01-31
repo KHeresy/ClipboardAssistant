@@ -4,102 +4,107 @@
 <context>
     <name>OpenAIAssistant</name>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="36"/>
+        <location filename="../OpenAIAssistant.cpp" line="23"/>
+        <source>OpenAI Assistant</source>
+        <translation>OpenAI 助手</translation>
+    </message>
+    <message>
+        <location filename="../OpenAIAssistant.cpp" line="39"/>
         <source>Default (Not Configured)</source>
         <translation>預設 (尚未設定)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="39"/>
+        <location filename="../OpenAIAssistant.cpp" line="42"/>
         <source>Account</source>
         <translation>帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="39"/>
+        <location filename="../OpenAIAssistant.cpp" line="42"/>
         <source>Select which OpenAI account to use</source>
         <translation>選擇要使用的 OpenAI 帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="40"/>
+        <location filename="../OpenAIAssistant.cpp" line="43"/>
         <source>System Prompt</source>
         <translation>系統提示詞 (System Prompt)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="40"/>
+        <location filename="../OpenAIAssistant.cpp" line="43"/>
         <source>The prompt to send to the AI</source>
         <translation>傳送給 AI 的提示詞</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="41"/>
+        <location filename="../OpenAIAssistant.cpp" line="44"/>
         <source>Prompt Mode</source>
         <translation>提示詞模式</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="41"/>
+        <location filename="../OpenAIAssistant.cpp" line="44"/>
         <source>Choose whether to override or append to account default prompt</source>
         <translation>選擇要覆蓋還是附加到帳戶的預設提示詞</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="42"/>
+        <location filename="../OpenAIAssistant.cpp" line="45"/>
         <source>Max Tokens</source>
         <translation>最大 Token 數</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="42"/>
+        <location filename="../OpenAIAssistant.cpp" line="45"/>
         <source>Maximum tokens to generate (0 for model default)</source>
         <translation>產生的最大 Token 數 (0 代表使用模型預設值)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="43"/>
+        <location filename="../OpenAIAssistant.cpp" line="46"/>
         <source>Override Model</source>
         <translation>覆蓋模型設定</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="43"/>
+        <location filename="../OpenAIAssistant.cpp" line="46"/>
         <source>Leave empty to use account default model</source>
         <translation>留空以使用帳戶預設模型</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="54"/>
+        <location filename="../OpenAIAssistant.cpp" line="57"/>
         <source>Summarize</source>
         <translation>摘要重點</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="54"/>
+        <location filename="../OpenAIAssistant.cpp" line="57"/>
         <source>Prompt</source>
         <translation>提示詞</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="104"/>
+        <location filename="../OpenAIAssistant.cpp" line="107"/>
         <source>Account not found or not configured. Please check Plugin Settings.</source>
         <translation>找不到帳戶或尚未設定，請檢查外掛設定。</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="111"/>
+        <location filename="../OpenAIAssistant.cpp" line="114"/>
         <source>Select OpenAI Account</source>
         <translation>選擇 OpenAI 帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="112"/>
+        <location filename="../OpenAIAssistant.cpp" line="115"/>
         <source>Account &apos;%1&apos; not found. Please select an account:</source>
         <translation>找不到帳戶 &apos;%1&apos;。請選擇一個帳戶：</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="115"/>
+        <location filename="../OpenAIAssistant.cpp" line="118"/>
         <source>No account selected.</source>
         <translation>未選擇帳戶。</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="149"/>
+        <location filename="../OpenAIAssistant.cpp" line="152"/>
         <source>API Key is empty for the selected account.</source>
         <translation>所選帳戶的 API Key 為空。</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="165"/>
+        <location filename="../OpenAIAssistant.cpp" line="168"/>
         <source>No content to process</source>
         <translation>沒有可處理的內容</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="213"/>
+        <location filename="../OpenAIAssistant.cpp" line="216"/>
         <source>
 
 [Warning: Message truncated due to Max Tokens limit.]</source>

@@ -3,11 +3,19 @@
 #include <QMimeData>
 
 RegExAssistant::RegExAssistant(QObject* parent) : QObject(parent)
+
 {
+
 }
 
-QString RegExAssistant::name() const { return "RegEx Assistant"; }
-QString RegExAssistant::version() const { return "0.1.0"; }
+
+
+QString RegExAssistant::id() const { return "kheresy.RegExAssistant"; }
+
+
+
+QString RegExAssistant::name() const { return tr("RegEx Assistant"); }
+QString RegExAssistant::version() const { return "0.2.0"; }
 
 QList<ParameterDefinition> RegExAssistant::actionParameterDefinitions() const
 {

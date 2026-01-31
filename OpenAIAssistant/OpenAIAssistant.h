@@ -14,8 +14,8 @@ class OPENAIASSISTANT_EXPORT OpenAIAssistant : public QObject, public IClipboard
 
 public:
     OpenAIAssistant();
-    ~OpenAIAssistant() override;
-
+    
+    QString id() const override;
     QString name() const override;
     QString version() const override;
     

@@ -31,7 +31,7 @@ struct ParameterDefinition {
 
 // Represents a single configured action instance in a pipeline
 struct PluginActionInstance {
-    QString pluginName;
+    QString pluginId;
     QVariantMap parameters;
 };
 
@@ -61,6 +61,7 @@ class IClipboardPlugin {
 public:
     virtual ~IClipboardPlugin() = default;
     
+    virtual QString id() const = 0;
     virtual QString name() const = 0;
     virtual QString version() const = 0;
     

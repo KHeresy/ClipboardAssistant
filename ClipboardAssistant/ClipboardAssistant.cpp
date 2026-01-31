@@ -169,7 +169,7 @@ void ClipboardAssistant::saveSettings() {
         s.beginWriteArray("Steps");
         for (int j = 0; j < info.actions.size(); ++j) {
             s.setArrayIndex(j);
-            s.setValue("Plugin", info.actions[j].pluginName);
+            s.setValue("Plugin", info.actions[j].pluginId);
             s.beginGroup("Params");
             for (auto it = info.actions[j].parameters.begin(); it != info.actions[j].parameters.end(); ++it) {
                 s.setValue(it.key(), it.value());
@@ -264,7 +264,7 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
 void ClipboardAssistant::onCaptureHotkey() {
     IClipboardPlugin* capturePlugin = nullptr;
     for(auto& pi : m_plugins) {
-        if(pi.plugin->name() == "Screen Capture") { 
+        if(pi.plugin->id() == "kheresy.ScreenCaptureAssistant") { 
             capturePlugin = pi.plugin; 
             break; 
         }
@@ -342,7 +342,7 @@ void ClipboardAssistant::updateButtonsState() {
                 continue;
             }
             IClipboardPlugin* firstPlugin = nullptr;
-            for(auto& pi : m_plugins) if(pi.plugin->name() == it.value().actions[0].pluginName) { firstPlugin = pi.plugin; break; }
+            for(auto& pi : m_plugins) if(pi.plugin->id() == it.value().actions[0].pluginId) { firstPlugin = pi.plugin; break; }
             if (firstPlugin) {
                 bool isEnabled = (firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None;
                 it.value().mainButton->setEnabled(isEnabled);
@@ -454,7 +454,7 @@ void ClipboardAssistant::reloadActionSets() {
             for (int j = 0; j < stepsSize; ++j) {
                 s.setArrayIndex(j);
                 PluginActionInstance step;
-                step.pluginName = s.value("Plugin").toString();
+                step.pluginId = s.value("Plugin").toString();
                 s.beginGroup("Params");
                 for (const QString& key : s.childKeys()) {
                     step.parameters[key] = s.value(key);
@@ -471,7 +471,7 @@ void ClipboardAssistant::reloadActionSets() {
                 ActionSetInfo info;
                 info.actionSetId = QUuid::createUuid().toString();
                 info.name = tmpl.name;
-                info.actions.append({pi.plugin->name(), tmpl.defaultParameters});
+                info.actions.append({pi.plugin->id(), tmpl.defaultParameters});
                 addActionSetWidget(info);
             }
         }
@@ -641,15 +641,15 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         QJsonArray steps = obj["Steps"].toArray();
         for (int i = 0; i < steps.size(); ++i) {
             QJsonObject sObj = steps[i].toObject();
-            QString pluginName = sObj["Plugin"].toString();
+            QString pluginId = sObj["Plugin"].toString();
             
             bool pluginExists = false;
-            for(auto& pi : m_plugins) if(pi.plugin->name() == pluginName) { pluginExists = true; break; }
+            for(auto& pi : m_plugins) if(pi.plugin->id() == pluginId) { pluginExists = true; break; }
             
-            if (!pluginExists) { reports << tr("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, pluginName); continue; }
+            if (!pluginExists) { reports << tr("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, pluginId); continue; }
             
             PluginActionInstance step;
-            step.pluginName = pluginName;
+            step.pluginId = pluginId;
             step.parameters = sObj["Params"].toObject().toVariantMap();
             info.actions.append(step);
         }
@@ -709,7 +709,7 @@ void ClipboardAssistant::onBtnExportAllClicked() {
         QJsonArray steps;
         for (const auto& step : info.actions) {
             QJsonObject sObj;
-            sObj["Plugin"] = step.pluginName;
+            sObj["Plugin"] = step.pluginId;
             sObj["Params"] = QJsonObject::fromVariantMap(step.parameters);
             steps.append(sObj);
         }
@@ -740,7 +740,7 @@ void ClipboardAssistant::onExportActionSet(const QString& asid) {
     QJsonArray steps;
     for (const auto& step : info.actions) {
         QJsonObject sObj;
-        sObj["Plugin"] = step.pluginName;
+        sObj["Plugin"] = step.pluginId;
         sObj["Params"] = QJsonObject::fromVariantMap(step.parameters);
         steps.append(sObj);
     }

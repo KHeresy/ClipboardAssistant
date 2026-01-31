@@ -2,12 +2,14 @@
 #include <QMimeData>
 #include <QDir>
 
-ExternalAppAssistant::ExternalAppAssistant(QObject* parent) : QObject(parent), m_process(nullptr)
+ExternalAppAssistant::ExternalAppAssistant(QObject* parent) : QObject(parent)
 {
 }
 
-QString ExternalAppAssistant::name() const { return "External App Assistant"; }
-QString ExternalAppAssistant::version() const { return "0.1.0"; }
+QString ExternalAppAssistant::id() const { return "kheresy.ExternalAppAssistant"; }
+
+QString ExternalAppAssistant::name() const { return tr("External App Assistant"); }
+QString ExternalAppAssistant::version() const { return "0.2.0"; }
 
 QList<ParameterDefinition> ExternalAppAssistant::actionParameterDefinitions() const
 {

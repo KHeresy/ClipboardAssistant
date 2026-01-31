@@ -10,7 +10,8 @@ class TextInputAssistant : public QObject, public IClipboardPlugin
 
 public:
     TextInputAssistant(QObject* parent = nullptr);
-    
+
+    QString id() const override;
     QString name() const override;
     QString version() const override;
 

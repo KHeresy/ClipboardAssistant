@@ -64,22 +64,22 @@
         <translation>步驟配置</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="82"/>
+        <location filename="../ActionSetSettings.cpp" line="89"/>
         <source>New %1 Action</source>
         <translation>新增 %1 動作</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="200"/>
+        <location filename="../ActionSetSettings.cpp" line="207"/>
         <source>Select File</source>
         <translation>選取檔案</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="200"/>
+        <location filename="../ActionSetSettings.cpp" line="207"/>
         <source>Select Directory</source>
         <translation>選取目錄</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="208"/>
+        <location filename="../ActionSetSettings.cpp" line="215"/>
         <source>%1:</source>
         <translation>%1:</translation>
     </message>
@@ -368,67 +368,72 @@
 <context>
     <name>ExternalAppAssistant</name>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="15"/>
+        <location filename="../ExternalAppAssistant.cpp" line="11"/>
+        <source>External App Assistant</source>
+        <translation>外部程式助手</translation>
+    </message>
+    <message>
+        <location filename="../ExternalAppAssistant.cpp" line="17"/>
         <source>Executable Path</source>
         <translation>執行檔路徑</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="15"/>
+        <location filename="../ExternalAppAssistant.cpp" line="17"/>
         <source>Full path to the .exe file</source>
         <translation>執行檔 (.exe) 的完整路徑</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="16"/>
+        <location filename="../ExternalAppAssistant.cpp" line="18"/>
         <source>Working Directory</source>
         <translation>工作目錄</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="16"/>
+        <location filename="../ExternalAppAssistant.cpp" line="18"/>
         <source>Directory to run the app in</source>
         <translation>程式執行的起始目錄</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="17"/>
+        <location filename="../ExternalAppAssistant.cpp" line="19"/>
         <source>Arguments</source>
         <translation>命令列參數</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="17"/>
+        <location filename="../ExternalAppAssistant.cpp" line="19"/>
         <source>Command line arguments. Use {text} for clipboard content.</source>
         <translation>命令列參數。使用 {text} 代表剪貼簿內容。</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="18"/>
+        <location filename="../ExternalAppAssistant.cpp" line="20"/>
         <source>Capture Output</source>
         <translation>擷取輸出</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="18"/>
+        <location filename="../ExternalAppAssistant.cpp" line="20"/>
         <source>If checked, the app&apos;s output will be displayed as the result.</source>
         <translation>若勾選，程式的標準輸出將會顯示在結果視窗中。</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="25"/>
+        <location filename="../ExternalAppAssistant.cpp" line="27"/>
         <source>Open in Notepad</source>
         <translation>在記事本中開啟</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="41"/>
+        <location filename="../ExternalAppAssistant.cpp" line="43"/>
         <source>No text in clipboard</source>
         <translation>剪貼簿中無文字</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="49"/>
+        <location filename="../ExternalAppAssistant.cpp" line="51"/>
         <source>Executable path is empty</source>
         <translation>執行檔路徑為空</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="63"/>
+        <location filename="../ExternalAppAssistant.cpp" line="65"/>
         <source>External app crashed.</source>
         <translation>外部程式崩潰。</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="69"/>
+        <location filename="../ExternalAppAssistant.cpp" line="71"/>
         <source>
 Error:
 </source>
@@ -437,24 +442,24 @@ Error:
 </translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="78"/>
+        <location filename="../ExternalAppAssistant.cpp" line="80"/>
         <source>Process error: </source>
         <translation>進程錯誤：</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="84"/>
+        <location filename="../ExternalAppAssistant.cpp" line="86"/>
         <source>Failed to start process: </source>
         <translation>無法啟動進程：</translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="87"/>
+        <location filename="../ExternalAppAssistant.cpp" line="89"/>
         <source>Started external application...
 </source>
         <translation>已啟動外部應用程式...
 </translation>
     </message>
     <message>
-        <location filename="../ExternalAppAssistant.cpp" line="91"/>
+        <location filename="../ExternalAppAssistant.cpp" line="93"/>
         <source>External application started.</source>
         <translation>外部應用程式已啟動。</translation>
     </message>
@@ -483,47 +488,52 @@ Error:
 <context>
     <name>RegExAssistant</name>
     <message>
-        <location filename="../RegExAssistant.cpp" line="15"/>
-        <source>RegEx Pattern</source>
-        <translation>正規表達式樣式</translation>
+        <location filename="../RegExAssistant.cpp" line="17"/>
+        <source>RegEx Assistant</source>
+        <translation>正規表示式助手</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="15"/>
+        <location filename="../RegExAssistant.cpp" line="23"/>
         <source>Regular expression to match</source>
         <translation>要比對的正規表達式 (Regular Expression)</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="16"/>
+        <location filename="../RegExAssistant.cpp" line="23"/>
+        <source>RegEx Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../RegExAssistant.cpp" line="24"/>
         <source>Replacement</source>
         <translation>替換文字</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="16"/>
+        <location filename="../RegExAssistant.cpp" line="24"/>
         <source>Replacement text (optional)</source>
         <translation>替換後的文字 (選填)</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="23"/>
+        <location filename="../RegExAssistant.cpp" line="31"/>
         <source>Remove Extra Spaces</source>
         <translation>移除多餘空白</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="24"/>
+        <location filename="../RegExAssistant.cpp" line="32"/>
         <source>Extract Email</source>
         <translation>擷取電子郵件</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="30"/>
+        <location filename="../RegExAssistant.cpp" line="38"/>
         <source>No text in clipboard</source>
         <translation>剪貼簿中無文字</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="37"/>
+        <location filename="../RegExAssistant.cpp" line="45"/>
         <source>Invalid RegEx: </source>
         <translation>無效的正規表達式：</translation>
     </message>
     <message>
-        <location filename="../RegExAssistant.cpp" line="47"/>
+        <location filename="../RegExAssistant.cpp" line="55"/>
         <source>No matches found.</source>
         <translation>找不到匹配項目。</translation>
     </message>
@@ -531,32 +541,37 @@ Error:
 <context>
     <name>ScreenCaptureAssistant</name>
     <message>
-        <location filename="../ScreenCaptureAssistant.cpp" line="122"/>
+        <location filename="../ScreenCaptureAssistant.cpp" line="115"/>
+        <source>Screen Capture</source>
+        <translation>螢幕截取</translation>
+    </message>
+    <message>
+        <location filename="../ScreenCaptureAssistant.cpp" line="126"/>
         <source>Capture Region</source>
         <translation>截取區域</translation>
     </message>
     <message>
-        <location filename="../ScreenCaptureAssistant.cpp" line="161"/>
+        <location filename="../ScreenCaptureAssistant.cpp" line="165"/>
         <source>Primary screen not found.</source>
         <translation>找不到主螢幕。</translation>
     </message>
     <message>
-        <location filename="../ScreenCaptureAssistant.cpp" line="168"/>
+        <location filename="../ScreenCaptureAssistant.cpp" line="172"/>
         <source>Failed to capture screen content.</source>
         <translation>無法截取螢幕內容。</translation>
     </message>
     <message>
-        <location filename="../ScreenCaptureAssistant.cpp" line="180"/>
+        <location filename="../ScreenCaptureAssistant.cpp" line="184"/>
         <source>[Image Captured]</source>
         <translation>[已截取圖片]</translation>
     </message>
     <message>
-        <location filename="../ScreenCaptureAssistant.cpp" line="183"/>
+        <location filename="../ScreenCaptureAssistant.cpp" line="187"/>
         <source>No region selected.</source>
         <translation>未選取區域。</translation>
     </message>
     <message>
-        <location filename="../ScreenCaptureAssistant.cpp" line="186"/>
+        <location filename="../ScreenCaptureAssistant.cpp" line="190"/>
         <source>Capture cancelled.</source>
         <translation>截取已取消。</translation>
     </message>
@@ -574,6 +589,11 @@ Error:
         <translation>英文 (English)</translation>
     </message>
     <message>
+        <location filename="../Setting.cpp" line="70"/>
+        <source>ID: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Setting.cpp" line="80"/>
         <source>&lt;i&gt;Built-in Module&lt;/i&gt;</source>
         <translation>&lt;i&gt;內建模組&lt;/i&gt;</translation>
@@ -584,82 +604,82 @@ Error:
         <translation>&lt;i&gt;外部插件：%1&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="90"/>
+        <location filename="../Setting.cpp" line="91"/>
         <source>Text</source>
         <translation>文字</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="91"/>
+        <location filename="../Setting.cpp" line="92"/>
         <source>Image</source>
         <translation>圖片</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="92"/>
+        <location filename="../Setting.cpp" line="93"/>
         <source>RTF</source>
         <translation>富文字 (RTF)</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="93"/>
+        <location filename="../Setting.cpp" line="94"/>
         <source>File</source>
         <translation>檔案</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="94"/>
+        <location filename="../Setting.cpp" line="95"/>
         <source>None</source>
         <translation>無</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="97"/>
+        <location filename="../Setting.cpp" line="98"/>
         <source>&lt;b&gt;Module Capabilities:&lt;/b&gt;</source>
         <translation>&lt;b&gt;模組能力：&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="100"/>
+        <location filename="../Setting.cpp" line="101"/>
         <source> - Inputs: %1</source>
         <translation> - 輸入：%1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="101"/>
+        <location filename="../Setting.cpp" line="102"/>
         <source> - Outputs: %1</source>
         <translation> - 輸出：%1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="102"/>
+        <location filename="../Setting.cpp" line="103"/>
         <source> - Streaming: %1</source>
         <translation> - 串流支援：%1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="102"/>
+        <location filename="../Setting.cpp" line="103"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="102"/>
+        <location filename="../Setting.cpp" line="103"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="110"/>
+        <location filename="../Setting.cpp" line="111"/>
         <source>&lt;b&gt;Module Configuration:&lt;/b&gt;</source>
         <translation>&lt;b&gt;模組配置：&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="146"/>
+        <location filename="../Setting.cpp" line="147"/>
         <source>%1:</source>
         <translation>%1:</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="156"/>
+        <location filename="../Setting.cpp" line="157"/>
         <source>Advanced Configuration</source>
         <translation>進階設定</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="287"/>
+        <location filename="../Setting.cpp" line="288"/>
         <source>Restart Required</source>
         <translation>需要重啟</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="288"/>
+        <location filename="../Setting.cpp" line="289"/>
         <source>Language changed. Do you want to restart the application now to apply changes?</source>
         <translation>語言已變更。您是否要立即重啟應用程式以套用變更？</translation>
     </message>
@@ -752,52 +772,57 @@ Error:
 <context>
     <name>TextInputAssistant</name>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="41"/>
+        <location filename="../TextInputAssistant.cpp" line="37"/>
+        <source>Text Input Assistant</source>
+        <translation>文字輸入助手</translation>
+    </message>
+    <message>
+        <location filename="../TextInputAssistant.cpp" line="43"/>
         <source>Input Mode</source>
         <translation>輸入模式</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="41"/>
+        <location filename="../TextInputAssistant.cpp" line="43"/>
         <source>Choose how to get the text.</source>
         <translation>選擇獲取文字的方式。</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="42"/>
+        <location filename="../TextInputAssistant.cpp" line="44"/>
         <source>Text Content</source>
         <translation>文字內容</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="42"/>
+        <location filename="../TextInputAssistant.cpp" line="44"/>
         <source>The text to insert (for Static Content mode).</source>
         <translation>要插入的文字 (用於固定內容模式)。</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="43"/>
+        <location filename="../TextInputAssistant.cpp" line="45"/>
         <source>Placement</source>
         <translation>放置位置</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="43"/>
+        <location filename="../TextInputAssistant.cpp" line="45"/>
         <source>Where to put the new text relative to current content.</source>
         <translation>新文字相對於目前內容的插入位置。</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="50"/>
+        <location filename="../TextInputAssistant.cpp" line="52"/>
         <source>Insert Fixed Text</source>
         <translation>插入固定文字</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="51"/>
+        <location filename="../TextInputAssistant.cpp" line="53"/>
         <source>Prompt for Input</source>
         <translation>執行時提示輸入</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="77"/>
+        <location filename="../TextInputAssistant.cpp" line="79"/>
         <source>Manual Input</source>
         <translation>手動輸入</translation>
     </message>
     <message>
-        <location filename="../TextInputAssistant.cpp" line="78"/>
+        <location filename="../TextInputAssistant.cpp" line="80"/>
         <source>Enter text for the pipeline:&lt;br/&gt;(Ctrl+Enter to Finish, Esc to Cancel)</source>
         <translation>請輸入文字：&lt;br/&gt;(Ctrl+Enter 完成，Esc 取消)</translation>
     </message>

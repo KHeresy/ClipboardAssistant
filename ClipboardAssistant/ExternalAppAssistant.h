@@ -12,6 +12,7 @@ class ExternalAppAssistant : public QObject, public IClipboardPlugin
 public:
     ExternalAppAssistant(QObject* parent = nullptr);
     
+    QString id() const override;
     QString name() const override;
     QString version() const override;
 

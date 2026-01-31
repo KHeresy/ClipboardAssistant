@@ -106,10 +106,14 @@ void SnippetOverlay::keyPressEvent(QKeyEvent* event) {
 
 // --- ScreenCaptureAssistant Implementation ---
 
-ScreenCaptureAssistant::ScreenCaptureAssistant(QObject* parent) : QObject(parent) {}
+ScreenCaptureAssistant::ScreenCaptureAssistant(QObject* parent) : QObject(parent)
+{
+}
 
-QString ScreenCaptureAssistant::name() const { return "Screen Capture"; }
-QString ScreenCaptureAssistant::version() const { return "1.0.0"; }
+QString ScreenCaptureAssistant::id() const { return "kheresy.ScreenCaptureAssistant"; }
+
+QString ScreenCaptureAssistant::name() const { return tr("Screen Capture"); }
+QString ScreenCaptureAssistant::version() const { return "0.2.0"; }
 
 QList<ParameterDefinition> ScreenCaptureAssistant::actionParameterDefinitions() const {
     return {

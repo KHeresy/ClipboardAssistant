@@ -13,8 +13,8 @@ class SCRIPTASSISTANT_EXPORT ScriptAssistant : public QObject, public IClipboard
 
 public:
     ScriptAssistant();
-    ~ScriptAssistant() override;
 
+    QString id() const override;
     QString name() const override;
     QString version() const override;
     

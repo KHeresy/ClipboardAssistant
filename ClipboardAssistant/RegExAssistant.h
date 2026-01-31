@@ -10,7 +10,8 @@ class RegExAssistant : public QObject, public IClipboardPlugin
 
 public:
     RegExAssistant(QObject* parent = nullptr);
-    
+
+    QString id() const override;
     QString name() const override;
     QString version() const override;
 

@@ -13,12 +13,15 @@
 #include <QApplication>
 #include <QCoreApplication>
 
-OpenAIAssistant::OpenAIAssistant() {
+OpenAIAssistant::OpenAIAssistant()
+{
     m_networkManager = new QNetworkAccessManager(this);
 }
-OpenAIAssistant::~OpenAIAssistant() {}
-QString OpenAIAssistant::name() const { return "OpenAI Assistant"; }
-QString OpenAIAssistant::version() const { return "0.1.0"; }
+
+QString OpenAIAssistant::id() const { return "kheresy.OpenAIAssistant"; }
+
+QString OpenAIAssistant::name() const { return tr("OpenAI Assistant"); }
+QString OpenAIAssistant::version() const { return "0.2.0"; }
 
 void OpenAIAssistant::showConfiguration(QWidget* parent) {
     OpenAISettings(parent).exec();

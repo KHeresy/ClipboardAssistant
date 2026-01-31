@@ -32,8 +32,10 @@ TextInputAssistant::TextInputAssistant(QObject* parent) : QObject(parent)
 {
 }
 
-QString TextInputAssistant::name() const { return "Text Input Assistant"; }
-QString TextInputAssistant::version() const { return "0.1.0"; }
+QString TextInputAssistant::id() const { return "kheresy.TextInputAssistant"; }
+
+QString TextInputAssistant::name() const { return tr("Text Input Assistant"); }
+QString TextInputAssistant::version() const { return "0.2.0"; }
 
 QList<ParameterDefinition> TextInputAssistant::actionParameterDefinitions() const
 {

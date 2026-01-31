@@ -4,6 +4,11 @@
 <context>
     <name>ScriptAssistant</name>
     <message>
+        <location filename="../ScriptAssistant.cpp" line="12"/>
+        <source>Script Assistant</source>
+        <translation>腳本助手</translation>
+    </message>
+    <message>
         <location filename="../ScriptAssistant.cpp" line="18"/>
         <source>Script</source>
         <translation>腳本程式碼</translation>

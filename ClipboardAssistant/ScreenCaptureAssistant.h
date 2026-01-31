@@ -33,12 +33,11 @@ private:
 // 插件主類別
 class ScreenCaptureAssistant : public QObject, public IClipboardPlugin {
     Q_OBJECT
-    Q_INTERFACES(IClipboardPlugin)
-    Q_PLUGIN_METADATA(IID "org.gemini.ClipboardAssistant.IClipboardPlugin")
-
+        Q_INTERFACES(IClipboardPlugin)
 public:
-    explicit ScreenCaptureAssistant(QObject* parent = nullptr);
+    ScreenCaptureAssistant(QObject* parent = nullptr);
 
+    QString id() const override;
     QString name() const override;
     QString version() const override;
     QList<ParameterDefinition> actionParameterDefinitions() const override;

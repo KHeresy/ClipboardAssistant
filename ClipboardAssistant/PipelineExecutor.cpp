@@ -88,14 +88,14 @@ void PipelineExecutor::executeNext() {
     const auto& action = m_info.actions[m_currentIdx++];
     IClipboardPlugin* plugin = nullptr;
     for (const auto& pi : m_parent->m_plugins) {
-        if (pi.plugin->name() == action.pluginName) {
+        if (pi.plugin->id() == action.pluginId) {
             plugin = pi.plugin;
             break;
         }
     }
     
     if (!plugin) {
-        onError(tr("Plugin not found: ") + action.pluginName);
+        onError(tr("Plugin not found: ") + action.pluginId);
         return;
     }
 
