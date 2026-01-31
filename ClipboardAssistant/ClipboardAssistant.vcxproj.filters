@@ -21,6 +21,9 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{a82870f5-7903-4921-a305-782a0c416915}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="ClipboardAssistant.qrc">
@@ -43,23 +46,23 @@
     <ClCompile Include="Setting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RegExAssistant.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ScreenCaptureAssistant.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ActionSetSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExternalAppAssistant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PipelineExecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ExternalAppAssistant.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="RegExAssistant.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenCaptureAssistant.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
     <ClCompile Include="TextInputAssistant.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -79,23 +82,23 @@
     <QtMoc Include="Setting.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="RegExAssistant.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="ScreenCaptureAssistant.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="ActionSetSettings.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="ExternalAppAssistant.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="PipelineExecutor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="ExternalAppAssistant.h">
+      <Filter>Modules</Filter>
+    </QtMoc>
+    <QtMoc Include="RegExAssistant.h">
+      <Filter>Modules</Filter>
+    </QtMoc>
+    <QtMoc Include="ScreenCaptureAssistant.h">
+      <Filter>Modules</Filter>
+    </QtMoc>
     <QtMoc Include="TextInputAssistant.h">
-      <Filter>Header Files</Filter>
+      <Filter>Modules</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

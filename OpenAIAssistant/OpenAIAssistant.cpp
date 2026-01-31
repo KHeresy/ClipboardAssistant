@@ -54,7 +54,7 @@ QList<ParameterDefinition> OpenAIAssistant::globalParameterDefinitions() const {
 
 QList<ModuleActionTemplate> OpenAIAssistant::actionTemplates() const {
     QList<ModuleActionTemplate> list;
-    list.append({"summarize", QCoreApplication::translate("OpenAIAssistant", "Summarize"), {{QCoreApplication::translate("OpenAIAssistant", "Prompt"), "Summarize text:"}}});
+    list.append({"summarize", QCoreApplication::translate("OpenAIAssistant", "Summarize"), {{"Prompt", "Summarize text:"}}});
     return list;
 }
 

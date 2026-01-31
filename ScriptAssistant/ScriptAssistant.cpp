@@ -17,7 +17,7 @@ QList<ParameterDefinition> ScriptAssistant::actionParameterDefinitions() const
 {
     return {
         {"Script", QCoreApplication::translate("ScriptAssistant", "Script"), ParameterType::Text, 
-         "function process(text) {\n    return text.toUpperCase();\n}", 
+         "function process(text) {\n    return text;\n}", 
          {}, QCoreApplication::translate("ScriptAssistant", "JavaScript code. Must contain a 'process(text)' function.")}
     };
 }
@@ -25,8 +25,8 @@ QList<ParameterDefinition> ScriptAssistant::actionParameterDefinitions() const
 QList<ModuleActionTemplate> ScriptAssistant::actionTemplates() const
 {
     QList<ModuleActionTemplate> list;
-    list.append({"upper", tr("To Upper Case"), {}});
-    list.append({"format_json", tr("Format JSON"), {}});
+    list.append({"upper", tr("To Upper Case"), {{"Script", "function process(text) {\n    return text.toUpperCase();\n}"}}});
+    list.append({"format_json", tr("Format JSON"), {{"Script", "function process(text) {\n    try {\n        var obj = JSON.parse(text);\n        return JSON.stringify(obj, null, 4);\n    } catch (e) {\n        return \"Invalid JSON: \" + e.message;\n    }\n}"}}});
     return list;
 }
 

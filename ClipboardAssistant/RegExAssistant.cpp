@@ -30,6 +30,7 @@ QList<ModuleActionTemplate> RegExAssistant::actionTemplates() const
     QList<ModuleActionTemplate> list;
     list.append({"remove_extra_spaces", tr("Remove Extra Spaces"), {{"Pattern", "\\s+"}, {"Replacement", " "}}});
     list.append({"extract_email", tr("Extract Email"), {{"Pattern", "[\\w\\.-]+@[\\w\\.-]+\\.[\\w]+"}, {"Replacement", ""}}});
+    list.append({"extract_url", tr("Extract URL"), {{"Pattern", "https?://[^\\s]+"}, {"Replacement", ""}}});
     return list;
 }
 

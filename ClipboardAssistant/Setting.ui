@@ -173,7 +173,7 @@
         <item>
          <widget class="QLabel" name="labelAbout">
           <property name="text">
-           <string>Clipboard Assistant v0.1.0&lt;br/&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;GitHub Project Page&lt;/a&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;Developed by Heresy &lt;br/&gt;with Google Gemini-CLI&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="openExternalLinks">
            <bool>true</bool>
@@ -187,9 +187,10 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBoxPlugins">
-         <property name="title">
-          <string>Module Settings</string>
-         </property>     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="title">
+      <string>Module Settings</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QListWidget" name="listPlugins">
         <property name="maximumSize">

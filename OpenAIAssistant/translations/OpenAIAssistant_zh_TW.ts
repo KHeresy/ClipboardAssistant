@@ -69,9 +69,8 @@
         <translation>摘要重點</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="57"/>
         <source>Prompt</source>
-        <translation>提示詞</translation>
+        <translation type="vanished">提示詞</translation>
     </message>
     <message>
         <location filename="../OpenAIAssistant.cpp" line="107"/>

@@ -439,43 +439,31 @@ void ClipboardAssistant::reloadActionSets() {
     
     QSettings s("Heresy", "ClipboardAssistant");
     int size = s.beginReadArray("Actions");
-    if (size > 0) {
-        for (int i = 0; i < size; ++i) {
-            s.setArrayIndex(i);
-            ActionSetInfo info;
-            info.actionSetId = s.value("ActionSetId").toString();
-            if (info.actionSetId.isEmpty()) info.actionSetId = QUuid::createUuid().toString();
-            info.name = s.value("Name").toString();
-            info.customShortcut = QKeySequence(s.value("Shortcut").toString());
-            info.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
-            info.isAutoCopy = s.value("IsAutoCopy", false).toBool();
-            
-            int stepsSize = s.beginReadArray("Steps");
-            for (int j = 0; j < stepsSize; ++j) {
-                s.setArrayIndex(j);
-                ModuleActionInstance step;
-                step.moduleId = s.value("Module").toString();
-                if (step.moduleId.isEmpty()) step.moduleId = s.value("Plugin").toString(); // 相容舊版本
-                s.beginGroup("Params");
-                for (const QString& key : s.childKeys()) {
-                    step.parameters[key] = s.value(key);
-                }
-                s.endGroup();
-                info.actions.append(step);
+    for (int i = 0; i < size; ++i) {
+        s.setArrayIndex(i);
+        ActionSetInfo info;
+        info.actionSetId = s.value("ActionSetId").toString();
+        if (info.actionSetId.isEmpty()) info.actionSetId = QUuid::createUuid().toString();
+        info.name = s.value("Name").toString();
+        info.customShortcut = QKeySequence(s.value("Shortcut").toString());
+        info.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
+        info.isAutoCopy = s.value("IsAutoCopy", false).toBool();
+        
+        int stepsSize = s.beginReadArray("Steps");
+        for (int j = 0; j < stepsSize; ++j) {
+            s.setArrayIndex(j);
+            ModuleActionInstance step;
+            step.moduleId = s.value("Module").toString();
+            if (step.moduleId.isEmpty()) step.moduleId = s.value("Plugin").toString(); // 相容舊版本
+            s.beginGroup("Params");
+            for (const QString& key : s.childKeys()) {
+                step.parameters[key] = s.value(key);
             }
-            s.endArray();
-            addActionSetWidget(info);
+            s.endGroup();
+            info.actions.append(step);
         }
-    } else {
-        for (const auto& mi : m_modules) {
-            for (const auto& tmpl : mi.module->actionTemplates()) {
-                ActionSetInfo info;
-                info.actionSetId = QUuid::createUuid().toString();
-                info.name = tmpl.name;
-                info.actions.append({mi.module->id(), tmpl.defaultParameters});
-                addActionSetWidget(info);
-            }
-        }
+        s.endArray();
+        addActionSetWidget(info);
     }
     s.endArray();
     updateActionSetShortcuts();
