@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>536</width>
-    <height>438</height>
+    <width>567</width>
+    <height>575</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,69 +20,149 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QGroupBox" name="groupBoxGeneral">
-       <property name="title">
-        <string>General</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_general">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_lang">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupBoxGeneral">
+         <property name="title">
+          <string>General</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_general">
           <item>
-           <widget class="QLabel" name="labelLanguage">
+           <layout class="QHBoxLayout" name="horizontalLayout_lang">
+            <item>
+             <widget class="QLabel" name="labelLanguage">
+              <property name="text">
+               <string>Language:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBoxLanguage"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBoxCloseOnEsc">
             <property name="text">
-             <string>Language:</string>
+             <string>Close main window with Esc key</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBoxLanguage"/>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLabel" name="labelHotkey">
+           <widget class="QCheckBox" name="checkBoxAutoStart">
             <property name="text">
-             <string>Global Hotkey:</string>
+             <string>Auto-start on boot</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QKeySequenceEdit" name="keySequenceEdit"/>
+           <widget class="QCheckBox" name="checkBoxStartMinimized">
+            <property name="text">
+             <string>Start minimized to tray</string>
+            </property>
+           </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxAutoCopy">
-          <property name="text">
-           <string>Auto-copy (Send Ctrl+C) when activated via hotkey</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxCloseOnEsc">
-          <property name="text">
-           <string>Close main window with Esc key</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxAutoStart">
-          <property name="text">
-           <string>Auto-start on boot</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxStartMinimized">
-          <property name="text">
-           <string>Start minimized to tray</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Global Hotkey</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QCheckBox" name="checkBoxEnableHotkey">
+              <property name="text">
+               <string>Show main window:</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QKeySequenceEdit" name="keySequenceEdit"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>24</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBoxAutoCopy">
+              <property name="text">
+               <string>Auto-copy (Send Ctrl+C) when activated</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_capture">
+            <item>
+             <widget class="QCheckBox" name="checkBoxEnableCaptureHotkey">
+              <property name="text">
+               <string>Screen Capture:</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QKeySequenceEdit" name="keySequenceEditCapture"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>24</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBoxShowAfterCapture">
+              <property name="text">
+               <string>Show main window after screen capture</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QGroupBox" name="groupBoxAbout">

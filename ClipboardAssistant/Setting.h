@@ -20,19 +20,26 @@ public:
     QKeySequence getHotkey() const;
     void setHotkey(const QKeySequence& sequence);
 
+    bool isHotkeyEnabled() const;
+    void setHotkeyEnabled(bool enabled);
+
+    bool isCaptureHotkeyEnabled() const;
+    void setCaptureHotkeyEnabled(bool enabled);
+
+    QKeySequence getCaptureHotkey() const;
+    void setCaptureHotkey(const QKeySequence& sequence);
+
+    bool isShowAfterCaptureEnabled() const;
+    void setShowAfterCaptureEnabled(bool enabled);
+
     void accept() override;
 
 private slots:
     void onPluginSelected(int row);
 
 private:
-
     Ui::SettingClass *ui;
-
     QList<IClipboardPlugin*> m_plugins;
-
     QMap<IClipboardPlugin*, QMap<QString, QWidget*>> m_paramWidgets;
-
     QMap<IClipboardPlugin*, QList<ParameterDefinition>> m_paramDefs;
-
 };

@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QTimer>
 #include <QThread>
+#include <QSettings>
 
 // --- SnippetOverlay Implementation ---
 
@@ -135,7 +136,7 @@ void ScreenCaptureAssistant::process(const QMimeData* data, const QVariantMap& a
     // 我們需要找到主視窗。通常 parent 是 ClipboardAssistant，或者透過 QApplication 找 topLevelWidgets
     QWidget* mainWindow = nullptr;
     for (QWidget* w : QApplication::topLevelWidgets()) {
-        if (w->objectName() == "ClipboardAssistantClass" && w->isVisible()) {
+        if (w->objectName() == "ClipboardAssistantClass") {
             mainWindow = w;
             break;
         }
@@ -144,19 +145,29 @@ void ScreenCaptureAssistant::process(const QMimeData* data, const QVariantMap& a
     bool wasVisible = false;
     if (mainWindow) {
         wasVisible = mainWindow->isVisible();
-        mainWindow->hide();
-        // 強制處理事件循環以確保視窗真正隱藏
-        QApplication::processEvents(); 
-        // 稍微等待一下，避免視窗淡出特效還在
-        QThread::msleep(250); 
+        if (wasVisible) {
+            mainWindow->hide();
+            // 強制處理事件循環以確保視窗真正隱藏
+            QApplication::processEvents(); 
+            // 稍微等待一下，避免視窗淡出特效還在
+            QThread::msleep(250); 
+        }
     }
 
     // 2. 抓取全螢幕
     QScreen *screen = QGuiApplication::primaryScreen();
-    // 抓取所有螢幕組合的大畫面
-    // grabWindow(0) 在某些多螢幕配置下可能只抓主螢幕，這裡我們遍歷所有螢幕並拼接
-    // 簡單起見，我們先用 grabWindow(0) 針對虛擬桌面，這通常在 Windows 上有效
+    if (!screen) {
+        if (mainWindow && wasVisible) mainWindow->show();
+        callback->onError(tr("Primary screen not found."));
+        return;
+    }
+
     QPixmap fullScreenScreenshot = screen->grabWindow(0);
+    if (fullScreenScreenshot.isNull()) {
+        if (mainWindow && wasVisible) mainWindow->show();
+        callback->onError(tr("Failed to capture screen content."));
+        return;
+    }
 
     // 3. 顯示選取介面 (Blocking Call)
     SnippetOverlay overlay(fullScreenScreenshot);
@@ -175,8 +186,11 @@ void ScreenCaptureAssistant::process(const QMimeData* data, const QVariantMap& a
         callback->onError(tr("Capture cancelled."));
     }
 
-    // 4. 恢復主視窗 (如果原本是顯示的)
-    if (mainWindow && wasVisible) {
+    // 4. 恢復主視窗
+    QSettings s("Heresy", "ClipboardAssistant");
+    bool showAfter = s.value("ShowAfterCapture", false).toBool();
+
+    if (mainWindow && (wasVisible || showAfter)) {
         mainWindow->show();
         // 確保視窗回到前台
         mainWindow->activateWindow();

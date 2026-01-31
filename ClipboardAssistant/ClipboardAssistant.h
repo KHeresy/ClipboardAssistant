@@ -24,6 +24,9 @@ public:
     ClipboardAssistant(QWidget *parent = nullptr);
     ~ClipboardAssistant();
 
+    static const int HOTKEY_ID_MAIN = 100;
+    static const int HOTKEY_ID_CAPTURE = 99;
+
 protected:
     void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -59,10 +62,11 @@ private:
     void clearLayout(QLayout* layout);
     void updateButtonsState();
     void setupTrayIcon();
-    void registerGlobalHotkey();
+    bool registerGlobalHotkey();
     void unregisterGlobalHotkey();
-    void registerActionSetHotkey(int id, const QKeySequence& ks);
+    bool registerActionSetHotkey(int id, const QKeySequence& ks);
     void processHtmlImages(QString html);
+    void onCaptureHotkey(); // Helper for screen capture
 
     Ui::ClipboardAssistantClass *ui;
     QSystemTrayIcon* m_trayIcon;
@@ -113,17 +117,9 @@ private:
         bool m_firstChunk = true;
     };
     friend class PluginCallback;
+    friend class PipelineExecutor;
     
-        friend class PipelineExecutor;
-    
-        
-    
-        // For callback access
-    
-        void handlePluginOutput(const QString& text, bool append, bool isFinal);
-    
-        void handlePluginError(const QString& msg);
-    
-    };
-    
-    
+    // For callback access
+    void handlePluginOutput(const QString& text, bool append, bool isFinal);
+    void handlePluginError(const QString& msg);
+};

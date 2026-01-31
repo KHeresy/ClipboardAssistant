@@ -25,9 +25,23 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     QSettings settings("Heresy", "ClipboardAssistant");
     QString hotkeyStr = settings.value("GlobalHotkey", "Ctrl+Alt+V").toString();
     ui->keySequenceEdit->setKeySequence(QKeySequence(hotkeyStr));
+    ui->checkBoxEnableHotkey->setChecked(settings.value("EnableGlobalHotkey", true).toBool());
+    
+    QString captureHotkeyStr = settings.value("CaptureHotkey", "Ctrl+Alt+S").toString();
+    ui->keySequenceEditCapture->setKeySequence(QKeySequence(captureHotkeyStr));
+    ui->checkBoxEnableCaptureHotkey->setChecked(settings.value("EnableCaptureHotkey", true).toBool());
+
     ui->checkBoxAutoCopy->setChecked(settings.value("AutoCopy", false).toBool());
     ui->checkBoxCloseOnEsc->setChecked(settings.value("CloseOnEsc", false).toBool());
     ui->checkBoxStartMinimized->setChecked(settings.value("StartMinimized", false).toBool());
+    ui->checkBoxShowAfterCapture->setChecked(settings.value("ShowAfterCapture", false).toBool());
+
+    // UI Logic: Enable/Disable dependent options
+    connect(ui->checkBoxEnableHotkey, &QCheckBox::toggled, ui->checkBoxAutoCopy, &QWidget::setEnabled);
+    ui->checkBoxAutoCopy->setEnabled(ui->checkBoxEnableHotkey->isChecked());
+
+    connect(ui->checkBoxEnableCaptureHotkey, &QCheckBox::toggled, ui->checkBoxShowAfterCapture, &QWidget::setEnabled);
+    ui->checkBoxShowAfterCapture->setEnabled(ui->checkBoxEnableCaptureHotkey->isChecked());
 
     // Language selection
     ui->comboBoxLanguage->addItem(tr("System Default"), "");
@@ -172,6 +186,38 @@ void Setting::setHotkey(const QKeySequence& sequence)
     ui->keySequenceEdit->setKeySequence(sequence);
 }
 
+bool Setting::isHotkeyEnabled() const {
+    return ui->checkBoxEnableHotkey->isChecked();
+}
+
+void Setting::setHotkeyEnabled(bool enabled) {
+    ui->checkBoxEnableHotkey->setChecked(enabled);
+}
+
+bool Setting::isCaptureHotkeyEnabled() const {
+    return ui->checkBoxEnableCaptureHotkey->isChecked();
+}
+
+void Setting::setCaptureHotkeyEnabled(bool enabled) {
+    ui->checkBoxEnableCaptureHotkey->setChecked(enabled);
+}
+
+QKeySequence Setting::getCaptureHotkey() const {
+    return ui->keySequenceEditCapture->keySequence();
+}
+
+void Setting::setCaptureHotkey(const QKeySequence& sequence) {
+    ui->keySequenceEditCapture->setKeySequence(sequence);
+}
+
+bool Setting::isShowAfterCaptureEnabled() const {
+    return ui->checkBoxShowAfterCapture->isChecked();
+}
+
+void Setting::setShowAfterCaptureEnabled(bool enabled) {
+    ui->checkBoxShowAfterCapture->setChecked(enabled);
+}
+
 void Setting::onPluginSelected(int row)
 {
     if (row >= 0 && row < ui->stackedWidgetPlugins->count() - 1) {
@@ -187,16 +233,21 @@ void Setting::accept()
     QString newLang = ui->comboBoxLanguage->currentData().toString();
 
     settings.setValue("GlobalHotkey", ui->keySequenceEdit->keySequence().toString());
+    settings.setValue("EnableGlobalHotkey", ui->checkBoxEnableHotkey->isChecked());
+    settings.setValue("CaptureHotkey", ui->keySequenceEditCapture->keySequence().toString());
+    settings.setValue("EnableCaptureHotkey", ui->checkBoxEnableCaptureHotkey->isChecked());
+    
     settings.setValue("AutoCopy", ui->checkBoxAutoCopy->isChecked());
     settings.setValue("CloseOnEsc", ui->checkBoxCloseOnEsc->isChecked());
     settings.setValue("StartMinimized", ui->checkBoxStartMinimized->isChecked());
+    settings.setValue("ShowAfterCapture", ui->checkBoxShowAfterCapture->isChecked());
     settings.setValue("Language", newLang);
 
     // Save Auto-start
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if (ui->checkBoxAutoStart->isChecked()) {
         QString appPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-        bootSettings.setValue("ClipboardAssistant", "\"" + appPath + "\"");
+        bootSettings.setValue("ClipboardAssistant", """ + appPath + """);
     } else {
         bootSettings.remove("ClipboardAssistant");
     }

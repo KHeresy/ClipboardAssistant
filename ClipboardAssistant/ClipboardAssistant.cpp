@@ -59,11 +59,9 @@ void sendCtrlC() { sendCtrlKey('C'); }
 void sendCtrlV() { sendCtrlKey('V'); }
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(new Ui::ClipboardAssistantClass) {
+    QApplication::setQuitOnLastWindowClosed(false);
     ui->setupUi(this);
     ui->textOutput->setReadOnly(true);
-    //QFont defaultFont("Segoe UI", 10);
-    //ui->textClipboard->setFont(defaultFont);
-    //ui->textOutput->setFont(defaultFont);
     setWindowIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
     m_networkManager = new QNetworkAccessManager(this);
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &ClipboardAssistant::onClipboardChanged);
@@ -229,30 +227,89 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
     MSG* msg = static_cast<MSG*>(m);
     if (msg->message == WM_HOTKEY) {
         int id = (int)msg->wParam;
-        if (id == 100 || m_hotkeyMap.contains(id)) {
-            auto act = [this, id]() {
-                show(); activateWindow();
-                if (m_hotkeyMap.contains(id)) {
-                    ActionSetInfo info = m_hotkeyMap[id];
-                    if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(nullptr, info.actionSetId);
-                }
-            };
-            
+        if (id == HOTKEY_ID_MAIN) {
             bool shouldAutoCopy = false;
-            if (id == 100) {
-                QSettings s("Heresy", "ClipboardAssistant");
-                shouldAutoCopy = s.value("AutoCopy", false).toBool();
-            } else {
-                shouldAutoCopy = m_hotkeyMap[id].isAutoCopy;
-            }
+            QSettings s("Heresy", "ClipboardAssistant");
+            shouldAutoCopy = s.value("AutoCopy", false).toBool();
+
+            auto act = [this]() {
+                show(); 
+                activateWindow();
+            };
 
             if (shouldAutoCopy) {
+                QTimer::singleShot(50, [this, act]() { sendCtrlC(); QTimer::singleShot(300, this, [act]() { act(); }); });
+            } else act();
+            return true;
+        } else if (id == HOTKEY_ID_CAPTURE) {
+            onCaptureHotkey();
+            return true;
+        } else if (m_hotkeyMap.contains(id)) {
+            ActionSetInfo info = m_hotkeyMap[id];
+            
+            auto act = [this, info]() {
+                show(); activateWindow();
+                if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(nullptr, info.actionSetId);
+            };
+
+            if (info.isAutoCopy) {
                 QTimer::singleShot(50, [this, act]() { sendCtrlC(); QTimer::singleShot(300, this, [act]() { act(); }); });
             } else act();
             return true;
         }
     }
     return false;
+}
+
+void ClipboardAssistant::onCaptureHotkey() {
+    IClipboardPlugin* capturePlugin = nullptr;
+    for(auto& pi : m_plugins) {
+        if(pi.plugin->name() == "Screen Capture") { 
+            capturePlugin = pi.plugin; 
+            break; 
+        }
+    }
+
+    if (!capturePlugin) {
+        QMessageBox::warning(this, tr("Error"), tr("Screen Capture Assistant plugin not found."));
+        return;
+    }
+
+    // We don't need input data for capture
+    QMimeData* dummyInput = new QMimeData();
+    
+    // Define a simple callback helper class
+    class CaptureCallback : public IPluginCallback {
+    public:
+        void onTextData(const QString&, bool) override {}
+        void onMimeData(const QMimeData* data) override {
+            if (data->hasImage()) {
+                QImage img = qvariant_cast<QImage>(data->imageData());
+                QTimer::singleShot(0, [img]() {
+                    QMimeData* clone = new QMimeData();
+                    clone->setImageData(img);
+                    QApplication::clipboard()->setMimeData(clone);
+                });
+            } else if (data->hasText()) {
+                QString txt = data->text();
+                QTimer::singleShot(0, [txt]() {
+                    QMimeData* clone = new QMimeData();
+                    clone->setText(txt);
+                    QApplication::clipboard()->setMimeData(clone);
+                });
+            }
+        }
+        void onError(const QString& msg) override {
+            QTimer::singleShot(0, []() { MessageBeep(MB_ICONHAND); });
+        }
+        void onFinished() override { 
+            // Delay deletion to ensure stack is unwound and no pending events reference this
+            QTimer::singleShot(0, [this]() { delete this; });
+        }
+    };
+
+    capturePlugin->process(dummyInput, {}, {}, new CaptureCallback());
+    delete dummyInput;
 }
 
 void ClipboardAssistant::onClipboardChanged() {
@@ -716,21 +773,50 @@ void ClipboardAssistant::setupTrayIcon() {
     m_trayMenu->addAction(tr("Quit"), qApp, &QCoreApplication::quit);
     m_trayIcon->setContextMenu(m_trayMenu); m_trayIcon->show(); connect(m_trayIcon, &QSystemTrayIcon::activated, this, &ClipboardAssistant::onTrayIconActivated);
 }
-void ClipboardAssistant::registerGlobalHotkey() {
-    QSettings s("Heresy", "ClipboardAssistant"); registerActionSetHotkey(100, QKeySequence(s.value("GlobalHotkey", "Ctrl+Alt+V").toString()));
+bool ClipboardAssistant::registerGlobalHotkey() {
+    QSettings s("Heresy", "ClipboardAssistant"); 
+    QStringList failedHotkeys;
+
+    if (s.value("EnableGlobalHotkey", true).toBool()) {
+        QKeySequence ks(s.value("GlobalHotkey", "Ctrl+Alt+V").toString());
+        if (!registerActionSetHotkey(HOTKEY_ID_MAIN, ks)) {
+            failedHotkeys << tr("Main Window: %1").arg(ks.toString());
+        }
+    }
+    
+    if (s.value("EnableCaptureHotkey", true).toBool()) {
+        QKeySequence ks(s.value("CaptureHotkey", "Ctrl+Alt+S").toString());
+        if (!registerActionSetHotkey(HOTKEY_ID_CAPTURE, ks)) {
+            failedHotkeys << tr("Screen Capture: %1").arg(ks.toString());
+        }
+    }
+
     m_hotkeyMap.clear(); m_nextHotkeyId = 101;
     for (int i = 0; i < ui->listActionSets->count(); ++i) {
         QString uid = ui->listActionSets->item(i)->data(Qt::UserRole).toString();
         if (!m_actionSetMap.contains(uid)) continue;
         ActionSetInfo& info = m_actionSetMap[uid];
         if (!info.customShortcut.isEmpty() && info.isCustomShortcutGlobal) {
-            int id = m_nextHotkeyId++; registerActionSetHotkey(id, info.customShortcut);
+            int id = m_nextHotkeyId++; 
+            if (!registerActionSetHotkey(id, info.customShortcut)) {
+                failedHotkeys << tr("Action '%1': %2").arg(info.name, info.customShortcut.toString());
+            }
             m_hotkeyMap.insert(id, info);
         }
     }
+
+    if (!failedHotkeys.isEmpty()) {
+        m_trayIcon->showMessage(tr("Hotkey Conflict"), 
+            tr("Failed to register the following global hotkeys (already in use):\n%1").arg(failedHotkeys.join("\n")),
+            QSystemTrayIcon::Warning, 5000);
+        return false;
+    }
+    return true;
 }
-void ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks) {
-    if (ks.isEmpty()) return; QString ksStr = ks.toString(QKeySequence::PortableText); UINT m = 0;
+
+bool ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks) {
+    if (ks.isEmpty()) return true; 
+    QString ksStr = ks.toString(QKeySequence::PortableText); UINT m = 0;
     if (ksStr.contains("Ctrl")) m |= MOD_CONTROL; if (ksStr.contains("Alt")) m |= MOD_ALT; if (ksStr.contains("Shift")) m |= MOD_SHIFT; if (ksStr.contains("Meta")) m |= MOD_WIN;
     int k = 0; QStringList p = ksStr.split("+"); if (!p.isEmpty()) { QString kp = p.last();
         if (kp.length() == 1) k = kp.at(0).toUpper().unicode();
@@ -738,7 +824,10 @@ void ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks)
         else if (kp == "Ins") k = VK_INSERT; else if (kp == "Del") k = VK_DELETE; else if (kp == "Home") k = VK_HOME; else if (kp == "End") k = VK_END;
         else if (kp == "Space") k = VK_SPACE; else if (kp == "Tab") k = VK_TAB;
     }
-    if (k != 0) RegisterHotKey((HWND)winId(), id, m, k);
+    if (k != 0) {
+        return RegisterHotKey((HWND)winId(), id, m, k);
+    }
+    return false;
 }
 void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = 100; i < m_nextHotkeyId + 20; ++i) UnregisterHotKey((HWND)winId(), i); }
 bool isLikelyMarkdown(const QString& text) {
