@@ -3,7 +3,7 @@
 #include <QDialog>
 #include <QKeySequence>
 #include "ui_Setting.h"
-#include "../Common/IClipboardPlugin.h"
+#include "../Common/IClipboardModule.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class SettingClass; };
@@ -14,7 +14,7 @@ class Setting : public QDialog
     Q_OBJECT
 
 public:
-    Setting(const QList<struct PluginInfo>& plugins, QWidget *parent = nullptr);
+    explicit Setting(const QList<struct ModuleInfo>& modules, QWidget *parent = nullptr);
     ~Setting();
 
     QKeySequence getHotkey() const;
@@ -32,14 +32,13 @@ public:
     bool isShowAfterCaptureEnabled() const;
     void setShowAfterCaptureEnabled(bool enabled);
 
-    void accept() override;
-
 private slots:
-    void onPluginSelected(int row);
+    void onModuleSelected(int row);
+    void accept() override;
 
 private:
     Ui::SettingClass *ui;
-    QList<IClipboardPlugin*> m_plugins;
-    QMap<IClipboardPlugin*, QMap<QString, QWidget*>> m_paramWidgets;
-    QMap<IClipboardPlugin*, QList<ParameterDefinition>> m_paramDefs;
+    QList<IClipboardModule*> m_modules;
+    QMap<IClipboardModule*, QMap<QString, QWidget*>> m_paramWidgets;
+    QMap<IClipboardModule*, QList<ParameterDefinition>> m_paramDefs;
 };

@@ -121,21 +121,21 @@ QList<ParameterDefinition> ScreenCaptureAssistant::actionParameterDefinitions() 
     };
 }
 
-QList<PluginActionTemplate> ScreenCaptureAssistant::actionTemplates() const {
+QList<ModuleActionTemplate> ScreenCaptureAssistant::actionTemplates() const {
     return {
         {"capture_region", tr("Capture Region"), {}}
     };
 }
 
-IClipboardPlugin::DataTypes ScreenCaptureAssistant::supportedInputs() const {
-    return IClipboardPlugin::None | IClipboardPlugin::Text | IClipboardPlugin::Image; // 其實不需要 Input，但為了流程相容可以接受任何東西然後忽略
+IClipboardModule::DataTypes ScreenCaptureAssistant::supportedInputs() const {
+    return IClipboardModule::None | IClipboardModule::Text | IClipboardModule::Image; // 其實不需要 Input，但為了流程相容可以接受任何東西然後忽略
 }
 
-IClipboardPlugin::DataTypes ScreenCaptureAssistant::supportedOutputs() const {
-    return IClipboardPlugin::Image;
+IClipboardModule::DataTypes ScreenCaptureAssistant::supportedOutputs() const {
+    return IClipboardModule::Image;
 }
 
-void ScreenCaptureAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) {
+void ScreenCaptureAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback) {
     // 1. 隱藏主視窗
     // 我們需要找到主視窗。通常 parent 是 ClipboardAssistant，或者透過 QApplication 找 topLevelWidgets
     QWidget* mainWindow = nullptr;

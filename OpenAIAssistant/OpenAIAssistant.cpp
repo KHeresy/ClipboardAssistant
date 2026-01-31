@@ -52,8 +52,8 @@ QList<ParameterDefinition> OpenAIAssistant::globalParameterDefinitions() const {
     return {};
 }
 
-QList<PluginActionTemplate> OpenAIAssistant::actionTemplates() const {
-    QList<PluginActionTemplate> list;
+QList<ModuleActionTemplate> OpenAIAssistant::actionTemplates() const {
+    QList<ModuleActionTemplate> list;
     list.append({"summarize", QCoreApplication::translate("OpenAIAssistant", "Summarize"), {{QCoreApplication::translate("OpenAIAssistant", "Prompt"), "Summarize text:"}}});
     return list;
 }
@@ -67,7 +67,7 @@ void OpenAIAssistant::abort() {
     }
 }
 
-void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) {
+void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback) {
     abort();
 
     QString targetAccount = actionParams.value("Account").toString();
@@ -104,7 +104,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         // Account fallback logic
         QString selectedAccountName;
         if (accountNames.isEmpty()) {
-            callback->onError(QCoreApplication::translate("OpenAIAssistant", "Account not found or not configured. Please check Plugin Settings."));
+            callback->onError(QCoreApplication::translate("OpenAIAssistant", "Account not found or not configured. Please check Module Settings."));
             return;
         } else if (accountNames.size() == 1) {
             selectedAccountName = accountNames.first();

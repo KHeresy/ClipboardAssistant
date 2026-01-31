@@ -4,13 +4,13 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include "../Common/IClipboardPlugin.h"
+#include "../Common/IClipboardModule.h"
 
-class OPENAIASSISTANT_EXPORT OpenAIAssistant : public QObject, public IClipboardPlugin
+class OPENAIASSISTANT_EXPORT OpenAIAssistant : public QObject, public IClipboardModule
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.gemini.ClipboardAssistant.IClipboardPlugin")
-    Q_INTERFACES(IClipboardPlugin)
+    Q_PLUGIN_METADATA(IID "org.gemini.ClipboardAssistant.IClipboardModule")
+    Q_INTERFACES(IClipboardModule)
 
 public:
     OpenAIAssistant();
@@ -21,14 +21,14 @@ public:
     
     QList<ParameterDefinition> actionParameterDefinitions() const override;
     QList<ParameterDefinition> globalParameterDefinitions() const override;
-    QList<PluginActionTemplate> actionTemplates() const override;
+    QList<ModuleActionTemplate> actionTemplates() const override;
 
     DataTypes supportedInputs() const override { return Text | Image | File; }
     DataTypes supportedOutputs() const override { return Text; }
     bool supportsStreaming() const override { return true; }
     void abort() override;
 
-    void process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) override;
+    void process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback) override;
 
     bool hasConfiguration() const override { return true; }
     void showConfiguration(QWidget* parent) override;

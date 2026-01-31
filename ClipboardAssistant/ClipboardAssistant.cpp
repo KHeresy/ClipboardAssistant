@@ -86,7 +86,7 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(ne
         });
     });
 
-    loadPlugins(); reloadActionSets(); setupTrayIcon(); loadSettings();
+    loadModules(); reloadActionSets(); setupTrayIcon(); loadSettings();
     if (ui->splitter_horizontal->sizes().isEmpty() || ui->splitter_horizontal->sizes().at(0) == 0) {
         int w = width() / 2; ui->splitter_horizontal->setSizes({w, w});
     }
@@ -169,7 +169,7 @@ void ClipboardAssistant::saveSettings() {
         s.beginWriteArray("Steps");
         for (int j = 0; j < info.actions.size(); ++j) {
             s.setArrayIndex(j);
-            s.setValue("Plugin", info.actions[j].pluginId);
+            s.setValue("Module", info.actions[j].moduleId);
             s.beginGroup("Params");
             for (auto it = info.actions[j].parameters.begin(); it != info.actions[j].parameters.end(); ++it) {
                 s.setValue(it.key(), it.value());
@@ -262,16 +262,16 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
 }
 
 void ClipboardAssistant::onCaptureHotkey() {
-    IClipboardPlugin* capturePlugin = nullptr;
-    for(auto& pi : m_plugins) {
-        if(pi.plugin->id() == "kheresy.ScreenCaptureAssistant") { 
-            capturePlugin = pi.plugin; 
+    IClipboardModule* captureModule = nullptr;
+    for(auto& mi : m_modules) {
+        if(mi.module->id() == "kheresy.ScreenCaptureAssistant") { 
+            captureModule = mi.module; 
             break; 
         }
     }
 
-    if (!capturePlugin) {
-        QMessageBox::warning(this, tr("Error"), tr("Screen Capture Assistant plugin not found."));
+    if (!captureModule) {
+        QMessageBox::warning(this, tr("Error"), tr("Screen Capture Assistant module not found."));
         return;
     }
 
@@ -279,7 +279,7 @@ void ClipboardAssistant::onCaptureHotkey() {
     QMimeData* dummyInput = new QMimeData();
     
     // Define a simple callback helper class
-    class CaptureCallback : public IPluginCallback {
+    class CaptureCallback : public IModuleCallback {
     public:
         void onTextData(const QString&, bool) override {}
         void onMimeData(const QMimeData* data) override {
@@ -308,7 +308,7 @@ void ClipboardAssistant::onCaptureHotkey() {
         }
     };
 
-    capturePlugin->process(dummyInput, {}, {}, new CaptureCallback());
+    captureModule->process(dummyInput, {}, {}, new CaptureCallback());
     delete dummyInput;
 }
 
@@ -328,12 +328,12 @@ void ClipboardAssistant::onClipboardChanged() {
 
 void ClipboardAssistant::updateButtonsState() {
     const QMimeData* d = QApplication::clipboard()->mimeData();
-    IClipboardPlugin::DataTypes cT = IClipboardPlugin::None;
-    if (d->hasText() || d->hasHtml()) cT |= IClipboardPlugin::Text;
-    if (d->hasImage()) cT |= IClipboardPlugin::Image;
+    IClipboardModule::DataTypes cT = IClipboardModule::None;
+    if (d->hasText() || d->hasHtml()) cT |= IClipboardModule::Text;
+    if (d->hasImage()) cT |= IClipboardModule::Image;
     if (d->hasUrls()) {
-        cT |= IClipboardPlugin::File; QMimeDatabase db;
-        for (const QUrl& u : d->urls()) if (db.mimeTypeForFile(u.toLocalFile()).name().startsWith("image/")) { cT |= IClipboardPlugin::Image; break; }
+        cT |= IClipboardModule::File; QMimeDatabase db;
+        for (const QUrl& u : d->urls()) if (db.mimeTypeForFile(u.toLocalFile()).name().startsWith("image/")) { cT |= IClipboardModule::Image; break; }
     }
     for (auto it = m_actionSetMap.begin(); it != m_actionSetMap.end(); ++it) {
         if (it.value().mainButton) {
@@ -341,10 +341,10 @@ void ClipboardAssistant::updateButtonsState() {
                 it.value().mainButton->setEnabled(false);
                 continue;
             }
-            IClipboardPlugin* firstPlugin = nullptr;
-            for(auto& pi : m_plugins) if(pi.plugin->id() == it.value().actions[0].pluginId) { firstPlugin = pi.plugin; break; }
-            if (firstPlugin) {
-                bool isEnabled = (firstPlugin->supportedInputs() & cT) != IClipboardPlugin::None;
+            IClipboardModule* firstModule = nullptr;
+            for(auto& mi : m_modules) if(mi.module->id() == it.value().actions[0].moduleId) { firstModule = mi.module; break; }
+            if (firstModule) {
+                bool isEnabled = (firstModule->supportedInputs() & cT) != IClipboardModule::None;
                 it.value().mainButton->setEnabled(isEnabled);
                 
                 QGraphicsOpacityEffect* effect = qobject_cast<QGraphicsOpacityEffect*>(it.value().mainButton->graphicsEffect());
@@ -396,36 +396,36 @@ void ClipboardAssistant::onImageDownloaded(QNetworkReply* rep, QString u) {
     m_pendingDownloads.remove(u); rep->deleteLater();
 }
 
-void ClipboardAssistant::loadPlugins() {
-    m_plugins.clear(); 
+void ClipboardAssistant::loadModules() {
+    m_modules.clear(); 
     m_regexAssistant = new RegExAssistant(this); 
-    m_plugins.append({m_regexAssistant, true, "Built-in"});
+    m_modules.append({m_regexAssistant, true, "Built-in"});
     m_externalAppAssistant = new ExternalAppAssistant(this);
-    m_plugins.append({m_externalAppAssistant, true, "Built-in"});
+    m_modules.append({m_externalAppAssistant, true, "Built-in"});
     m_textInputAssistant = new TextInputAssistant(this);
-    m_plugins.append({ m_textInputAssistant, true, "" });
+    m_modules.append({ m_textInputAssistant, true, "" });
 
-    m_plugins.append({ new ScreenCaptureAssistant(this), true, "" });
+    m_modules.append({ new ScreenCaptureAssistant(this), true, "" });
 
-    // Load external plugins (DLLs)
+    // Load external modules (DLLs)
     QDir dir(QCoreApplication::applicationDirPath());
     for (const QString& f : dir.entryList({"*.dll"}, QDir::Files)) {
         QPluginLoader l(dir.absoluteFilePath(f)); 
         QObject* p = l.instance();
         if (p) { 
-            IClipboardPlugin* iP = qobject_cast<IClipboardPlugin*>(p); 
-            if (iP) m_plugins.append({iP, false, f}); 
+            IClipboardModule* iM = qobject_cast<IClipboardModule*>(p); 
+            if (iM) m_modules.append({iM, false, f}); 
         }
     }
 
     QSettings s("Heresy", "ClipboardAssistant");
-    for (const auto& info : m_plugins) {
-        s.beginGroup("Plugins/" + info.plugin->name() + "/Global");
+    for (const auto& info : m_modules) {
+        s.beginGroup("Modules/" + info.module->name() + "/Global");
         QVariantMap globalParams;
-        for (const auto& def : info.plugin->globalParameterDefinitions()) {
+        for (const auto& def : info.module->globalParameterDefinitions()) {
             globalParams[def.id] = s.value(def.id, def.defaultValue);
         }
-        m_globalSettingsMap[info.plugin->name()] = globalParams;
+        m_globalSettingsMap[info.module->name()] = globalParams;
         s.endGroup();
     }
 }
@@ -453,8 +453,9 @@ void ClipboardAssistant::reloadActionSets() {
             int stepsSize = s.beginReadArray("Steps");
             for (int j = 0; j < stepsSize; ++j) {
                 s.setArrayIndex(j);
-                PluginActionInstance step;
-                step.pluginId = s.value("Plugin").toString();
+                ModuleActionInstance step;
+                step.moduleId = s.value("Module").toString();
+                if (step.moduleId.isEmpty()) step.moduleId = s.value("Plugin").toString(); // 相容舊版本
                 s.beginGroup("Params");
                 for (const QString& key : s.childKeys()) {
                     step.parameters[key] = s.value(key);
@@ -466,12 +467,12 @@ void ClipboardAssistant::reloadActionSets() {
             addActionSetWidget(info);
         }
     } else {
-        for (const auto& pi : m_plugins) {
-            for (const auto& tmpl : pi.plugin->actionTemplates()) {
+        for (const auto& mi : m_modules) {
+            for (const auto& tmpl : mi.module->actionTemplates()) {
                 ActionSetInfo info;
                 info.actionSetId = QUuid::createUuid().toString();
                 info.name = tmpl.name;
-                info.actions.append({pi.plugin->id(), tmpl.defaultParameters});
+                info.actions.append({mi.module->id(), tmpl.defaultParameters});
                 addActionSetWidget(info);
             }
         }
@@ -542,7 +543,7 @@ void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetIn
     ui->listActionSets->setItemWidget(item, row);
 }
 
-void ClipboardAssistant::onRunActionSet(IClipboardPlugin*, QString asid) {
+void ClipboardAssistant::onRunActionSet(IClipboardModule*, QString asid) {
     if (!m_actionSetMap.contains(asid)) return;
     const ActionSetInfo& info = m_actionSetMap[asid];
     if (info.actions.isEmpty()) {
@@ -559,12 +560,12 @@ void ClipboardAssistant::onRunActionSet(IClipboardPlugin*, QString asid) {
     m_currentExecutor->start();
 }
 
-void ClipboardAssistant::onEditActionSet(IClipboardPlugin*, QString asid) { 
+void ClipboardAssistant::onEditActionSet(IClipboardModule*, QString asid) { 
     if (!m_actionSetMap.contains(asid)) return;
     ActionSetInfo& info = m_actionSetMap[asid];
     QDialog dialog(this); dialog.setWindowTitle(tr("Edit Action Set"));
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    ActionSetSettings* editor = new ActionSetSettings(m_plugins, &dialog);
+    ActionSetSettings* editor = new ActionSetSettings(m_modules, &dialog);
     editor->setName(info.name);
     editor->setShortcut(info.customShortcut);
     editor->setIsGlobal(info.isCustomShortcutGlobal);
@@ -585,7 +586,7 @@ void ClipboardAssistant::onEditActionSet(IClipboardPlugin*, QString asid) {
     }
 }
 
-void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin*, QString asid) { 
+void ClipboardAssistant::onDeleteActionSet(IClipboardModule*, QString asid) { 
     if (QMessageBox::question(this, tr("Confirm"), tr("Delete pipeline?")) == QMessageBox::Yes) { 
         for (int i = 0; i < ui->listActionSets->count(); ++i) {
             if (ui->listActionSets->item(i)->data(Qt::UserRole).toString() == asid) {
@@ -599,7 +600,7 @@ void ClipboardAssistant::onDeleteActionSet(IClipboardPlugin*, QString asid) {
 void ClipboardAssistant::onBtnAddActionSetClicked() {
     QDialog dialog(this); dialog.setWindowTitle(tr("Add Action Set"));
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    ActionSetSettings* editor = new ActionSetSettings(m_plugins, &dialog);
+    ActionSetSettings* editor = new ActionSetSettings(m_modules, &dialog);
     layout->addWidget(editor);
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     layout->addWidget(buttons);
@@ -641,15 +642,16 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         QJsonArray steps = obj["Steps"].toArray();
         for (int i = 0; i < steps.size(); ++i) {
             QJsonObject sObj = steps[i].toObject();
-            QString pluginId = sObj["Plugin"].toString();
+            QString moduleId = sObj["Module"].toString();
+            if (moduleId.isEmpty()) moduleId = sObj["Plugin"].toString(); // 相容
             
-            bool pluginExists = false;
-            for(auto& pi : m_plugins) if(pi.plugin->id() == pluginId) { pluginExists = true; break; }
+            bool moduleExists = false;
+            for(auto& mi : m_modules) if(mi.module->id() == moduleId) { moduleExists = true; break; }
             
-            if (!pluginExists) { reports << tr("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, pluginId); continue; }
+            if (!moduleExists) { reports << tr("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, moduleId); continue; }
             
-            PluginActionInstance step;
-            step.pluginId = pluginId;
+            ModuleActionInstance step;
+            step.moduleId = moduleId;
             step.parameters = sObj["Params"].toObject().toVariantMap();
             info.actions.append(step);
         }
@@ -709,7 +711,7 @@ void ClipboardAssistant::onBtnExportAllClicked() {
         QJsonArray steps;
         for (const auto& step : info.actions) {
             QJsonObject sObj;
-            sObj["Plugin"] = step.pluginId;
+            sObj["Module"] = step.moduleId;
             sObj["Params"] = QJsonObject::fromVariantMap(step.parameters);
             steps.append(sObj);
         }
@@ -740,7 +742,7 @@ void ClipboardAssistant::onExportActionSet(const QString& asid) {
     QJsonArray steps;
     for (const auto& step : info.actions) {
         QJsonObject sObj;
-        sObj["Plugin"] = step.pluginId;
+        sObj["Module"] = step.moduleId;
         sObj["Params"] = QJsonObject::fromVariantMap(step.parameters);
         steps.append(sObj);
     }
@@ -760,8 +762,8 @@ void ClipboardAssistant::onBtnCopyOutputClicked() {
     QApplication::clipboard()->setMimeData(data);
 }
 void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide(); QTimer::singleShot(500, []() { sendCtrlV(); }); }
-void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) { loadPlugins(); reloadActionSets(); } }
-void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText(tr("Cancelled.")); ui->progressBar->setVisible(false); ui->textOutput->append(tr("\n[Cancelled]")); m_activePlugin = nullptr; } }
+void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_modules, this); if (dlg.exec() == QDialog::Accepted) { loadModules(); reloadActionSets(); } }
+void ClipboardAssistant::onBtnCancelClicked() { if (m_activeModule) { m_activeModule->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText(tr("Cancelled.")); ui->progressBar->setVisible(false); ui->textOutput->append(tr("\n[Cancelled]")); m_activeModule = nullptr; } }
 void ClipboardAssistant::setupTrayIcon() {
     m_trayIcon = new QSystemTrayIcon(this); 
     m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
@@ -850,13 +852,13 @@ bool isLikelyMarkdown(const QString& text) {
     return false;
 }
 
-void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) { 
+void ClipboardAssistant::handleModuleOutput(const QString& t, bool a, bool f) { 
     if (!a) ui->textOutput->clear(); 
     ui->textOutput->insertPlainText(t); 
     
     if (f) {
         QString currentText = ui->textOutput->toPlainText();
-        // Only convert to Markdown if it looks like Markdown AND was generated by an AI plugin (which usually outputs Markdown)
+        // Only convert to Markdown if it looks like Markdown AND was generated by an AI module (which usually outputs Markdown)
         // OR if it strongly looks like Markdown regardless of source.
         if (isLikelyMarkdown(currentText)) {
              // To preserve single newlines which strictly speaking shouldn't be preserved in CommonMark but users expect it:
@@ -867,10 +869,18 @@ void ClipboardAssistant::handlePluginOutput(const QString& t, bool a, bool f) {
     } 
     ui->textOutput->moveCursor(QTextCursor::End); 
 }
-void ClipboardAssistant::handlePluginError(const QString& m) { 
+void ClipboardAssistant::handleModuleError(const QString& m) { 
     ui->btnCancel->setVisible(false); 
     ui->labelStatus->setText(m.isEmpty() ? tr("Cancelled.") : tr("Error.")); 
     ui->progressBar->setVisible(false); 
-    m_activePlugin = nullptr; 
+    m_activeModule = nullptr; 
     if (!m.isEmpty()) QMessageBox::critical(this, tr("Error"), m); 
+}
+
+ModuleCallback::ModuleCallback(ClipboardAssistant* p) : QObject(p), m_parent(p) {}
+void ModuleCallback::onTextData(const QString& t, bool f) { m_parent->handleModuleOutput(t, true, f); }
+void ModuleCallback::onError(const QString& m) { m_parent->handleModuleError(m); }
+void ModuleCallback::onFinished() { 
+    // Delay deletion to ensure stack is unwound
+    QTimer::singleShot(0, this, &QObject::deleteLater); 
 }

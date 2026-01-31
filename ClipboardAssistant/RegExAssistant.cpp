@@ -25,15 +25,15 @@ QList<ParameterDefinition> RegExAssistant::actionParameterDefinitions() const
     };
 }
 
-QList<PluginActionTemplate> RegExAssistant::actionTemplates() const
+QList<ModuleActionTemplate> RegExAssistant::actionTemplates() const
 {
-    QList<PluginActionTemplate> list;
+    QList<ModuleActionTemplate> list;
     list.append({"remove_extra_spaces", tr("Remove Extra Spaces"), {{"Pattern", "\\s+"}, {"Replacement", " "}}});
     list.append({"extract_email", tr("Extract Email"), {{"Pattern", "[\\w\\.-]+@[\\w\\.-]+\\.[\\w]+"}, {"Replacement", ""}}});
     return list;
 }
 
-void RegExAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback)
+void RegExAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback)
 {
     if (!data->hasText()) { callback->onError(tr("No text in clipboard")); return; }
     

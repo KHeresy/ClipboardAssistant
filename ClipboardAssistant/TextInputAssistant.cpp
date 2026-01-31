@@ -46,15 +46,15 @@ QList<ParameterDefinition> TextInputAssistant::actionParameterDefinitions() cons
     };
 }
 
-QList<PluginActionTemplate> TextInputAssistant::actionTemplates() const
+QList<ModuleActionTemplate> TextInputAssistant::actionTemplates() const
 {
-    QList<PluginActionTemplate> list;
+    QList<ModuleActionTemplate> list;
     list.append({"fixed_text", tr("Insert Fixed Text"), {{"Mode", "Static Content"}, {"Position", "Append"}}});
     list.append({"ask_text", tr("Prompt for Input"), {{"Mode", "Ask at Runtime"}, {"Position", "Replace"}}});
     return list;
 }
 
-void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback)
+void TextInputAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback)
 {
     QString mode = actionParams.value("Mode").toString();
     QString position = actionParams.value("Position").toString();

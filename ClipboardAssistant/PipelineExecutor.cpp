@@ -35,7 +35,7 @@ void PipelineExecutor::onTextData(const QString& text, bool isFinal) {
 
     QMetaObject::invokeMethod(m_parent, [this, text, isFinal]() {
         if (m_cancelled) return;
-        m_parent->handlePluginOutput(text, !m_firstChunk, isFinal);
+        m_parent->handleModuleOutput(text, !m_firstChunk, isFinal);
         if (m_firstChunk) m_firstChunk = false;
         if (isFinal) m_accumulatedText += text;
     });
@@ -57,7 +57,7 @@ void PipelineExecutor::onError(const QString& msg) {
     m_cancelled = true; // 發生錯誤，整個 Pipeline 停止
     
     QMetaObject::invokeMethod(m_parent, [this, msg]() {
-        m_parent->handlePluginError(msg);
+        m_parent->handleModuleError(msg);
         if (m_parent->m_currentExecutor == this) m_parent->m_currentExecutor = nullptr;
         deleteLater();
     });
@@ -78,7 +78,7 @@ void PipelineExecutor::executeNext() {
             m_parent->ui->btnCancel->setVisible(false);
             m_parent->ui->labelStatus->setText(tr("Pipeline Done."));
             m_parent->ui->progressBar->setVisible(false);
-            m_parent->m_activePlugin = nullptr;
+            m_parent->m_activeModule = nullptr;
             if (m_parent->m_currentExecutor == this) m_parent->m_currentExecutor = nullptr;
             deleteLater();
         });
@@ -86,24 +86,24 @@ void PipelineExecutor::executeNext() {
     }
 
     const auto& action = m_info.actions[m_currentIdx++];
-    IClipboardPlugin* plugin = nullptr;
-    for (const auto& pi : m_parent->m_plugins) {
-        if (pi.plugin->id() == action.pluginId) {
-            plugin = pi.plugin;
+    IClipboardModule* module = nullptr;
+    for (const auto& mi : m_parent->m_modules) {
+        if (mi.module->id() == action.moduleId) {
+            module = mi.module;
             break;
         }
     }
     
-    if (!plugin) {
-        onError(tr("Plugin not found: ") + action.pluginId);
+    if (!module) {
+        onError(tr("Module not found: ") + action.moduleId);
         return;
     }
 
-    m_parent->m_activePlugin = plugin;
+    m_parent->m_activeModule = module;
     m_parent->ui->labelStatus->setText(QString("[%1/%2] %3...")
         .arg(m_currentIdx)
         .arg(m_info.actions.size())
-        .arg(plugin->name()));
+        .arg(module->name()));
     m_firstChunk = true;
 
     if (m_currentIdx > 1) {
@@ -121,5 +121,5 @@ void PipelineExecutor::executeNext() {
     }
 
     // 啟動下一個插件
-    plugin->process(m_currentData, action.parameters, m_parent->m_globalSettingsMap[plugin->name()], this);
+    module->process(m_currentData, action.parameters, m_parent->m_globalSettingsMap[module->name()], this);
 }

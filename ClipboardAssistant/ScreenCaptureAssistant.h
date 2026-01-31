@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Common/IClipboardPlugin.h"
+#include "../Common/IClipboardModule.h"
 #include <QObject>
 #include <QDialog>
 #include <QPixmap>
@@ -31,9 +31,9 @@ private:
 };
 
 // 插件主類別
-class ScreenCaptureAssistant : public QObject, public IClipboardPlugin {
+class ScreenCaptureAssistant : public QObject, public IClipboardModule {
     Q_OBJECT
-        Q_INTERFACES(IClipboardPlugin)
+        Q_INTERFACES(IClipboardModule)
 public:
     ScreenCaptureAssistant(QObject* parent = nullptr);
 
@@ -41,9 +41,9 @@ public:
     QString name() const override;
     QString version() const override;
     QList<ParameterDefinition> actionParameterDefinitions() const override;
-    QList<PluginActionTemplate> actionTemplates() const override;
+    QList<ModuleActionTemplate> actionTemplates() const override;
     DataTypes supportedInputs() const override;
     DataTypes supportedOutputs() const override;
     
-    void process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback) override;
+    void process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback) override;
 };

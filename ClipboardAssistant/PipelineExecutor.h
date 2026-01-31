@@ -2,10 +2,10 @@
 
 #include <QObject>
 #include <QMimeData>
-#include "../Common/IClipboardPlugin.h"
+#include "../Common/IClipboardModule.h"
 #include "ClipboardAssistant.h"
 
-class PipelineExecutor : public QObject, public IPluginCallback {
+class PipelineExecutor : public QObject, public IModuleCallback {
     Q_OBJECT
 public:
     PipelineExecutor(ClipboardAssistant* parent, const ClipboardAssistant::ActionSetInfo& info, const QMimeData* initialData);

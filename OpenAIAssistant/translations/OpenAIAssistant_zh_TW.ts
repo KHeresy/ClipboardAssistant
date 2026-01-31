@@ -75,8 +75,12 @@
     </message>
     <message>
         <location filename="../OpenAIAssistant.cpp" line="107"/>
+        <source>Account not found or not configured. Please check Module Settings.</source>
+        <translation>找不到帳戶或尚未設定，請檢查模組設定。</translation>
+    </message>
+    <message>
         <source>Account not found or not configured. Please check Plugin Settings.</source>
-        <translation>找不到帳戶或尚未設定，請檢查外掛設定。</translation>
+        <translation type="vanished">找不到帳戶或尚未設定，請檢查外掛設定。</translation>
     </message>
     <message>
         <location filename="../OpenAIAssistant.cpp" line="114"/>

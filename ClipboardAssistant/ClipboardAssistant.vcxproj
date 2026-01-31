@@ -128,7 +128,7 @@
     <None Include="app_icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\IClipboardPlugin.h" />
+    <ClInclude Include="..\Common\IClipboardModule.h" />
   </ItemGroup>
   <ItemGroup>
     <QtTranslation Include="translations\ClipboardAssistant_zh_TW.ts">

@@ -15,10 +15,10 @@
 #include <QMenu>
 #include <QScrollArea>
 
-ActionSetSettings::ActionSetSettings(const QList<PluginInfo>& plugins, QWidget *parent) :
+ActionSetSettings::ActionSetSettings(const QList<ModuleInfo>& modules, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ActionSetSettings),
-    m_plugins(plugins)
+    m_modules(modules)
 {
     ui->setupUi(this);
     
@@ -31,7 +31,7 @@ ActionSetSettings::ActionSetSettings(const QList<PluginInfo>& plugins, QWidget *
     connect(ui->checkGlobal, &QCheckBox::toggled, ui->checkAutoCopy, &QCheckBox::setEnabled);
     
     connect(ui->listActions->model(), &QAbstractItemModel::rowsMoved, this, [this]() {
-        QList<PluginActionInstance> newActions;
+        QList<ModuleActionInstance> newActions;
         for(int i=0; i<ui->listActions->count(); ++i) {
             int oldIdx = ui->listActions->item(i)->data(Qt::UserRole).toInt();
             newActions.append(m_actions[oldIdx]);
@@ -52,13 +52,13 @@ void ActionSetSettings::setIsGlobal(bool isGlobal) { ui->checkGlobal->setChecked
 bool ActionSetSettings::isAutoCopy() const { return ui->checkAutoCopy->isChecked(); }
 void ActionSetSettings::setIsAutoCopy(bool isAutoCopy) { ui->checkAutoCopy->setChecked(isAutoCopy); }
 
-void ActionSetSettings::setActions(const QList<PluginActionInstance>& actions) {
+void ActionSetSettings::setActions(const QList<ModuleActionInstance>& actions) {
     m_actions = actions;
     updateActionList();
     if (!m_actions.isEmpty()) ui->listActions->setCurrentRow(0);
 }
 
-QList<PluginActionInstance> ActionSetSettings::getActions() const {
+QList<ModuleActionInstance> ActionSetSettings::getActions() const {
     const_cast<ActionSetSettings*>(this)->saveCurrentParams();
     return m_actions;
 }
@@ -68,10 +68,10 @@ void ActionSetSettings::updateActionList() {
     int current = ui->listActions->currentRow();
     ui->listActions->clear();
     for (int i = 0; i < m_actions.size(); ++i) {
-        QString displayName = m_actions[i].pluginId;
-        for (const auto& info : m_plugins) {
-            if (info.plugin->id() == m_actions[i].pluginId) {
-                displayName = info.plugin->name();
+        QString displayName = m_actions[i].moduleId;
+        for (const auto& info : m_modules) {
+            if (info.module->id() == m_actions[i].moduleId) {
+                displayName = info.module->name();
                 break;
             }
         }
@@ -84,23 +84,23 @@ void ActionSetSettings::updateActionList() {
 
 void ActionSetSettings::onAddAction() {
     QMenu menu(this);
-    for (const auto& info : m_plugins) {
-        QMenu* sub = menu.addMenu(info.plugin->name());
-        QAction* actNew = sub->addAction(tr("New %1 Action").arg(info.plugin->name()));
+    for (const auto& info : m_modules) {
+        QMenu* sub = menu.addMenu(info.module->name());
+        QAction* actNew = sub->addAction(tr("New %1 Action").arg(info.module->name()));
         connect(actNew, &QAction::triggered, [this, info]() {
             saveCurrentParams();
-            m_actions.append({info.plugin->id(), {}});
+            m_actions.append({info.module->id(), {}});
             updateActionList();
             ui->listActions->setCurrentRow(m_actions.size() - 1);
         });
-        auto templates = info.plugin->actionTemplates();
+        auto templates = info.module->actionTemplates();
         if (!templates.isEmpty()) {
             sub->addSeparator();
             for (const auto& tmpl : templates) {
                 QAction* act = sub->addAction(tmpl.name);
                 connect(act, &QAction::triggered, [this, info, tmpl]() {
                     saveCurrentParams();
-                    m_actions.append({info.plugin->id(), tmpl.defaultParameters});
+                    m_actions.append({info.module->id(), tmpl.defaultParameters});
                     updateActionList();
                     ui->listActions->setCurrentRow(m_actions.size() - 1);
                 });
@@ -179,16 +179,16 @@ void ActionSetSettings::loadParamsForAction(int row) {
 
     if (row < 0 || row >= m_actions.size()) return;
     
-    PluginActionInstance& action = m_actions[row];
-    IClipboardPlugin* plugin = nullptr;
-    for (const auto& info : m_plugins) { if (info.plugin->id() == action.pluginId) { plugin = info.plugin; break; } }
-    if (!plugin) return;
+    ModuleActionInstance& action = m_actions[row];
+    IClipboardModule* module = nullptr;
+    for (const auto& info : m_modules) { if (info.module->id() == action.moduleId) { module = info.module; break; } }
+    if (!module) return;
 
     QWidget* container = new QWidget();
     QVBoxLayout* mainVBox = new QVBoxLayout(container);
     QFormLayout* form = new QFormLayout();
     
-    m_currentDefs = plugin->actionParameterDefinitions();
+    m_currentDefs = module->actionParameterDefinitions();
     for (const auto& def : m_currentDefs) {
         QWidget* widget = nullptr;
         QVariant val = action.parameters.value(def.id, def.defaultValue);

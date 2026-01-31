@@ -104,7 +104,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\IClipboardPlugin.h" />
+    <ClInclude Include="..\Common\IClipboardModule.h" />
     <ClCompile Include="OpenAIAssistant.cpp" />
     <ClCompile Include="OpenAISettings.cpp" />
   </ItemGroup>

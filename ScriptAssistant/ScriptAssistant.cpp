@@ -5,6 +5,7 @@
 
 ScriptAssistant::ScriptAssistant()
 {
+    m_engine = new QJSEngine(this);
 }
 
 QString ScriptAssistant::id() const { return "kheresy.ScriptAssistant"; }
@@ -21,15 +22,15 @@ QList<ParameterDefinition> ScriptAssistant::actionParameterDefinitions() const
     };
 }
 
-QList<PluginActionTemplate> ScriptAssistant::actionTemplates() const
+QList<ModuleActionTemplate> ScriptAssistant::actionTemplates() const
 {
-    QList<PluginActionTemplate> list;
-    list.append({"uppercase", QCoreApplication::translate("ScriptAssistant", "To Upper Case"), {{"Script", "function process(text) { return text.toUpperCase(); }"}}});
-    list.append({"json_format", QCoreApplication::translate("ScriptAssistant", "Format JSON"), {{"Script", "function process(text) { return JSON.stringify(JSON.parse(text), null, 4); }"}}});
+    QList<ModuleActionTemplate> list;
+    list.append({"upper", tr("To Upper Case"), {}});
+    list.append({"format_json", tr("Format JSON"), {}});
     return list;
 }
 
-void ScriptAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback)
+void ScriptAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback)
 {
     if (!data->hasText()) {
         callback->onError(QCoreApplication::translate("ScriptAssistant", "No text found in clipboard."));

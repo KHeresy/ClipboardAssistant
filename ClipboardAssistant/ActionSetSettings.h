@@ -4,7 +4,7 @@
 #include <QKeySequence>
 #include <QMap>
 #include <QListWidget>
-#include "../Common/IClipboardPlugin.h"
+#include "../Common/IClipboardModule.h"
 
 namespace Ui {
 class ActionSetSettings;
@@ -15,7 +15,7 @@ class ActionSetSettings : public QWidget
     Q_OBJECT
 
 public:
-    explicit ActionSetSettings(const QList<PluginInfo>& plugins, QWidget *parent = nullptr);
+    explicit ActionSetSettings(const QList<ModuleInfo>& modules, QWidget *parent = nullptr);
     ~ActionSetSettings();
 
     QString name() const;
@@ -30,8 +30,8 @@ public:
     bool isAutoCopy() const;
     void setIsAutoCopy(bool isAutoCopy);
 
-    void setActions(const QList<PluginActionInstance>& actions);
-    QList<PluginActionInstance> getActions() const;
+    void setActions(const QList<ModuleActionInstance>& actions);
+    QList<ModuleActionInstance> getActions() const;
 
 private slots:
     void onAddAction();
@@ -47,9 +47,9 @@ private:
 
         Ui::ActionSetSettings *ui;
 
-        QList<PluginInfo> m_plugins;
+        QList<ModuleInfo> m_modules;
 
-        QList<PluginActionInstance> m_actions;
+        QList<ModuleActionInstance> m_actions;
 
         
 

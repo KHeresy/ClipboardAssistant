@@ -21,9 +21,9 @@ QList<ParameterDefinition> ExternalAppAssistant::actionParameterDefinitions() co
     };
 }
 
-QList<PluginActionTemplate> ExternalAppAssistant::actionTemplates() const
+QList<ModuleActionTemplate> ExternalAppAssistant::actionTemplates() const
 {
-    QList<PluginActionTemplate> list;
+    QList<ModuleActionTemplate> list;
     list.append({"notepad", tr("Open in Notepad"), {{"Executable", "notepad.exe"}, {"Arguments", "{text}"}, {"CaptureOutput", false}}});
     return list;
 }
@@ -38,7 +38,7 @@ void ExternalAppAssistant::abort() {
     }
 }
 
-void ExternalAppAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback)
+void ExternalAppAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IModuleCallback* callback)
 {
     if (!data->hasText()) { callback->onError(tr("No text in clipboard")); return; }
     

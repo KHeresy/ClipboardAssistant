@@ -12,9 +12,21 @@
 #include <QShortcut>
 #include <QPointer>
 #include "ui_ClipboardAssistant.h"
-#include "../Common/IClipboardPlugin.h"
+#include "../Common/IClipboardModule.h"
 
 QT_END_NAMESPACE
+
+class ModuleCallback : public QObject, public IModuleCallback {
+    Q_OBJECT
+public:
+    ModuleCallback(class ClipboardAssistant* parent);
+    void onTextData(const QString& text, bool isFinal) override;
+    void onError(const QString& message) override;
+    void onFinished() override;
+private:
+    class ClipboardAssistant* m_parent;
+    bool m_firstChunk = true;
+};
 
 class ClipboardAssistant : public QWidget
 {
@@ -50,12 +62,12 @@ private slots:
     void onBtnImportActionSetClicked();
     void onBtnExportAllClicked();
     void onExportActionSet(const QString& asid);
-    void onRunActionSet(IClipboardPlugin* plugin, QString actionSetId);
-    void onEditActionSet(IClipboardPlugin* plugin, QString actionSetId);
-    void onDeleteActionSet(IClipboardPlugin* plugin, QString actionSetId);
+    void onRunActionSet(IClipboardModule* module, QString actionSetId);
+    void onEditActionSet(IClipboardModule* module, QString actionSetId);
+    void onDeleteActionSet(IClipboardModule* module, QString actionSetId);
 
 private:
-    void loadPlugins();
+    void loadModules();
     void reloadActionSets(); // Helper to refresh list
     void loadSettings();
     void saveSettings();
@@ -71,8 +83,8 @@ private:
     Ui::ClipboardAssistantClass *ui;
     QSystemTrayIcon* m_trayIcon;
     QMenu* m_trayMenu;
-    QList<PluginInfo> m_plugins;
-    IClipboardPlugin* m_activePlugin = nullptr;
+    QList<ModuleInfo> m_modules;
+    IClipboardModule* m_activeModule = nullptr;
     class PipelineExecutor* m_currentExecutor = nullptr;
     class RegExAssistant* m_regexAssistant;
     class ExternalAppAssistant* m_externalAppAssistant;
@@ -90,7 +102,7 @@ private:
         QKeySequence customShortcut;
         bool isCustomShortcutGlobal;
         bool isAutoCopy;
-        QList<PluginActionInstance> actions;
+        QList<ModuleActionInstance> actions;
         
         QPointer<QPushButton> mainButton;
         QPointer<QLabel> lblContent;
@@ -106,20 +118,10 @@ private:
     QMap<int, ActionSetInfo> m_hotkeyMap;
     int m_nextHotkeyId = 101; // Start after 100 (main app hotkey)
     
-    class PluginCallback : public IPluginCallback {
-    public:
-        PluginCallback(ClipboardAssistant* parent);
-        void onTextData(const QString& text, bool isFinal) override;
-        void onError(const QString& message) override;
-        void onFinished() override;
-    private:
-        ClipboardAssistant* m_parent;
-        bool m_firstChunk = true;
-    };
-    friend class PluginCallback;
-    friend class PipelineExecutor;
-    
     // For callback access
-    void handlePluginOutput(const QString& text, bool append, bool isFinal);
-    void handlePluginError(const QString& msg);
+    void handleModuleOutput(const QString& text, bool append, bool isFinal);
+    void handleModuleError(const QString& msg);
+    
+    friend class ModuleCallback;
+    friend class PipelineExecutor;
 };

@@ -15,7 +15,7 @@
 #include <QProcess>
 #include <QMessageBox>
 
-Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
+Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::SettingClass)
 {
@@ -62,23 +62,24 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     ui->checkBoxAutoStart->setChecked(bootSettings.contains("ClipboardAssistant"));
 
+    // Setup Modules
     ui->listPlugins->clear();
-    for (const auto& info : plugins) {
-        IClipboardPlugin* plugin = info.plugin;
-        m_plugins.append(plugin);
-        QListWidgetItem* item = new QListWidgetItem(plugin->name(), ui->listPlugins);
-        item->setToolTip(tr("ID: %1").arg(plugin->id()));
+    for (const auto& info : modules) {
+        IClipboardModule* module = info.module;
+        m_modules.append(module);
+        QListWidgetItem* item = new QListWidgetItem(module->name(), ui->listPlugins);
+        item->setToolTip(tr("ID: %1").arg(module->id()));
         
         QWidget* page = new QWidget();
         QVBoxLayout* layout = new QVBoxLayout(page);
         
         // Header: Name, ID and Version
-        QLabel* title = new QLabel(QString("<b>%1</b> v%3").arg(plugin->name(), plugin->version()));
+        QLabel* title = new QLabel(QString("<b>%1</b> (<i>%2</i>) v%3").arg(module->name(), module->id(), module->version()));
         layout->addWidget(title);
 
         // Source Info
-        QString sourceText = info.isInternal ? tr("<i>Built-in Module</i>") : tr("<i>External Plugin: %1</i>").arg(info.filePath);
-        sourceText += QString("<br />ID: %1").arg(plugin->id());
+        QString sourceText = info.isInternal ? tr("<i>Built-in Module</i>") : tr("<i>External Module: %1</i>").arg(info.filePath);
+        sourceText += QString("<br />ID: %1").arg(module->id());
         QLabel* sourceLabel = new QLabel(sourceText);
         sourceLabel->setStyleSheet("color: gray;");
         layout->addWidget(sourceLabel);
@@ -86,28 +87,28 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
         layout->addSpacing(10);
 
         // Capabilities
-        auto dataTypeToString = [](IClipboardPlugin::DataTypes types) {
+        auto dataTypeToString = [](IClipboardModule::DataTypes types) {
             QStringList parts;
-            if (types.testFlag(IClipboardPlugin::Text)) parts << tr("Text");
-            if (types.testFlag(IClipboardPlugin::Image)) parts << tr("Image");
-            if (types.testFlag(IClipboardPlugin::Rtf)) parts << tr("RTF");
-            if (types.testFlag(IClipboardPlugin::File)) parts << tr("File");
+            if (types.testFlag(IClipboardModule::Text)) parts << tr("Text");
+            if (types.testFlag(IClipboardModule::Image)) parts << tr("Image");
+            if (types.testFlag(IClipboardModule::Rtf)) parts << tr("RTF");
+            if (types.testFlag(IClipboardModule::File)) parts << tr("File");
             return parts.isEmpty() ? tr("None") : parts.join(", ");
         };
 
         QLabel* capTitle = new QLabel(tr("<b>Module Capabilities:</b>"));
         layout->addWidget(capTitle);
         
-        layout->addWidget(new QLabel(tr(" - Inputs: %1").arg(dataTypeToString(plugin->supportedInputs()))));
-        layout->addWidget(new QLabel(tr(" - Outputs: %1").arg(dataTypeToString(plugin->supportedOutputs()))));
-        layout->addWidget(new QLabel(tr(" - Streaming: %1").arg(plugin->supportsStreaming() ? tr("Yes") : tr("No"))));
+        layout->addWidget(new QLabel(tr(" - Inputs: %1").arg(dataTypeToString(module->supportedInputs()))));
+        layout->addWidget(new QLabel(tr(" - Outputs: %1").arg(dataTypeToString(module->supportedOutputs()))));
+        layout->addWidget(new QLabel(tr(" - Streaming: %1").arg(module->supportsStreaming() ? tr("Yes") : tr("No"))));
 
         layout->addSpacing(10);
 
         // Global Parameters
-        QList<ParameterDefinition> gDefs = plugin->globalParameterDefinitions();
+        QList<ParameterDefinition> gDefs = module->globalParameterDefinitions();
         if (!gDefs.isEmpty()) {
-            m_paramDefs[plugin] = gDefs;
+            m_paramDefs[module] = gDefs;
             QLabel* gTitle = new QLabel(tr("<b>Module Configuration:</b>"));
             layout->addWidget(gTitle);
 
@@ -115,7 +116,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
             QMap<QString, QWidget*> widgets;
             
             QSettings ps("Heresy", "ClipboardAssistant");
-            ps.beginGroup("Plugins/" + plugin->name() + "/Global");
+            ps.beginGroup("Modules/" + module->name() + "/Global");
 
             for (const auto& def : gDefs) {
                 QWidget* widget = nullptr;
@@ -150,13 +151,13 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
             }
             ps.endGroup();
             layout->addLayout(form);
-            m_paramWidgets[plugin] = widgets;
+            m_paramWidgets[module] = widgets;
         }
 
-        if (plugin->hasConfiguration()) {
+        if (module->hasConfiguration()) {
             QPushButton* btn = new QPushButton(tr("Advanced Configuration"), page);
-            connect(btn, &QPushButton::clicked, [plugin, this]() {
-                plugin->showConfiguration(this);
+            connect(btn, &QPushButton::clicked, [module, this]() {
+                module->showConfiguration(this);
             });
             layout->addWidget(btn);
         }
@@ -165,7 +166,7 @@ Setting::Setting(const QList<PluginInfo>& plugins, QWidget *parent)
         ui->stackedWidgetPlugins->addWidget(page);
     }
 
-    connect(ui->listPlugins, &QListWidget::currentRowChanged, this, &Setting::onPluginSelected);
+    connect(ui->listPlugins, &QListWidget::currentRowChanged, this, &Setting::onModuleSelected);
     
     if (ui->listPlugins->count() > 0) {
         ui->listPlugins->setCurrentRow(0);
@@ -219,7 +220,7 @@ void Setting::setShowAfterCaptureEnabled(bool enabled) {
     ui->checkBoxShowAfterCapture->setChecked(enabled);
 }
 
-void Setting::onPluginSelected(int row)
+void Setting::onModuleSelected(int row)
 {
     if (row >= 0 && row < ui->stackedWidgetPlugins->count() - 1) {
         ui->stackedWidgetPlugins->setCurrentIndex(row + 1); 
@@ -248,18 +249,18 @@ void Setting::accept()
     QSettings bootSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     if (ui->checkBoxAutoStart->isChecked()) {
         QString appPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-        bootSettings.setValue("ClipboardAssistant", """ + appPath + """);
+        bootSettings.setValue("ClipboardAssistant", "\"" + appPath + "\"");
     } else {
         bootSettings.remove("ClipboardAssistant");
     }
 
-    // Save Plugin Global Parameters
-    for (IClipboardPlugin* plugin : m_plugins) {
-        if (!m_paramWidgets.contains(plugin)) continue;
+    // Save Module Global Parameters
+    for (IClipboardModule* module : m_modules) {
+        if (!m_paramWidgets.contains(module)) continue;
         
-        settings.beginGroup("Plugins/" + plugin->name() + "/Global");
-        const auto& widgets = m_paramWidgets[plugin];
-        const auto& defs = m_paramDefs[plugin];
+        settings.beginGroup("Modules/" + module->name() + "/Global");
+        const auto& widgets = m_paramWidgets[module];
+        const auto& defs = m_paramDefs[module];
 
         for (const auto& def : defs) {
             QWidget* widget = widgets.value(def.id);

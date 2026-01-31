@@ -32,7 +32,7 @@
     <ClCompile Include="OpenAIAssistant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClInclude Include="..\Common\IClipboardPlugin.h">
+    <ClInclude Include="..\Common\IClipboardModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
