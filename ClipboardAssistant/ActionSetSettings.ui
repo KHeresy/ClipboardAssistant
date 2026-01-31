@@ -163,14 +163,14 @@
           <item>
            <widget class="QPushButton" name="btnUp">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="maximumSize">
              <size>
-              <width>32</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -182,14 +182,14 @@
           <item>
            <widget class="QPushButton" name="btnDown">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="maximumSize">
              <size>
-              <width>32</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -222,7 +222,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>292</width>
+             <width>256</width>
              <height>183</height>
             </rect>
            </property>

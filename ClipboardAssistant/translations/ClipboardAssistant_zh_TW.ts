@@ -437,7 +437,7 @@ Error:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../main.cpp" line="54"/>
+        <location filename="../main.cpp" line="70"/>
         <source>ClipboardAssistant</source>
         <translation>剪貼簿助手</translation>
     </message>

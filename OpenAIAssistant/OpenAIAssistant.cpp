@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QInputDialog>
 #include <QApplication>
+#include <QCoreApplication>
 
 OpenAIAssistant::OpenAIAssistant() {
     m_networkManager = new QNetworkAccessManager(this);
@@ -32,14 +33,14 @@ QList<ParameterDefinition> OpenAIAssistant::actionParameterDefinitions() const {
     }
     s.endGroup();
 
-    if (accounts.isEmpty()) accounts << tr("Default (Not Configured)");
+    if (accounts.isEmpty()) accounts << QCoreApplication::translate("OpenAIAssistant", "Default (Not Configured)");
 
     return {
-        {"Account", tr("Account"), ParameterType::Choice, accounts.first(), accounts, tr("Select which OpenAI account to use")},
-        {"Prompt", tr("System Prompt"), ParameterType::Text, "", {}, tr("The prompt to send to the AI")},
-        {"PromptMode", tr("Prompt Mode"), ParameterType::Choice, "Override", {"Override", "Append"}, tr("Choose whether to override or append to account default prompt")},
-        {"MaxTokens", tr("Max Tokens"), ParameterType::Number, 0, {}, tr("Maximum tokens to generate (0 for model default)")},
-        {"OverrideModel", tr("Override Model"), ParameterType::String, "", {}, tr("Leave empty to use account default model")}
+        {"Account", QCoreApplication::translate("OpenAIAssistant", "Account"), ParameterType::Choice, accounts.first(), accounts, QCoreApplication::translate("OpenAIAssistant", "Select which OpenAI account to use")},
+        {"Prompt", QCoreApplication::translate("OpenAIAssistant", "System Prompt"), ParameterType::Text, "", {}, QCoreApplication::translate("OpenAIAssistant", "The prompt to send to the AI")},
+        {"PromptMode", QCoreApplication::translate("OpenAIAssistant", "Prompt Mode"), ParameterType::Choice, "Override", {"Override", "Append"}, QCoreApplication::translate("OpenAIAssistant", "Choose whether to override or append to account default prompt")},
+        {"MaxTokens", QCoreApplication::translate("OpenAIAssistant", "Max Tokens"), ParameterType::Number, 0, {}, QCoreApplication::translate("OpenAIAssistant", "Maximum tokens to generate (0 for model default)")},
+        {"OverrideModel", QCoreApplication::translate("OpenAIAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("OpenAIAssistant", "Leave empty to use account default model")}
     };
 }
 
@@ -50,7 +51,7 @@ QList<ParameterDefinition> OpenAIAssistant::globalParameterDefinitions() const {
 
 QList<PluginActionTemplate> OpenAIAssistant::actionTemplates() const {
     QList<PluginActionTemplate> list;
-    list.append({"summarize", tr("Summarize"), {{tr("Prompt"), "Summarize text:"}}});
+    list.append({"summarize", QCoreApplication::translate("OpenAIAssistant", "Summarize"), {{QCoreApplication::translate("OpenAIAssistant", "Prompt"), "Summarize text:"}}});
     return list;
 }
 
@@ -100,18 +101,18 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         // Account fallback logic
         QString selectedAccountName;
         if (accountNames.isEmpty()) {
-            callback->onError(tr("Account not found or not configured. Please check Plugin Settings."));
+            callback->onError(QCoreApplication::translate("OpenAIAssistant", "Account not found or not configured. Please check Plugin Settings."));
             return;
         } else if (accountNames.size() == 1) {
             selectedAccountName = accountNames.first();
         } else {
             bool ok = false;
             selectedAccountName = QInputDialog::getItem(QApplication::activeWindow(), 
-                tr("Select OpenAI Account"), 
-                tr("Account '%1' not found. Please select an account:").arg(targetAccount), 
+                QCoreApplication::translate("OpenAIAssistant", "Select OpenAI Account"), 
+                QCoreApplication::translate("OpenAIAssistant", "Account '%1' not found. Please select an account:").arg(targetAccount), 
                 accountNames, 0, false, &ok);
             if (!ok || selectedAccountName.isEmpty()) {
-                callback->onError(tr("No account selected."));
+                callback->onError(QCoreApplication::translate("OpenAIAssistant", "No account selected."));
                 return;
             }
         }
@@ -145,7 +146,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QString overrideModel = actionParams.value("OverrideModel").toString();
     if (!overrideModel.isEmpty()) model = overrideModel;
 
-    if (key.isEmpty()) { callback->onError(tr("API Key is empty for the selected account.")); return; }
+    if (key.isEmpty()) { callback->onError(QCoreApplication::translate("OpenAIAssistant", "API Key is empty for the selected account.")); return; }
 
     QJsonArray content;
     if (data->hasText() && !data->text().isEmpty()) { 
@@ -161,7 +162,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         }
     }
 
-    if (content.isEmpty()) { callback->onError(tr("No content to process")); return; }
+    if (content.isEmpty()) { callback->onError(QCoreApplication::translate("OpenAIAssistant", "No content to process")); return; }
 
     QJsonArray msgs;
     QJsonObject sys; sys["role"]="system"; sys["content"]=prompt; msgs.append(sys);
@@ -209,7 +210,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
                         }
                         
                         if (choice["finish_reason"].toString() == "length") {
-                            callback->onError(tr("\n\n[Warning: Message truncated due to Max Tokens limit.]"));
+                            callback->onError(QCoreApplication::translate("OpenAIAssistant", "\n\n[Warning: Message truncated due to Max Tokens limit.]"));
                         }
                     }
                 }

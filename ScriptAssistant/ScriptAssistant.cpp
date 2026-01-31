@@ -1,6 +1,7 @@
 #include "ScriptAssistant.h"
 #include <QMimeData>
 #include <QJSValue>
+#include <QCoreApplication>
 
 ScriptAssistant::ScriptAssistant() {
     m_engine = new QJSEngine(this);
@@ -14,24 +15,24 @@ QString ScriptAssistant::version() const { return "0.1.0"; }
 QList<ParameterDefinition> ScriptAssistant::actionParameterDefinitions() const
 {
     return {
-        {"Script", tr("Script"), ParameterType::Text, 
+        {"Script", QCoreApplication::translate("ScriptAssistant", "Script"), ParameterType::Text, 
          "function process(text) {\n    return text.toUpperCase();\n}", 
-         {}, tr("JavaScript code. Must contain a 'process(text)' function.")}
+         {}, QCoreApplication::translate("ScriptAssistant", "JavaScript code. Must contain a 'process(text)' function.")}
     };
 }
 
 QList<PluginActionTemplate> ScriptAssistant::actionTemplates() const
 {
     QList<PluginActionTemplate> list;
-    list.append({"uppercase", tr("To Upper Case"), {{"Script", "function process(text) { return text.toUpperCase(); }"}}});
-    list.append({"json_format", tr("Format JSON"), {{"Script", "function process(text) { return JSON.stringify(JSON.parse(text), null, 4); }"}}});
+    list.append({"uppercase", QCoreApplication::translate("ScriptAssistant", "To Upper Case"), {{"Script", "function process(text) { return text.toUpperCase(); }"}}});
+    list.append({"json_format", QCoreApplication::translate("ScriptAssistant", "Format JSON"), {{"Script", "function process(text) { return JSON.stringify(JSON.parse(text), null, 4); }"}}});
     return list;
 }
 
 void ScriptAssistant::process(const QMimeData* data, const QVariantMap& actionParams, const QVariantMap& globalParams, IPluginCallback* callback)
 {
     if (!data->hasText()) {
-        callback->onError(tr("No text found in clipboard."));
+        callback->onError(QCoreApplication::translate("ScriptAssistant", "No text found in clipboard."));
         return;
     }
 
@@ -42,7 +43,7 @@ void ScriptAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QJSValue result = m_engine->evaluate(script);
     
     if (result.isError()) {
-        callback->onError(tr("Script Syntax Error: ") + result.toString());
+        callback->onError(QCoreApplication::translate("ScriptAssistant", "Script Syntax Error: ") + result.toString());
         return;
     }
 
@@ -50,7 +51,7 @@ void ScriptAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QJSValue processFunc = m_engine->globalObject().property("process");
     
     if (!processFunc.isCallable()) {
-        callback->onError(tr("Script must define a 'process(text)' function."));
+        callback->onError(QCoreApplication::translate("ScriptAssistant", "Script must define a 'process(text)' function."));
         return;
     }
 
@@ -59,7 +60,7 @@ void ScriptAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QJSValue funcResult = processFunc.call(args);
 
     if (funcResult.isError()) {
-        callback->onError(tr("Script Execution Error: ") + funcResult.toString());
+        callback->onError(QCoreApplication::translate("ScriptAssistant", "Script Execution Error: ") + funcResult.toString());
     } else {
         callback->onTextData(funcResult.toString(), true);
         callback->onFinished();

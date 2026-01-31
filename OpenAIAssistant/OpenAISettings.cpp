@@ -74,7 +74,7 @@ void OpenAISettings::onAddAccount()
     QString id = QUuid::createUuid().toString(QUuid::Id128);
     OpenAIAccount acc;
     acc.id = id;
-    acc.displayName = tr("New Account");
+    acc.displayName = QCoreApplication::translate("OpenAISettings", "New Account");
     acc.isAzure = false;
     acc.model = "gpt-3.5-turbo";
     acc.systemPrompt = "You are a helpful assistant.";
@@ -143,14 +143,14 @@ void OpenAISettings::updateHelp()
     QString style = "font-size: 10px; ";
 
     if (isAzure) {
-        helpText = tr("Azure URL: ") + "https://{res}.openai.azure.com/openai/deployments/{dep}/chat/completions?api-version=2024-05-01-preview";
+        helpText = QCoreApplication::translate("OpenAISettings", "Azure URL: ") + "https://{res}.openai.azure.com/openai/deployments/{dep}/chat/completions?api-version=2024-05-01-preview";
         if (!url.isEmpty() && !url.contains("api-version=")) {
-            helpText += "<br><font color='red'>" + tr("Warning: Azure URL usually requires '?api-version=' parameter.") + "</font>";
+            helpText += "<br><font color='red'>" + QCoreApplication::translate("OpenAISettings", "Warning: Azure URL usually requires '?api-version=' parameter.") + "</font>";
         }
     } else {
-        helpText = tr("OpenAI URL: ") + "https://api.openai.com/v1";
+        helpText = QCoreApplication::translate("OpenAISettings", "OpenAI URL: ") + "https://api.openai.com/v1";
         if (url.contains("/chat/completions")) {
-            helpText += "<br><font color='orange'>" + tr("Warning: Base URL should usually NOT include '/chat/completions'.") + "</font>";
+            helpText += "<br><font color='orange'>" + QCoreApplication::translate("OpenAISettings", "Warning: Base URL should usually NOT include '/chat/completions'.") + "</font>";
         }
     }
     
@@ -166,12 +166,12 @@ void OpenAISettings::onTestAccount()
     bool isAz = ui->checkAzure->isChecked();
 
     if (key.isEmpty() || urlStr.isEmpty()) {
-        QMessageBox::warning(this, tr("Test Connection"), tr("API Key and URL are required."));
+        QMessageBox::warning(this, QCoreApplication::translate("OpenAISettings", "Test Connection"), QCoreApplication::translate("OpenAISettings", "API Key and URL are required."));
         return;
     }
 
     ui->btnTest->setEnabled(false);
-    ui->btnTest->setText(tr("Testing..."));
+    ui->btnTest->setText(QCoreApplication::translate("OpenAISettings", "Testing..."));
 
     QUrl url;
     if (isAz) {
@@ -202,17 +202,17 @@ void OpenAISettings::onTestAccount()
 
     connect(reply, &QNetworkReply::finished, [this, reply]() {
         ui->btnTest->setEnabled(true);
-        ui->btnTest->setText(tr("Test Connection"));
+        ui->btnTest->setText(QCoreApplication::translate("OpenAISettings", "Test Connection"));
 
         if (reply->error() == QNetworkReply::NoError) {
-            QMessageBox::information(this, tr("Test Connection"), tr("Connection successful!"));
+            QMessageBox::information(this, QCoreApplication::translate("OpenAISettings", "Test Connection"), QCoreApplication::translate("OpenAISettings", "Connection successful!"));
         } else {
             QByteArray data = reply->readAll();
             QString errorMsg = reply->errorString();
             if (!data.isEmpty()) {
                 errorMsg += "\n\n" + QString::fromUtf8(data);
             }
-            QMessageBox::critical(this, tr("Test Connection"), tr("Connection failed: %1").arg(errorMsg));
+            QMessageBox::critical(this, QCoreApplication::translate("OpenAISettings", "Test Connection"), QCoreApplication::translate("OpenAISettings", "Connection failed: %1").arg(errorMsg));
         }
         reply->deleteLater();
     });

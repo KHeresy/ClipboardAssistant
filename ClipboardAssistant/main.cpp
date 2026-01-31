@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QTranslator>
 #include <QLibraryInfo>
+#include <QDir>
 #include <windows.h>
 
 int main(int argc, char *argv[])
@@ -26,8 +27,24 @@ int main(int argc, char *argv[])
 
     // 載入應用程式翻譯
     QTranslator appTranslator;
-    if (appTranslator.load(locale, "ClipboardAssistant", "_", QApplication::applicationDirPath() + "/translations")) {
+    QString appTransPath = QApplication::applicationDirPath() + "/translations";
+    if (appTranslator.load(locale, "ClipboardAssistant", "_", appTransPath)) {
         app.installTranslator(&appTranslator);
+    }
+
+    // 載入外掛模組翻譯 (載入所有 translations 資料夾下符合當前語系的 .qm 檔)
+    QDir translationsDir(appTransPath);
+    QString filter = "*_" + locale.name() + ".qm";
+    QStringList pluginQmFiles = translationsDir.entryList(QStringList() << filter, QDir::Files);
+    
+    for (const QString& qmFile : pluginQmFiles) {
+        // 避免重複載入主程式 (雖然重複 installTranslator 也沒關係，但乾淨一點)
+        if (qmFile.startsWith("ClipboardAssistant_")) continue;
+
+        QTranslator* pluginTranslator = new QTranslator(&app);
+        if (pluginTranslator->load(qmFile, translationsDir.absolutePath())) {
+            app.installTranslator(pluginTranslator);
+        }
     }
 
     // 使用唯一的 Key 建立共享記憶體
@@ -49,20 +66,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-        ClipboardAssistant window;
+    ClipboardAssistant window;
+    window.setWindowTitle(QObject::tr("ClipboardAssistant"));
 
-        window.setWindowTitle(QObject::tr("ClipboardAssistant"));
-
-        if (!settings.value("StartMinimized", false).toBool()) {
-
-            window.show();
-
-        }
-
-        
-
-        return app.exec();
-
+    if (!settings.value("StartMinimized", false).toBool()) {
+        window.show();
     }
 
-    
+    return app.exec();
+}
