@@ -89,6 +89,16 @@
          <widget class="QLineEdit" name="editModel"/>
         </item>
         <item>
+         <widget class="QLabel" name="label_prompt">
+          <property name="text">
+           <string>Default System Prompt:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="editPrompt"/>
+        </item>
+        <item>
          <widget class="QLabel" name="label_url">
           <property name="text">
            <string>Base URL / Full Endpoint:</string>
@@ -99,9 +109,33 @@
          <widget class="QLineEdit" name="editUrl"/>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_test">
+          <item>
+           <widget class="QPushButton" name="btnTest">
+            <property name="text">
+             <string>Test Connection</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_test">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
          <widget class="QLabel" name="labelHelp">
           <property name="styleSheet">
-           <string notr="true">color: gray; font-size: 10px;</string>
+           <string notr="true">font-size: 10px;</string>
           </property>
           <property name="text">
            <string/>

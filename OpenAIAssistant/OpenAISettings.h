@@ -10,6 +10,7 @@ struct OpenAIAccount {
     QString apiKey;
     QString model;
     QString baseUrl;
+    QString systemPrompt;
     bool isAzure;
 };
 
@@ -29,12 +30,14 @@ private slots:
     void onAccountSelected();
     void updateHelp();
     void onFieldChanged();
+    void onTestAccount();
 
 private:
     void loadAccounts();
     void saveCurrentToMap();
 
     Ui::OpenAISettingsClass *ui;
+    class QNetworkAccessManager* m_networkManager = nullptr;
     QMap<QString, OpenAIAccount> m_accounts;
     QString m_currentAccountId;
     bool m_loading = false;
