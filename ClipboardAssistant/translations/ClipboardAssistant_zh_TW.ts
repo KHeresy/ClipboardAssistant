@@ -123,14 +123,24 @@
         <translation>編輯動作集</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="532"/>
-        <source>Confirm</source>
-        <translation>確認</translation>
+        <location filename="../ClipboardAssistant.cpp" line="711"/>
+        <source>Clipboard Assistant</source>
+        <translation>剪貼簿小幫手</translation>
+    </message>
+    <message>
+        <location filename="../ClipboardAssistant.cpp" line="713"/>
+        <source>Show</source>
+        <translation>顯示</translation>
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="532"/>
         <source>Delete pipeline?</source>
         <translation>確定要刪除此流程嗎？</translation>
+    </message>
+    <message>
+        <location filename="../ClipboardAssistant.cpp" line="532"/>
+        <source>Confirm</source>
+        <translation>確認</translation>
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="543"/>
@@ -151,7 +161,7 @@
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="571"/>
-        <location filename="../ClipboardAssistant.cpp" line="784"/>
+        <location filename="../ClipboardAssistant.cpp" line="786"/>
         <source>Error</source>
         <translation>錯誤</translation>
     </message>
@@ -222,7 +232,7 @@
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="707"/>
-        <location filename="../ClipboardAssistant.cpp" line="781"/>
+        <location filename="../ClipboardAssistant.cpp" line="783"/>
         <source>Cancelled.</source>
         <translation>已取消。</translation>
     </message>
@@ -234,22 +244,17 @@
 [已取消]</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="711"/>
-        <source>Show</source>
-        <translation>顯示</translation>
-    </message>
-    <message>
-        <location filename="../ClipboardAssistant.cpp" line="712"/>
+        <location filename="../ClipboardAssistant.cpp" line="714"/>
         <source>Settings</source>
         <translation>設定</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="714"/>
+        <location filename="../ClipboardAssistant.cpp" line="716"/>
         <source>Quit</source>
         <translation>結束</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="781"/>
+        <location filename="../ClipboardAssistant.cpp" line="783"/>
         <source>Error.</source>
         <translation>錯誤。</translation>
     </message>

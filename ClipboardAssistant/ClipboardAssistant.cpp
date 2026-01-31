@@ -706,7 +706,9 @@ void ClipboardAssistant::onBtnPasteClicked() { onBtnCopyOutputClicked(); hide();
 void ClipboardAssistant::onBtnSettingsClicked() { Setting dlg(m_plugins, this); if (dlg.exec() == QDialog::Accepted) { loadPlugins(); reloadActionSets(); } }
 void ClipboardAssistant::onBtnCancelClicked() { if (m_activePlugin) { m_activePlugin->abort(); ui->btnCancel->setVisible(false); ui->labelStatus->setText(tr("Cancelled.")); ui->progressBar->setVisible(false); ui->textOutput->append(tr("\n[Cancelled]")); m_activePlugin = nullptr; } }
 void ClipboardAssistant::setupTrayIcon() {
-    m_trayIcon = new QSystemTrayIcon(this); m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
+    m_trayIcon = new QSystemTrayIcon(this); 
+    m_trayIcon->setIcon(QIcon(":/ClipboardAssistant/app_icon.png"));
+    m_trayIcon->setToolTip(tr("Clipboard Assistant")); // Add tooltip
     m_trayMenu = new QMenu(this); 
     m_trayMenu->addAction(tr("Show"), this, &QWidget::show); 
     m_trayMenu->addAction(tr("Settings"), this, &ClipboardAssistant::onBtnSettingsClicked);
