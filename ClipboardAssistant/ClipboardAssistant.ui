@@ -259,12 +259,18 @@
        <property name="text">
         <string>Copy Result</string>
        </property>
+       <property name="shortcut">
+        <string>Alt+C</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnPaste">
        <property name="text">
         <string>Paste Result</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+V</string>
        </property>
       </widget>
      </item>

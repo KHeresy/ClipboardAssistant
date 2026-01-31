@@ -147,6 +147,7 @@ void ClipboardAssistant::loadSettings() {
     bool ontap = s.value("AlwaysOnTop", false).toBool(); ui->checkAlwaysOnTop->setChecked(ontap); onCheckAlwaysOnTopToggled(ontap);
     int inS = s.value("InputFontSize", 10).toInt(); ui->spinInputFontSize->setValue(inS); onSpinInputFontSizeChanged(inS);
     int outS = s.value("OutputFontSize", 10).toInt(); ui->spinOutputFontSize->setValue(outS); onSpinOutputFontSizeChanged(outS);
+    registerGlobalHotkey();
 }
 
 void ClipboardAssistant::saveSettings() {
@@ -767,7 +768,10 @@ bool ClipboardAssistant::registerGlobalHotkey() {
     QSettings s("Heresy", "ClipboardAssistant"); 
     QStringList failedHotkeys;
 
-    if (s.value("EnableGlobalHotkey", true).toBool()) {
+    bool mainHotkeyEnabled = s.value("EnableGlobalHotkey", true).toBool();
+    ui->groupBoxInput->setEnabled(mainHotkeyEnabled);
+
+    if (mainHotkeyEnabled) {
         QKeySequence ks(s.value("GlobalHotkey", "Ctrl+Alt+V").toString());
         if (!registerActionSetHotkey(HOTKEY_ID_MAIN, ks)) {
             failedHotkeys << tr("Main Window: %1").arg(ks.toString());
@@ -795,12 +799,12 @@ bool ClipboardAssistant::registerGlobalHotkey() {
         }
     }
 
-    if (!failedHotkeys.isEmpty()) {
-        m_trayIcon->showMessage(tr("Hotkey Conflict"), 
-            tr("Failed to register the following global hotkeys (already in use):\n%1").arg(failedHotkeys.join("\n")),
-            QSystemTrayIcon::Warning, 5000);
-        return false;
-    }
+    // if (!failedHotkeys.isEmpty()) {
+    //     m_trayIcon->showMessage(tr("Hotkey Conflict"), 
+    //         tr("Failed to register the following global hotkeys (already in use):\n%1").arg(failedHotkeys.join("\n")),
+    //         QSystemTrayIcon::Warning, 5000);
+    //     return false;
+    // }
     return true;
 }
 
@@ -819,7 +823,7 @@ bool ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks)
     }
     return false;
 }
-void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = 100; i < m_nextHotkeyId + 20; ++i) UnregisterHotKey((HWND)winId(), i); }
+void ClipboardAssistant::unregisterGlobalHotkey() { for (int i = HOTKEY_ID_CAPTURE; i < m_nextHotkeyId + 20; ++i) UnregisterHotKey((HWND)winId(), i); }
 bool isLikelyMarkdown(const QString& text) {
     // Simple heuristics to detect Markdown
     // Check for headers

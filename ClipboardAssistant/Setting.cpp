@@ -38,9 +38,11 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
 
     // UI Logic: Enable/Disable dependent options
     connect(ui->checkBoxEnableHotkey, &QCheckBox::toggled, ui->checkBoxAutoCopy, &QWidget::setEnabled);
+    connect(ui->checkBoxEnableHotkey, &QCheckBox::toggled, ui->keySequenceEdit, &QWidget::setEnabled);
     ui->checkBoxAutoCopy->setEnabled(ui->checkBoxEnableHotkey->isChecked());
 
     connect(ui->checkBoxEnableCaptureHotkey, &QCheckBox::toggled, ui->checkBoxShowAfterCapture, &QWidget::setEnabled);
+    connect(ui->checkBoxEnableCaptureHotkey, &QCheckBox::toggled, ui->keySequenceEditCapture, &QWidget::setEnabled);
     ui->checkBoxShowAfterCapture->setEnabled(ui->checkBoxEnableCaptureHotkey->isChecked());
 
     // Language selection
