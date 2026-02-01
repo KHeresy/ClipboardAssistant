@@ -102,6 +102,7 @@ void PipelineExecutor::executeNext() {
                 }
             }
 
+            m_parent->closeProgressReporter();
             m_parent->m_activeModule = nullptr;
             if (m_parent->m_currentExecutor == this) m_parent->m_currentExecutor = nullptr;
             deleteLater();

@@ -12,9 +12,12 @@
 #include <QShortcut>
 #include <QPointer>
 #include <QDialog>
+#include <QProgressDialog>
+#include <QShowEvent>
 #include <QPixmap>
 #include <QPoint>
 #include <QRect>
+#include <QTimer>
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardModule.h"
 
@@ -73,6 +76,7 @@ public:
     };
 
 protected:
+    void showEvent(QShowEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -89,6 +93,7 @@ private slots:
     void onSpinOutputFontSizeChanged(int size);
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void onImageDownloaded(QNetworkReply* reply, QString originalUrl);
+    void showProgressDialog();
     
     // New slots for dynamic ActionSets
     void onBtnAddActionSetClicked();
@@ -157,9 +162,13 @@ private:
     QMap<int, ActionSetInfo> m_hotkeyMap;
     int m_nextHotkeyId = 101; // Start after 100 (main app hotkey)
     
+    QTimer* m_progressTimer;
+    QPointer<QProgressDialog> m_progressDlg;
+
     // For callback access
     void handleModuleOutput(const QString& text, bool append, bool isFinal);
     void handleModuleError(const QString& msg);
+    void closeProgressReporter();
     
     friend class ModuleCallback;
     friend class PipelineExecutor;
