@@ -13,6 +13,9 @@
 #include <QGridLayout>
 #include <QDialog>
 #include <QSettings>
+#include <QThread>
+#include <QPainter>
+#include <QScreen>
 #include <windows.h> 
 #include "Setting.h"
 #include <QBuffer>
@@ -35,7 +38,6 @@
 #include "RegExAssistant.h"
 #include "ExternalAppAssistant.h"
 #include "TextInputAssistant.h"
-#include "ScreenCaptureAssistant.h"
 #include "ActionSetSettings.h"
 #include "PipelineExecutor.h"
 #include <QDialogButtonBox>
@@ -166,6 +168,8 @@ void ClipboardAssistant::saveSettings() {
         s.setValue("Shortcut", info.customShortcut.toString());
         s.setValue("IsGlobal", info.isCustomShortcutGlobal);
         s.setValue("IsAutoCopy", info.isAutoCopy);
+        s.setValue("IsCaptureScreen", info.isCaptureScreen);
+        s.setValue("IsCaptureCopy", info.isCaptureCopy);
         s.setValue("CompletionAction", info.completionAction);
         s.setValue("AutoClose", info.autoClose);
         s.setValue("StartHidden", info.startHidden);
@@ -268,58 +272,52 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
 }
 
 void ClipboardAssistant::onCaptureHotkey() {
-    IClipboardModule* captureModule = nullptr;
-    for(auto& mi : m_modules) {
-        if(mi.module->id() == "kheresy.ScreenCaptureAssistant") { 
-            captureModule = mi.module; 
-            break; 
+    QMimeData* data = captureScreenRegion(false); // 通常熱鍵觸發時主視窗本來就是隱藏的，不強制恢復
+    if (data) {
+        QApplication::clipboard()->setMimeData(data);
+        
+        QSettings s("Heresy", "ClipboardAssistant");
+        if (s.value("ShowAfterCapture", false).toBool()) {
+            show();
+            activateWindow();
         }
     }
+}
 
-    if (!captureModule) {
-        QMessageBox::warning(this, tr("Error"), tr("Screen Capture Assistant module not found."));
-        return;
+QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
+    bool wasVisible = isVisible();
+    if (wasVisible) {
+        hide();
+        QApplication::processEvents();
+        QThread::msleep(250);
     }
 
-    // We don't need input data for capture
-    QMimeData* dummyInput = new QMimeData();
-    
-    // Define a simple callback helper class
-    class CaptureCallback : public IModuleCallback {
-    public:
-        void onTextData(const QString&, bool) override {}
-        void onMimeData(const QMimeData* data) override {
-            if (data->hasImage()) {
-                QImage img = qvariant_cast<QImage>(data->imageData());
-                QTimer::singleShot(0, [img]() {
-                    QMimeData* clone = new QMimeData();
-                    clone->setImageData(img);
-                    QApplication::clipboard()->setMimeData(clone);
-                });
-            } else if (data->hasText()) {
-                QString txt = data->text();
-                QTimer::singleShot(0, [txt]() {
-                    QMimeData* clone = new QMimeData();
-                    clone->setText(txt);
-                    QApplication::clipboard()->setMimeData(clone);
-                });
+    QMimeData* resultData = nullptr;
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        QPixmap fullScreen = screen->grabWindow(0);
+        SnippetOverlay overlay(fullScreen, this);
+        if (overlay.exec() == QDialog::Accepted) {
+            QPixmap result = overlay.selectedPixmap();
+            if (!result.isNull()) {
+                resultData = new QMimeData();
+                resultData->setImageData(result.toImage());
             }
         }
-        void onError(const QString& msg) override {
-            QTimer::singleShot(0, []() { MessageBeep(MB_ICONHAND); });
-        }
-        void onFinished() override { 
-            // Delay deletion to ensure stack is unwound and no pending events reference this
-            QTimer::singleShot(0, [this]() { delete this; });
-        }
-    };
+    }
 
-    captureModule->process(dummyInput, {}, {}, new CaptureCallback());
-    delete dummyInput;
+    if (wasVisible && restoreWindow) {
+        show();
+        activateWindow();
+    }
+    return resultData;
 }
 
 void ClipboardAssistant::onClipboardChanged() {
-    const QMimeData* d = QApplication::clipboard()->mimeData(); m_currentHtml.clear(); m_pendingDownloads.clear(); m_currentImage = QImage();
+    const QMimeData* d = QApplication::clipboard()->mimeData();
+    if (!d) return;
+    
+    m_currentHtml.clear(); m_pendingDownloads.clear(); m_currentImage = QImage();
     if (d->hasImage()) {
         m_currentImage = qvariant_cast<QImage>(d->imageData());
         if (!m_currentImage.isNull()) {
@@ -411,8 +409,6 @@ void ClipboardAssistant::loadModules() {
     m_textInputAssistant = new TextInputAssistant(this);
     m_modules.append({ m_textInputAssistant, true, "" });
 
-    m_modules.append({ new ScreenCaptureAssistant(this), true, "" });
-
     // Load external modules (DLLs)
     QDir dir(QCoreApplication::applicationDirPath());
     for (const QString& f : dir.entryList({"*.dll"}, QDir::Files)) {
@@ -454,6 +450,8 @@ void ClipboardAssistant::reloadActionSets() {
         info.customShortcut = QKeySequence(s.value("Shortcut").toString());
         info.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
         info.isAutoCopy = s.value("IsAutoCopy", false).toBool();
+        info.isCaptureScreen = s.value("IsCaptureScreen", false).toBool();
+        info.isCaptureCopy = s.value("IsCaptureCopy", false).toBool();
         info.completionAction = s.value("CompletionAction", 0).toInt();
         info.autoClose = s.value("AutoClose", false).toBool();
         info.startHidden = s.value("StartHidden", false).toBool();
@@ -547,14 +545,35 @@ void ClipboardAssistant::onRunActionSet(IClipboardModule*, QString asid) {
         ui->labelStatus->setText(tr("No actions in this set."));
         return;
     }
+
+    QMimeData* inputData = nullptr;
+
+    if (info.isCaptureScreen) {
+        inputData = captureScreenRegion(!info.startHidden);
+        if (inputData) {
+            if (info.isCaptureCopy) {
+                // Clipboard takes ownership, so we must clone it
+                QMimeData* clone = new QMimeData();
+                if (inputData->hasImage()) clone->setImageData(inputData->imageData());
+                QApplication::clipboard()->setMimeData(clone);
+            }
+        } else {
+            ui->labelStatus->setText(tr("Capture cancelled or failed."));
+            return;
+        }
+    }
+
     if (m_currentExecutor) m_currentExecutor->stop();
     ui->textOutput->clear();
     ui->btnCancel->setVisible(true);
     ui->progressBar->setVisible(true);
     ui->progressBar->setRange(0, 0);
-    const QMimeData* data = QApplication::clipboard()->mimeData();
+
+    const QMimeData* data = inputData ? inputData : QApplication::clipboard()->mimeData();
     m_currentExecutor = new PipelineExecutor(this, info, data);
     m_currentExecutor->start();
+
+    if (inputData) delete inputData;
 }
 
 void ClipboardAssistant::onEditActionSet(IClipboardModule*, QString asid) { 
@@ -567,6 +586,8 @@ void ClipboardAssistant::onEditActionSet(IClipboardModule*, QString asid) {
     editor->setShortcut(info.customShortcut);
     editor->setIsGlobal(info.isCustomShortcutGlobal);
     editor->setIsAutoCopy(info.isAutoCopy);
+    editor->setIsCaptureScreen(info.isCaptureScreen);
+    editor->setIsCaptureCopy(info.isCaptureCopy);
     editor->setCompletionAction(info.completionAction);
     editor->setIsAutoClose(info.autoClose);
     editor->setIsStartHidden(info.startHidden);
@@ -581,6 +602,8 @@ void ClipboardAssistant::onEditActionSet(IClipboardModule*, QString asid) {
         info.customShortcut = editor->shortcut();
         info.isCustomShortcutGlobal = editor->isGlobal();
         info.isAutoCopy = editor->isAutoCopy();
+        info.isCaptureScreen = editor->isCaptureScreen();
+        info.isCaptureCopy = editor->isCaptureCopy();
         info.completionAction = editor->completionAction();
         info.autoClose = editor->isAutoClose();
         info.startHidden = editor->isStartHidden();
@@ -616,6 +639,8 @@ void ClipboardAssistant::onBtnAddActionSetClicked() {
          info.customShortcut = editor->shortcut();
          info.isCustomShortcutGlobal = editor->isGlobal();
          info.isAutoCopy = editor->isAutoCopy();
+         info.isCaptureScreen = editor->isCaptureScreen();
+         info.isCaptureCopy = editor->isCaptureCopy();
          info.completionAction = editor->completionAction();
          info.autoClose = editor->isAutoClose();
          info.startHidden = editor->isStartHidden();
@@ -644,6 +669,8 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         info.customShortcut = QKeySequence(obj["Shortcut"].toString());
         info.isCustomShortcutGlobal = obj["IsGlobal"].toBool();
         info.isAutoCopy = obj["IsAutoCopy"].toBool();
+        info.isCaptureScreen = obj["IsCaptureScreen"].toBool();
+        info.isCaptureCopy = obj["IsCaptureCopy"].toBool();
         info.completionAction = obj["CompletionAction"].toInt();
         info.autoClose = obj["AutoClose"].toBool();
         info.startHidden = obj["StartHidden"].toBool();
@@ -716,6 +743,8 @@ void ClipboardAssistant::onBtnExportAllClicked() {
         obj["Shortcut"] = info.customShortcut.toString();
         obj["IsGlobal"] = info.isCustomShortcutGlobal;
         obj["IsAutoCopy"] = info.isAutoCopy;
+        obj["IsCaptureScreen"] = info.isCaptureScreen;
+        obj["IsCaptureCopy"] = info.isCaptureCopy;
         obj["CompletionAction"] = info.completionAction;
         obj["AutoClose"] = info.autoClose;
         obj["StartHidden"] = info.startHidden;
@@ -750,6 +779,8 @@ void ClipboardAssistant::onExportActionSet(const QString& asid) {
     obj["Shortcut"] = info.customShortcut.toString();
     obj["IsGlobal"] = info.isCustomShortcutGlobal;
     obj["IsAutoCopy"] = info.isAutoCopy;
+    obj["IsCaptureScreen"] = info.isCaptureScreen;
+    obj["IsCaptureCopy"] = info.isCaptureCopy;
     obj["CompletionAction"] = info.completionAction;
     obj["AutoClose"] = info.autoClose;
     obj["StartHidden"] = info.startHidden;
@@ -901,4 +932,78 @@ void ModuleCallback::onError(const QString& m) { m_parent->handleModuleError(m);
 void ModuleCallback::onFinished() { 
     // Delay deletion to ensure stack is unwound
     QTimer::singleShot(0, this, &QObject::deleteLater); 
+}
+
+// --- SnippetOverlay Implementation ---
+SnippetOverlay::SnippetOverlay(const QPixmap& screenShot, QWidget* parent)
+    : QDialog(parent), m_fullScreenPixmap(screenShot), m_isSelecting(false)
+{
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setCursor(Qt::CrossCursor);
+    QRect totalGeo;
+    for (QScreen* screen : QGuiApplication::screens()) {
+        totalGeo = totalGeo.united(screen->geometry());
+    }
+    setGeometry(totalGeo);
+}
+
+QRect SnippetOverlay::selectedRect() const {
+    return m_selectionRect.normalized();
+}
+
+QPixmap SnippetOverlay::selectedPixmap() const {
+    QRect r = selectedRect();
+    if (r.isEmpty()) return QPixmap();
+    return m_fullScreenPixmap.copy(r);
+}
+
+void SnippetOverlay::paintEvent(QPaintEvent* event) {
+    QPainter painter(this);
+    painter.drawPixmap(0, 0, m_fullScreenPixmap);
+    QColor dimColor(0, 0, 0, 120);
+    QRect r = selectedRect();
+    if (r.isEmpty()) {
+        painter.fillRect(rect(), dimColor);
+    } else {
+        painter.fillRect(0, 0, width(), r.top(), dimColor);
+        painter.fillRect(0, r.bottom() + 1, width(), height() - r.bottom(), dimColor);
+        painter.fillRect(0, r.top(), r.left(), r.height(), dimColor);
+        painter.fillRect(r.right() + 1, r.top(), width() - r.right(), r.height(), dimColor);
+        painter.setPen(QPen(Qt::red, 2));
+        painter.drawRect(r);
+        QString sizeText = QString("%1 x %2").arg(r.width()).arg(r.height());
+        painter.setPen(Qt::white);
+        painter.drawText(r.topLeft() - QPoint(0, 5), sizeText);
+    }
+}
+
+void SnippetOverlay::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        m_startPoint = event->pos();
+        m_selectionRect = QRect(m_startPoint, QSize());
+        m_isSelecting = true;
+        update();
+    }
+}
+
+void SnippetOverlay::mouseMoveEvent(QMouseEvent* event) {
+    if (m_isSelecting) {
+        m_selectionRect = QRect(m_startPoint, event->pos());
+        update();
+    }
+}
+
+void SnippetOverlay::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton && m_isSelecting) {
+        m_isSelecting = false;
+        accept(); 
+    }
+}
+
+void SnippetOverlay::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        reject();
+    } else {
+        QDialog::keyPressEvent(event);
+    }
 }

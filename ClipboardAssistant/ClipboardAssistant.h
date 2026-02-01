@@ -11,10 +11,33 @@
 #include <QSet>
 #include <QShortcut>
 #include <QPointer>
+#include <QDialog>
+#include <QPixmap>
+#include <QPoint>
+#include <QRect>
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardModule.h"
 
 QT_END_NAMESPACE
+
+class SnippetOverlay : public QDialog {
+    Q_OBJECT
+public:
+    explicit SnippetOverlay(const QPixmap& screenShot, QWidget* parent = nullptr);
+    QRect selectedRect() const;
+    QPixmap selectedPixmap() const;
+protected:
+    void paintEvent(QPaintEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
+private:
+    QPixmap m_fullScreenPixmap;
+    QPoint m_startPoint;
+    QRect m_selectionRect;
+    bool m_isSelecting;
+};
 
 class ModuleCallback : public QObject, public IModuleCallback {
     Q_OBJECT
@@ -112,6 +135,8 @@ private:
         QKeySequence customShortcut;
         bool isCustomShortcutGlobal;
         bool isAutoCopy;
+        bool isCaptureScreen = false;
+        bool isCaptureCopy = false;
         int completionAction = 0; // 0: Show, 1: Copy, 2: Paste
         bool autoClose = false;
         bool startHidden = false;
@@ -124,6 +149,7 @@ private:
     void updateActionSetShortcuts();
     void addActionSetWidget(const ActionSetInfo& info);
     void setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info);
+    QMimeData* captureScreenRegion(bool restoreWindow);
     QMap<QString, ActionSetInfo> m_actionSetMap;
     // Plugin Name -> Global Settings
     QMap<QString, QVariantMap> m_globalSettingsMap;

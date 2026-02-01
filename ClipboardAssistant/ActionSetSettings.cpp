@@ -30,6 +30,7 @@ ActionSetSettings::ActionSetSettings(const QList<ModuleInfo>& modules, QWidget *
     connect(ui->listActions, &QListWidget::currentRowChanged, this, &ActionSetSettings::onActionSelected);
     connect(ui->checkGlobal, &QCheckBox::toggled, ui->checkAutoCopy, &QCheckBox::setEnabled);
     connect(ui->checkAutoClose, &QCheckBox::toggled, ui->checkStartHidden, &QCheckBox::setEnabled);
+    connect(ui->checkCaptureScreen, &QCheckBox::toggled, ui->checkCaptureCopy, &QCheckBox::setEnabled);
     
     connect(ui->listActions->model(), &QAbstractItemModel::rowsMoved, this, [this]() {
         QList<ModuleActionInstance> newActions;
@@ -52,6 +53,12 @@ bool ActionSetSettings::isGlobal() const { return ui->checkGlobal->isChecked(); 
 void ActionSetSettings::setIsGlobal(bool isGlobal) { ui->checkGlobal->setChecked(isGlobal); ui->checkAutoCopy->setEnabled(isGlobal); }
 bool ActionSetSettings::isAutoCopy() const { return ui->checkAutoCopy->isChecked(); }
 void ActionSetSettings::setIsAutoCopy(bool isAutoCopy) { ui->checkAutoCopy->setChecked(isAutoCopy); }
+
+bool ActionSetSettings::isCaptureScreen() const { return ui->checkCaptureScreen->isChecked(); }
+void ActionSetSettings::setIsCaptureScreen(bool capture) { ui->checkCaptureScreen->setChecked(capture); ui->checkCaptureCopy->setEnabled(capture); }
+
+bool ActionSetSettings::isCaptureCopy() const { return ui->checkCaptureCopy->isChecked(); }
+void ActionSetSettings::setIsCaptureCopy(bool copy) { ui->checkCaptureCopy->setChecked(copy); }
 
 int ActionSetSettings::completionAction() const { return ui->comboCompletion->currentIndex(); }
 void ActionSetSettings::setCompletionAction(int action) { ui->comboCompletion->setCurrentIndex(action); }

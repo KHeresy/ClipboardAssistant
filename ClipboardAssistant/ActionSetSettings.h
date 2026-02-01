@@ -30,6 +30,12 @@ public:
     bool isAutoCopy() const;
     void setIsAutoCopy(bool isAutoCopy);
 
+    bool isCaptureScreen() const;
+    void setIsCaptureScreen(bool capture);
+
+    bool isCaptureCopy() const;
+    void setIsCaptureCopy(bool copy);
+
     int completionAction() const;
     void setCompletionAction(int action);
 
