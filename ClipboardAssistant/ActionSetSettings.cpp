@@ -29,6 +29,7 @@ ActionSetSettings::ActionSetSettings(const QList<ModuleInfo>& modules, QWidget *
     connect(ui->btnDown, &QPushButton::clicked, this, &ActionSetSettings::onMoveDown);
     connect(ui->listActions, &QListWidget::currentRowChanged, this, &ActionSetSettings::onActionSelected);
     connect(ui->checkGlobal, &QCheckBox::toggled, ui->checkAutoCopy, &QCheckBox::setEnabled);
+    connect(ui->checkAutoClose, &QCheckBox::toggled, ui->checkStartHidden, &QCheckBox::setEnabled);
     
     connect(ui->listActions->model(), &QAbstractItemModel::rowsMoved, this, [this]() {
         QList<ModuleActionInstance> newActions;
@@ -51,6 +52,15 @@ bool ActionSetSettings::isGlobal() const { return ui->checkGlobal->isChecked(); 
 void ActionSetSettings::setIsGlobal(bool isGlobal) { ui->checkGlobal->setChecked(isGlobal); ui->checkAutoCopy->setEnabled(isGlobal); }
 bool ActionSetSettings::isAutoCopy() const { return ui->checkAutoCopy->isChecked(); }
 void ActionSetSettings::setIsAutoCopy(bool isAutoCopy) { ui->checkAutoCopy->setChecked(isAutoCopy); }
+
+int ActionSetSettings::completionAction() const { return ui->comboCompletion->currentIndex(); }
+void ActionSetSettings::setCompletionAction(int action) { ui->comboCompletion->setCurrentIndex(action); }
+
+bool ActionSetSettings::isAutoClose() const { return ui->checkAutoClose->isChecked(); }
+void ActionSetSettings::setIsAutoClose(bool autoClose) { ui->checkAutoClose->setChecked(autoClose); ui->checkStartHidden->setEnabled(autoClose); }
+
+bool ActionSetSettings::isStartHidden() const { return ui->checkStartHidden->isChecked(); }
+void ActionSetSettings::setIsStartHidden(bool startHidden) { ui->checkStartHidden->setChecked(startHidden); }
 
 void ActionSetSettings::setActions(const QList<ModuleActionInstance>& actions) {
     m_actions = actions;

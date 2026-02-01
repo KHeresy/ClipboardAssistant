@@ -45,7 +45,7 @@
 #include <QTextImageFormat>
 #include <QTextDocument>
 
-void sendCtrlKey(char key) {
+void ClipboardAssistant::sendCtrlKey(char key) {
     INPUT inputs[10]; ZeroMemory(inputs, sizeof(inputs)); int n = 0;
     auto rel = [&](WORD v) { inputs[n].type = INPUT_KEYBOARD; inputs[n].ki.wVk = v; inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP; };
     rel(VK_CONTROL); rel(VK_MENU); rel(VK_SHIFT); rel(VK_LWIN);
@@ -55,8 +55,8 @@ void sendCtrlKey(char key) {
     inputs[n].type = INPUT_KEYBOARD; inputs[n].ki.wVk = VK_CONTROL; inputs[n++].ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(n, inputs, sizeof(INPUT));
 }
-void sendCtrlC() { sendCtrlKey('C'); }
-void sendCtrlV() { sendCtrlKey('V'); }
+void ClipboardAssistant::sendCtrlC() { sendCtrlKey('C'); }
+void ClipboardAssistant::sendCtrlV() { sendCtrlKey('V'); }
 
 ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(new Ui::ClipboardAssistantClass) {
     QApplication::setQuitOnLastWindowClosed(false);
@@ -166,6 +166,9 @@ void ClipboardAssistant::saveSettings() {
         s.setValue("Shortcut", info.customShortcut.toString());
         s.setValue("IsGlobal", info.isCustomShortcutGlobal);
         s.setValue("IsAutoCopy", info.isAutoCopy);
+        s.setValue("CompletionAction", info.completionAction);
+        s.setValue("AutoClose", info.autoClose);
+        s.setValue("StartHidden", info.startHidden);
         
         s.beginWriteArray("Steps");
         for (int j = 0; j < info.actions.size(); ++j) {
@@ -249,7 +252,9 @@ bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) 
             ActionSetInfo info = m_hotkeyMap[id];
             
             auto act = [this, info]() {
-                show(); activateWindow();
+                if (!info.startHidden) {
+                    show(); activateWindow();
+                }
                 if (info.mainButton && info.mainButton->isEnabled()) onRunActionSet(nullptr, info.actionSetId);
             };
 
@@ -449,6 +454,9 @@ void ClipboardAssistant::reloadActionSets() {
         info.customShortcut = QKeySequence(s.value("Shortcut").toString());
         info.isCustomShortcutGlobal = s.value("IsGlobal", false).toBool();
         info.isAutoCopy = s.value("IsAutoCopy", false).toBool();
+        info.completionAction = s.value("CompletionAction", 0).toInt();
+        info.autoClose = s.value("AutoClose", false).toBool();
+        info.startHidden = s.value("StartHidden", false).toBool();
         
         int stepsSize = s.beginReadArray("Steps");
         for (int j = 0; j < stepsSize; ++j) {
@@ -559,6 +567,9 @@ void ClipboardAssistant::onEditActionSet(IClipboardModule*, QString asid) {
     editor->setShortcut(info.customShortcut);
     editor->setIsGlobal(info.isCustomShortcutGlobal);
     editor->setIsAutoCopy(info.isAutoCopy);
+    editor->setCompletionAction(info.completionAction);
+    editor->setIsAutoClose(info.autoClose);
+    editor->setIsStartHidden(info.startHidden);
     editor->setActions(info.actions);
     layout->addWidget(editor);
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -570,6 +581,9 @@ void ClipboardAssistant::onEditActionSet(IClipboardModule*, QString asid) {
         info.customShortcut = editor->shortcut();
         info.isCustomShortcutGlobal = editor->isGlobal();
         info.isAutoCopy = editor->isAutoCopy();
+        info.completionAction = editor->completionAction();
+        info.autoClose = editor->isAutoClose();
+        info.startHidden = editor->isStartHidden();
         info.actions = editor->getActions();
         saveSettings(); updateActionSetShortcuts(); updateButtonsState();
     }
@@ -602,6 +616,9 @@ void ClipboardAssistant::onBtnAddActionSetClicked() {
          info.customShortcut = editor->shortcut();
          info.isCustomShortcutGlobal = editor->isGlobal();
          info.isAutoCopy = editor->isAutoCopy();
+         info.completionAction = editor->completionAction();
+         info.autoClose = editor->isAutoClose();
+         info.startHidden = editor->isStartHidden();
          info.actions = editor->getActions();
          addActionSetWidget(info);
          saveSettings(); updateActionSetShortcuts(); updateButtonsState();
@@ -627,6 +644,9 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
         info.customShortcut = QKeySequence(obj["Shortcut"].toString());
         info.isCustomShortcutGlobal = obj["IsGlobal"].toBool();
         info.isAutoCopy = obj["IsAutoCopy"].toBool();
+        info.completionAction = obj["CompletionAction"].toInt();
+        info.autoClose = obj["AutoClose"].toBool();
+        info.startHidden = obj["StartHidden"].toBool();
         
         QJsonArray steps = obj["Steps"].toArray();
         for (int i = 0; i < steps.size(); ++i) {
@@ -696,6 +716,9 @@ void ClipboardAssistant::onBtnExportAllClicked() {
         obj["Shortcut"] = info.customShortcut.toString();
         obj["IsGlobal"] = info.isCustomShortcutGlobal;
         obj["IsAutoCopy"] = info.isAutoCopy;
+        obj["CompletionAction"] = info.completionAction;
+        obj["AutoClose"] = info.autoClose;
+        obj["StartHidden"] = info.startHidden;
 
         QJsonArray steps;
         for (const auto& step : info.actions) {
@@ -727,6 +750,9 @@ void ClipboardAssistant::onExportActionSet(const QString& asid) {
     obj["Shortcut"] = info.customShortcut.toString();
     obj["IsGlobal"] = info.isCustomShortcutGlobal;
     obj["IsAutoCopy"] = info.isAutoCopy;
+    obj["CompletionAction"] = info.completionAction;
+    obj["AutoClose"] = info.autoClose;
+    obj["StartHidden"] = info.startHidden;
     
     QJsonArray steps;
     for (const auto& step : info.actions) {

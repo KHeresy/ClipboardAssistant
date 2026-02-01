@@ -83,6 +83,50 @@
         </property>
        </widget>
       </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_Completion">
+        <item>
+         <widget class="QLabel" name="labelCompletion">
+          <property name="text">
+           <string>Completion Action:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboCompletion">
+          <item>
+           <property name="text">
+            <string>Show Result</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Copy to Clipboard</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Paste to Active Window</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkAutoClose">
+        <property name="text">
+         <string>Auto-close window after completion</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkStartHidden">
+        <property name="text">
+         <string>Start hidden (don't show window initially)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

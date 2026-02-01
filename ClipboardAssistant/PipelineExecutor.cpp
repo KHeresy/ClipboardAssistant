@@ -1,6 +1,7 @@
 #include "PipelineExecutor.h"
 #include <QMetaObject>
 #include <QApplication>
+#include <QTimer>
 #include "ui_ClipboardAssistant.h"
 
 PipelineExecutor::PipelineExecutor(ClipboardAssistant* parent, const ClipboardAssistant::ActionSetInfo& info, const QMimeData* initialData)
@@ -75,9 +76,32 @@ void PipelineExecutor::executeNext() {
     if (m_currentIdx >= m_info.actions.size()) {
         QMetaObject::invokeMethod(m_parent, [this]() {
             if (m_cancelled) return;
-            m_parent->ui->btnCancel->setVisible(false);
-            m_parent->ui->labelStatus->setText(tr("Pipeline Done."));
-            m_parent->ui->progressBar->setVisible(false);
+
+            // Perform Completion Action
+            if (m_info.completionAction == ClipboardAssistant::CA_CopyToClipboard || 
+                m_info.completionAction == ClipboardAssistant::CA_Paste) 
+            {
+                m_parent->onBtnCopyOutputClicked();
+            }
+
+            if (m_info.completionAction == ClipboardAssistant::CA_Paste) {
+                QTimer::singleShot(500, []() { ClipboardAssistant::sendCtrlV(); });
+            }
+
+            if (m_info.autoClose) {
+                m_parent->hide();
+            } else {
+                m_parent->ui->btnCancel->setVisible(false);
+                m_parent->ui->labelStatus->setText(tr("Pipeline Done."));
+                m_parent->ui->progressBar->setVisible(false);
+                
+                // If it was hidden and we are in "Show Result" mode, show it now
+                if (m_info.startHidden && m_info.completionAction == ClipboardAssistant::CA_ShowResult) {
+                    m_parent->show();
+                    m_parent->activateWindow();
+                }
+            }
+
             m_parent->m_activeModule = nullptr;
             if (m_parent->m_currentExecutor == this) m_parent->m_currentExecutor = nullptr;
             deleteLater();

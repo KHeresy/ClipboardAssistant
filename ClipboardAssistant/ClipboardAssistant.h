@@ -36,8 +36,18 @@ public:
     ClipboardAssistant(QWidget *parent = nullptr);
     ~ClipboardAssistant();
 
+    static void sendCtrlKey(char key);
+    static void sendCtrlC();
+    static void sendCtrlV();
+
     static const int HOTKEY_ID_MAIN = 100;
     static const int HOTKEY_ID_CAPTURE = 99;
+
+    enum CompletionAction {
+        CA_ShowResult = 0,
+        CA_CopyToClipboard = 1,
+        CA_Paste = 2
+    };
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -102,6 +112,9 @@ private:
         QKeySequence customShortcut;
         bool isCustomShortcutGlobal;
         bool isAutoCopy;
+        int completionAction = 0; // 0: Show, 1: Copy, 2: Paste
+        bool autoClose = false;
+        bool startHidden = false;
         QList<ModuleActionInstance> actions;
         
         QPointer<QPushButton> mainButton;

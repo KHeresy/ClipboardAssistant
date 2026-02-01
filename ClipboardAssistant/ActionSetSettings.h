@@ -30,6 +30,15 @@ public:
     bool isAutoCopy() const;
     void setIsAutoCopy(bool isAutoCopy);
 
+    int completionAction() const;
+    void setCompletionAction(int action);
+
+    bool isAutoClose() const;
+    void setIsAutoClose(bool autoClose);
+
+    bool isStartHidden() const;
+    void setIsStartHidden(bool startHidden);
+
     void setActions(const QList<ModuleActionInstance>& actions);
     QList<ModuleActionInstance> getActions() const;
 
