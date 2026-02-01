@@ -104,22 +104,22 @@
         <translation>步驟配置</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="106"/>
+        <location filename="../ActionSetSettings.cpp" line="117"/>
         <source>New %1 Action</source>
         <translation>新增 %1 動作</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="224"/>
+        <location filename="../ActionSetSettings.cpp" line="235"/>
         <source>Select File</source>
         <translation>選取檔案</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="224"/>
+        <location filename="../ActionSetSettings.cpp" line="235"/>
         <source>Select Directory</source>
         <translation>選取目錄</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="232"/>
+        <location filename="../ActionSetSettings.cpp" line="243"/>
         <source>%1:</source>
         <translation>%1:</translation>
     </message>

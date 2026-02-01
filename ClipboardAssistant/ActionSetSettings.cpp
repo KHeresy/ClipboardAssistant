@@ -31,6 +31,17 @@ ActionSetSettings::ActionSetSettings(const QList<ModuleInfo>& modules, QWidget *
     connect(ui->checkGlobal, &QCheckBox::toggled, ui->checkAutoCopy, &QCheckBox::setEnabled);
     connect(ui->checkAutoClose, &QCheckBox::toggled, ui->checkStartHidden, &QCheckBox::setEnabled);
     connect(ui->checkCaptureScreen, &QCheckBox::toggled, ui->checkCaptureCopy, &QCheckBox::setEnabled);
+
+    connect(ui->checkAutoCopy, &QCheckBox::toggled, this, [this](bool checked) {
+        if (checked && ui->checkCaptureScreen->isChecked()) {
+            ui->checkCaptureScreen->setChecked(false);
+        }
+    });
+    connect(ui->checkCaptureScreen, &QCheckBox::toggled, this, [this](bool checked) {
+        if (checked && ui->checkAutoCopy->isChecked()) {
+            ui->checkAutoCopy->setChecked(false);
+        }
+    });
     
     connect(ui->listActions->model(), &QAbstractItemModel::rowsMoved, this, [this]() {
         QList<ModuleActionInstance> newActions;
