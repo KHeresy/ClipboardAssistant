@@ -242,6 +242,17 @@ bool ClipboardAssistant::eventFilter(QObject *w, QEvent *e) {
 bool ClipboardAssistant::nativeEvent(const QByteArray &et, void *m, qintptr *r) {
     MSG* msg = static_cast<MSG*>(m);
     if (msg->message == WM_HOTKEY) {
+        // Send a dummy key event to prevent IME switching (e.g. Ctrl+Shift)
+        // by breaking the "only modifiers pressed" sequence.
+        INPUT input[2] = {};
+        input[0].type = INPUT_KEYBOARD;
+        input[0].ki.wVk = 0xFF; // Unassigned key
+        input[0].ki.dwFlags = 0;
+        input[1].type = INPUT_KEYBOARD;
+        input[1].ki.wVk = 0xFF;
+        input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(2, input, sizeof(INPUT));
+
         int id = (int)msg->wParam;
         if (id == HOTKEY_ID_MAIN) {
             bool shouldAutoCopy = false;
@@ -301,9 +312,25 @@ QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
     }
 
     QMimeData* resultData = nullptr;
-    QScreen* screen = QGuiApplication::primaryScreen();
-    if (screen) {
-        QPixmap fullScreen = screen->grabWindow(0);
+    QList<QScreen*> screens = QGuiApplication::screens();
+    if (!screens.isEmpty()) {
+        QRect totalGeo;
+        for (QScreen* screen : screens) {
+            totalGeo = totalGeo.united(screen->geometry());
+        }
+
+        QPixmap fullScreen(totalGeo.size());
+        fullScreen.setDevicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio());
+        fullScreen.fill(Qt::black);
+
+        {
+            QPainter p(&fullScreen);
+            for (QScreen* screen : screens) {
+                QPixmap screenPixmap = screen->grabWindow(0);
+                p.drawPixmap(screen->geometry().topLeft() - totalGeo.topLeft(), screenPixmap);
+            }
+        }
+
         SnippetOverlay overlay(fullScreen, this);
         if (overlay.exec() == QDialog::Accepted) {
             QPixmap result = overlay.selectedPixmap();
@@ -911,6 +938,7 @@ bool ClipboardAssistant::registerActionSetHotkey(int id, const QKeySequence& ks)
     if (ks.isEmpty()) return true; 
     QString ksStr = ks.toString(QKeySequence::PortableText); UINT m = 0;
     if (ksStr.contains("Ctrl")) m |= MOD_CONTROL; if (ksStr.contains("Alt")) m |= MOD_ALT; if (ksStr.contains("Shift")) m |= MOD_SHIFT; if (ksStr.contains("Meta")) m |= MOD_WIN;
+    m |= 0x4000; // MOD_NOREPEAT
     int k = 0; QStringList p = ksStr.split("+"); if (!p.isEmpty()) { QString kp = p.last();
         if (kp.length() == 1) k = kp.at(0).toUpper().unicode();
         else if (kp.startsWith("F")) { bool ok; int f = kp.mid(1).toInt(&ok); if (ok && f >= 1 && f <= 12) k = VK_F1 + (f - 1); }
