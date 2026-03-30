@@ -384,6 +384,9 @@ void ClipboardAssistant::updateButtonsState() {
             for(auto& mi : m_modules) if(mi.module->id() == it.value().actions[0].moduleId) { firstModule = mi.module; break; }
             if (firstModule) {
                 bool isEnabled = (firstModule->supportedInputs() & cT) != IClipboardModule::None;
+                if (it.value().isAutoCopy || it.value().isCaptureScreen) {
+                    isEnabled = true;
+                }
                 it.value().mainButton->setEnabled(isEnabled);
                 
                 QGraphicsOpacityEffect* effect = qobject_cast<QGraphicsOpacityEffect*>(it.value().mainButton->graphicsEffect());
