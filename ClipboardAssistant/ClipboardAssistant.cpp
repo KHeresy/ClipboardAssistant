@@ -315,18 +315,21 @@ QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
     QList<QScreen*> screens = QGuiApplication::screens();
     if (!screens.isEmpty()) {
         QRect totalGeo;
+        qreal maxDpr = 1.0;
         for (QScreen* screen : screens) {
             totalGeo = totalGeo.united(screen->geometry());
+            if (screen->devicePixelRatio() > maxDpr) maxDpr = screen->devicePixelRatio();
         }
 
-        QPixmap fullScreen(totalGeo.size());
-        fullScreen.setDevicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio());
+        QPixmap fullScreen(totalGeo.size() * maxDpr);
+        fullScreen.setDevicePixelRatio(maxDpr);
         fullScreen.fill(Qt::black);
 
         {
             QPainter p(&fullScreen);
             for (QScreen* screen : screens) {
                 QPixmap screenPixmap = screen->grabWindow(0);
+                screenPixmap.setDevicePixelRatio(screen->devicePixelRatio());
                 p.drawPixmap(screen->geometry().topLeft() - totalGeo.topLeft(), screenPixmap);
             }
         }
