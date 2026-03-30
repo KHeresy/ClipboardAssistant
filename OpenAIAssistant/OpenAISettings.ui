@@ -58,11 +58,36 @@
          <widget class="QLineEdit" name="editName"/>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkAzure">
-          <property name="text">
-           <string>Use Azure OpenAI</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_azure">
+          <item>
+           <widget class="QCheckBox" name="checkAzure">
+            <property name="text">
+             <string>Use Azure OpenAI (Full URL mode)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_auth">
+            <property name="text">
+             <string>Auth Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboAuthMode">
+            <item>
+             <property name="text">
+              <string>api-key</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Authorization: Bearer</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QLabel" name="label_key">
@@ -109,6 +134,49 @@
          <widget class="QLineEdit" name="editUrl"/>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_api">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_apiType">
+            <item>
+             <widget class="QLabel" name="label_apiType">
+              <property name="text">
+               <string>API Type:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboApiType">
+              <item>
+               <property name="text">
+                <string>Chat</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Completions (Legacy)</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_suffix">
+            <item>
+             <widget class="QLabel" name="label_suffix">
+              <property name="text">
+               <string>Endpoint Suffix:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="editSuffix"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_test">
           <item>
            <widget class="QPushButton" name="btnTest">
@@ -144,19 +212,6 @@
            <bool>true</bool>
           </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>

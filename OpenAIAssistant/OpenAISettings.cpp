@@ -28,6 +28,9 @@ OpenAISettings::OpenAISettings(QWidget *parent)
     connect(ui->editModel, &QLineEdit::textChanged, this, &OpenAISettings::onFieldChanged);
     connect(ui->editPrompt, &QLineEdit::textChanged, this, &OpenAISettings::onFieldChanged);
     connect(ui->editUrl, &QLineEdit::textChanged, this, &OpenAISettings::onFieldChanged);
+    connect(ui->editSuffix, &QLineEdit::textChanged, this, &OpenAISettings::onFieldChanged);
+    connect(ui->comboApiType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &OpenAISettings::onFieldChanged);
+    connect(ui->comboAuthMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &OpenAISettings::onFieldChanged);
     connect(ui->checkAzure, &QCheckBox::toggled, this, &OpenAISettings::onFieldChanged);
     connect(ui->btnTest, &QPushButton::clicked, this, &OpenAISettings::onTestAccount);
 
@@ -58,6 +61,9 @@ void OpenAISettings::loadAccounts()
         acc.model = s.value("Model").toString().trimmed();
         acc.systemPrompt = s.value("SystemPrompt").toString().trimmed();
         acc.baseUrl = s.value("Url").toString().trimmed();
+        acc.customSuffix = s.value("Suffix").toString().trimmed();
+        acc.apiType = s.value("ApiType", "Chat").toString();
+        acc.authMode = s.value("AuthMode", "api-key").toString();
         acc.isAzure = s.value("IsAzure").toBool();
         m_accounts.insert(id, acc);
         
@@ -79,6 +85,9 @@ void OpenAISettings::onAddAccount()
     acc.model = "gpt-3.5-turbo";
     acc.systemPrompt = "You are a helpful assistant.";
     acc.baseUrl = "https://api.openai.com/v1";
+    acc.apiType = "Chat";
+    acc.authMode = "Authorization: Bearer";
+    acc.customSuffix = "";
 
     m_accounts.insert(id, acc);
     QListWidgetItem* item = new QListWidgetItem(acc.displayName, ui->listAccounts);
@@ -92,12 +101,15 @@ void OpenAISettings::onRemoveAccount()
     if (!item) return;
 
     QString id = item->data(Qt::UserRole).toString();
+    
+    m_currentAccountId.clear(); // Clear it first
     m_accounts.remove(id);
+    
     delete item;
+    ui->groupDetails->setEnabled(false);
 
-    if (ui->listAccounts->count() == 0) {
-        m_currentAccountId.clear();
-        ui->groupDetails->setEnabled(false);
+    if (ui->listAccounts->count() > 0) {
+        ui->listAccounts->setCurrentRow(0);
     }
 }
 
@@ -118,6 +130,9 @@ void OpenAISettings::onAccountSelected()
     ui->editModel->setText(acc.model);
     ui->editPrompt->setText(acc.systemPrompt);
     ui->editUrl->setText(acc.baseUrl);
+    ui->editSuffix->setText(acc.customSuffix);
+    ui->comboApiType->setCurrentText(acc.apiType);
+    ui->comboAuthMode->setCurrentText(acc.authMode);
     ui->checkAzure->setChecked(acc.isAzure);
     
     updateHelp();
@@ -149,8 +164,13 @@ void OpenAISettings::updateHelp()
         }
     } else {
         helpText = QCoreApplication::translate("OpenAISettings", "OpenAI URL: ") + "https://api.openai.com/v1";
-        if (url.contains("/chat/completions")) {
-            helpText += "<br><font color='orange'>" + QCoreApplication::translate("OpenAISettings", "Warning: Base URL should usually NOT include '/chat/completions'.") + "</font>";
+        QString suffix = ui->editSuffix->text().trimmed();
+        if (url.contains("/chat/completions") || url.contains("/completions")) {
+            helpText += "<br><font color='orange'>" + QCoreApplication::translate("OpenAISettings", "Warning: Base URL should usually NOT include endpoints like '/chat/completions'.") + "</font>";
+        }
+        if (suffix.isEmpty()) {
+             QString type = ui->comboApiType->currentText();
+             helpText += "<br>" + QCoreApplication::translate("OpenAISettings", "Default suffix will be: ") + (type == "Chat" ? "/chat/completions" : "/completions");
         }
     }
     
@@ -163,6 +183,9 @@ void OpenAISettings::onTestAccount()
     QString key = ui->editKey->text().trimmed();
     QString model = ui->editModel->text().trimmed();
     QString urlStr = ui->editUrl->text().trimmed();
+    QString suffix = ui->editSuffix->text().trimmed();
+    QString type = ui->comboApiType->currentText();
+    QString auth = ui->comboAuthMode->currentText();
     bool isAz = ui->checkAzure->isChecked();
 
     if (key.isEmpty() || urlStr.isEmpty()) {
@@ -178,25 +201,30 @@ void OpenAISettings::onTestAccount()
         url = QUrl(urlStr);
     } else {
         if (urlStr.endsWith("/")) urlStr.chop(1);
-        url = QUrl(urlStr + "/chat/completions");
+        if (suffix.isEmpty()) suffix = (type == "Chat" ? "/chat/completions" : "/completions");
+        if (!suffix.startsWith("/")) suffix = "/" + suffix;
+        url = QUrl(urlStr + suffix);
     }
 
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    if (isAz) req.setRawHeader("api-key", key.toUtf8());
+    if (auth == "api-key") req.setRawHeader("api-key", key.toUtf8());
     else req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
-
-    QJsonObject msg;
-    msg["role"] = "user";
-    msg["content"] = "Ping";
-    
-    QJsonArray msgs;
-    msgs.append(msg);
 
     QJsonObject json;
     json["model"] = model;
-    json["messages"] = msgs;
-    // Remove token limit to avoid 'limit reached' error during testing
+
+    if (type == "Chat") {
+        QJsonObject msg;
+        msg["role"] = "user";
+        msg["content"] = "Ping";
+        QJsonArray msgs;
+        msgs.append(msg);
+        json["messages"] = msgs;
+    } else {
+        json["prompt"] = "Ping";
+        json["max_tokens"] = 5;
+    }
 
     QNetworkReply* reply = m_networkManager->post(req, QJsonDocument(json).toJson());
 
@@ -220,7 +248,7 @@ void OpenAISettings::onTestAccount()
 
 void OpenAISettings::saveCurrentToMap()
 {
-    if (m_currentAccountId.isEmpty()) return;
+    if (m_currentAccountId.isEmpty() || !m_accounts.contains(m_currentAccountId)) return;
 
     OpenAIAccount& acc = m_accounts[m_currentAccountId];
     acc.displayName = ui->editName->text().trimmed();
@@ -228,6 +256,9 @@ void OpenAISettings::saveCurrentToMap()
     acc.model = ui->editModel->text().trimmed();
     acc.systemPrompt = ui->editPrompt->text().trimmed();
     acc.baseUrl = ui->editUrl->text().trimmed();
+    acc.customSuffix = ui->editSuffix->text().trimmed();
+    acc.apiType = ui->comboApiType->currentText();
+    acc.authMode = ui->comboAuthMode->currentText();
     acc.isAzure = ui->checkAzure->isChecked();
 }
 
@@ -245,6 +276,9 @@ void OpenAISettings::accept()
         s.setValue("Model", it.value().model);
         s.setValue("SystemPrompt", it.value().systemPrompt);
         s.setValue("Url", it.value().baseUrl);
+        s.setValue("Suffix", it.value().customSuffix);
+        s.setValue("ApiType", it.value().apiType);
+        s.setValue("AuthMode", it.value().authMode);
         s.setValue("IsAzure", it.value().isAzure);
         s.endGroup();
     }

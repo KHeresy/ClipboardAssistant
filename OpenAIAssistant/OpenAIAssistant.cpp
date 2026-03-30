@@ -43,7 +43,14 @@ QList<ParameterDefinition> OpenAIAssistant::actionParameterDefinitions() const {
         {"Prompt", QCoreApplication::translate("OpenAIAssistant", "System Prompt"), ParameterType::Text, "", {}, QCoreApplication::translate("OpenAIAssistant", "The prompt to send to the AI")},
         {"PromptMode", QCoreApplication::translate("OpenAIAssistant", "Prompt Mode"), ParameterType::Choice, "Override", {"Override", "Append"}, QCoreApplication::translate("OpenAIAssistant", "Choose whether to override or append to account default prompt")},
         {"MaxTokens", QCoreApplication::translate("OpenAIAssistant", "Max Tokens"), ParameterType::Number, 0, {}, QCoreApplication::translate("OpenAIAssistant", "Maximum tokens to generate (0 for model default)")},
-        {"OverrideModel", QCoreApplication::translate("OpenAIAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("OpenAIAssistant", "Leave empty to use account default model")}
+        {"OverrideModel", QCoreApplication::translate("OpenAIAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("OpenAIAssistant", "Leave empty to use account default model")},
+        {"Temperature", QCoreApplication::translate("OpenAIAssistant", "Temperature"), ParameterType::Number, 1.0, {}, QCoreApplication::translate("OpenAIAssistant", "What sampling temperature to use (0 to 2)")},
+        {"TopP", QCoreApplication::translate("OpenAIAssistant", "Top P"), ParameterType::Number, 1.0, {}, QCoreApplication::translate("OpenAIAssistant", "Nucleus sampling probability (0 to 1)")},
+        {"FrequencyPenalty", QCoreApplication::translate("OpenAIAssistant", "Frequency Penalty"), ParameterType::Number, 0.0, {}, QCoreApplication::translate("OpenAIAssistant", "Penalize new tokens based on their existing frequency in the text (-2.0 to 2.0)")},
+        {"PresencePenalty", QCoreApplication::translate("OpenAIAssistant", "Presence Penalty"), ParameterType::Number, 0.0, {}, QCoreApplication::translate("OpenAIAssistant", "Penalize new tokens based on whether they appear in the text so far (-2.0 to 2.0)")},
+        {"ReasoningEffort", QCoreApplication::translate("OpenAIAssistant", "Reasoning Effort"), ParameterType::Choice, "medium", {"low", "medium", "high"}, QCoreApplication::translate("OpenAIAssistant", "For reasoning models (o1/o3), sets how much effort to spend on thinking")},
+        {"ResponseFormat", QCoreApplication::translate("OpenAIAssistant", "Response Format"), ParameterType::Choice, "Text", {"Text", "JSON Object"}, QCoreApplication::translate("OpenAIAssistant", "The format that the model must output")},
+        {"RawJsonParams", QCoreApplication::translate("OpenAIAssistant", "Raw JSON Params"), ParameterType::Text, "", {}, QCoreApplication::translate("OpenAIAssistant", "Optional raw JSON parameters to merge into the request body")}
     };
 }
 
@@ -75,7 +82,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QString promptMode = actionParams.value("PromptMode").toString();
 
     // Find account info in internal settings
-    QString key, model, urlStr, accountSystemPrompt;
+    QString key, model, urlStr, suffix, apiType, authMode, accountSystemPrompt;
     bool isAz = false;
     bool found = false;
 
@@ -93,6 +100,9 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
             key = s.value(id + "/Key").toString().trimmed();
             model = s.value(id + "/Model").toString().trimmed();
             urlStr = s.value(id + "/Url").toString().trimmed();
+            suffix = s.value(id + "/Suffix").toString().trimmed();
+            apiType = s.value(id + "/ApiType", "Chat").toString();
+            authMode = s.value(id + "/AuthMode", "api-key").toString();
             accountSystemPrompt = s.value(id + "/SystemPrompt").toString().trimmed();
             isAz = s.value(id + "/IsAzure").toBool();
             found = true;
@@ -126,6 +136,9 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         key = s.value("Key").toString().trimmed();
         model = s.value("Model").toString().trimmed();
         urlStr = s.value("Url").toString().trimmed();
+        suffix = s.value("Suffix").toString().trimmed();
+        apiType = s.value("ApiType", "Chat").toString();
+        authMode = s.value("AuthMode", "api-key").toString();
         accountSystemPrompt = s.value("SystemPrompt").toString().trimmed();
         isAz = s.value("IsAzure").toBool();
         s.endGroup();
@@ -171,25 +184,56 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QJsonObject sys; sys["role"]="system"; sys["content"]=prompt; msgs.append(sys);
     QJsonObject usr; usr["role"]="user"; usr["content"]=content; msgs.append(usr);
 
-        QJsonObject json; json["model"]=model; json["messages"]=msgs; json["stream"]=true;
-        
-        int maxTokens = actionParams.value("MaxTokens").toInt();
-        if (maxTokens > 0) {
-            // Use max_completion_tokens for newer models; some models might still need max_tokens
-            // But for stream=true, many providers accept either.
-            json["max_completion_tokens"] = maxTokens;
+    QJsonObject json; json["model"]=model; json["stream"]=true;
+    
+    if (apiType == "Chat") {
+        json["messages"] = msgs;
+        if (actionParams.value("ResponseFormat").toString() == "JSON Object") {
+            QJsonObject fmt; fmt["type"] = "json_object"; json["response_format"] = fmt;
         }
-        
-        QUrl url;    if (isAz) {
+    } else {
+        QString fullPrompt = prompt + "\n\n";
+        if (data->hasText()) fullPrompt += data->text();
+        json["prompt"] = fullPrompt;
+    }
+    
+    int maxTokens = actionParams.value("MaxTokens").toInt();
+    if (maxTokens > 0) {
+        if (apiType == "Chat") json["max_completion_tokens"] = maxTokens;
+        else json["max_tokens"] = maxTokens;
+    }
+    
+    if (actionParams.contains("Temperature")) json["temperature"] = actionParams.value("Temperature").toDouble();
+    if (actionParams.contains("TopP")) json["top_p"] = actionParams.value("TopP").toDouble();
+    if (actionParams.contains("FrequencyPenalty")) json["frequency_penalty"] = actionParams.value("FrequencyPenalty").toDouble();
+    if (actionParams.contains("PresencePenalty")) json["presence_penalty"] = actionParams.value("PresencePenalty").toDouble();
+    
+    if (actionParams.contains("ReasoningEffort") && (model.contains("o1") || model.contains("o3") || model.contains("gpt-5.4") || model.contains("o5"))) {
+        json["reasoning_effort"] = actionParams.value("ReasoningEffort").toString();
+    }
+
+    QString rawJson = actionParams.value("RawJsonParams").toString().trimmed();
+    if (!rawJson.isEmpty()) {
+        QJsonDocument doc = QJsonDocument::fromJson(rawJson.toUtf8());
+        if (doc.isObject()) {
+            QJsonObject rawObj = doc.object();
+            for (auto it = rawObj.begin(); it != rawObj.end(); ++it) json[it.key()] = it.value();
+        }
+    }
+    
+    QUrl url;
+    if (isAz) {
         url = QUrl(urlStr);
     } else {
         if (urlStr.endsWith("/")) urlStr.chop(1);
-        url = QUrl(urlStr + "/chat/completions");
+        if (suffix.isEmpty()) suffix = (apiType == "Chat" ? "/chat/completions" : "/completions");
+        if (!suffix.startsWith("/")) suffix = "/" + suffix;
+        url = QUrl(urlStr + suffix);
     }
 
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    if (isAz) req.setRawHeader("api-key", key.toUtf8()); 
+    if (authMode == "api-key") req.setRawHeader("api-key", key.toUtf8()); 
     else req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
 
     m_currentReply = m_networkManager->post(req, QJsonDocument(json).toJson());
@@ -197,7 +241,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QNetworkReply* reply = m_currentReply;
     QByteArray* buf = new QByteArray();
 
-    connect(reply, &QNetworkReply::readyRead, [reply, callback, buf]() {
+    connect(reply, &QNetworkReply::readyRead, [reply, callback, buf, apiType]() {
         while(reply->canReadLine()) {
             QByteArray line = reply->readLine().trimmed();
             if (line.startsWith("data: ")) {
@@ -207,11 +251,11 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
                     QJsonArray choices = doc.object()["choices"].toArray();
                     if (!choices.isEmpty()) {
                         QJsonObject choice = choices[0].toObject();
-                        QString content = choice["delta"].toObject()["content"].toString();
-                        if (!content.isEmpty()) {
-                            callback->onTextData(content, false);
-                        }
+                        QString text;
+                        if (apiType == "Chat") text = choice["delta"].toObject()["content"].toString();
+                        else text = choice["text"].toString();
                         
+                        if (!text.isEmpty()) callback->onTextData(text, false);
                         if (choice["finish_reason"].toString() == "length") {
                             callback->onError(QCoreApplication::translate("OpenAIAssistant", "\n\n[Warning: Message truncated due to Max Tokens limit.]"));
                         }
@@ -221,19 +265,19 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         }
     });
 
-    connect(reply, &QNetworkReply::finished, [this, reply, callback, buf]() {
+    connect(reply, &QNetworkReply::finished, [this, reply, callback, buf, apiType]() {
         if (m_currentReply == reply) m_currentReply = nullptr;
-
-        // 先斷開連線防止任何重複觸發
         reply->disconnect();
-
         if (reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::OperationCanceledError) {
             callback->onError(reply->errorString() + "\n" + QString::fromUtf8(*buf));
         } else {
             if (!buf->isEmpty()) {
                 QJsonDocument doc = QJsonDocument::fromJson(*buf);
                 QJsonArray choices = doc.object()["choices"].toArray();
-                if (!choices.isEmpty()) callback->onTextData(choices[0].toObject()["message"].toObject()["content"].toString(), true);
+                if (!choices.isEmpty()) {
+                    if (apiType == "Chat") callback->onTextData(choices[0].toObject()["message"].toObject()["content"].toString(), true);
+                    else callback->onTextData(choices[0].toObject()["text"].toString(), true);
+                }
             }
             callback->onTextData("", true); 
             callback->onFinished();

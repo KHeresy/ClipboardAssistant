@@ -10,7 +10,10 @@ struct OpenAIAccount {
     QString apiKey;
     QString model;
     QString baseUrl;
+    QString customSuffix; // Added for more flexibility (e.g., /chat/completions or /completions)
     QString systemPrompt;
+    QString apiType;      // "Chat" or "Completions"
+    QString authMode;     // "Bearer" or "api-key"
     bool isAzure;
 };
 

@@ -662,10 +662,14 @@ void ClipboardAssistant::onDeleteActionSet(IClipboardModule*, QString asid) {
     if (QMessageBox::question(this, tr("Confirm"), tr("Delete pipeline?")) == QMessageBox::Yes) { 
         for (int i = 0; i < ui->listActionSets->count(); ++i) {
             if (ui->listActionSets->item(i)->data(Qt::UserRole).toString() == asid) {
-                delete ui->listActionSets->takeItem(i); break;
+                delete ui->listActionSets->takeItem(i); 
+                break;
             }
         }
-        m_actionSetMap.remove(asid); saveSettings(); updateActionSetShortcuts();
+        m_actionSetMap.remove(asid); 
+        saveSettings(); 
+        updateActionSetShortcuts();
+        updateButtonsState();
     } 
 }
 
