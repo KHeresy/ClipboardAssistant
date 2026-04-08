@@ -23,11 +23,12 @@
 
 QT_END_NAMESPACE
 
+struct SelectionState;
+
 class SnippetOverlay : public QDialog {
     Q_OBJECT
 public:
-    explicit SnippetOverlay(const QPixmap& screenShot, QWidget* parent = nullptr);
-    QRect selectedRect() const;
+    explicit SnippetOverlay(const QPixmap& fullCanvas, const QRect& screenGeo, const QRect& totalGeo, SelectionState* state, QWidget* parent = nullptr);
     QPixmap selectedPixmap() const;
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -36,10 +37,11 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
 private:
-    QPixmap m_fullScreenPixmap;
-    QPoint m_startPoint;
-    QRect m_selectionRect;
-    bool m_isSelecting;
+    QRect selectedRect() const;
+    const QPixmap& m_fullCanvas;
+    QRect m_screenGeo; // My geometry in global logical coordinates
+    QRect m_totalGeo;  // Total bounding box of all screens
+    SelectionState* m_state;
 };
 
 class ModuleCallback : public QObject, public IModuleCallback {

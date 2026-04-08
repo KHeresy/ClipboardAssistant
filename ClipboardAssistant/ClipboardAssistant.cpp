@@ -303,6 +303,15 @@ void ClipboardAssistant::onCaptureHotkey() {
     }
 }
 
+// --- SelectionState Definition ---
+struct SelectionState {
+    QRect selectionRect; // Global logical coordinates
+    bool isSelecting = false;
+    QPoint startPoint; // Global logical coordinates
+    bool accepted = false;
+    QList<SnippetOverlay*> overlays;
+};
+
 QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
     bool wasVisible = isVisible();
     if (wasVisible) {
@@ -321,12 +330,12 @@ QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
             if (screen->devicePixelRatio() > maxDpr) maxDpr = screen->devicePixelRatio();
         }
 
-        QPixmap fullScreen(totalGeo.size() * maxDpr);
-        fullScreen.setDevicePixelRatio(maxDpr);
-        fullScreen.fill(Qt::black);
+        QPixmap fullCanvas(totalGeo.size() * maxDpr);
+        fullCanvas.setDevicePixelRatio(maxDpr);
+        fullCanvas.fill(Qt::black);
 
         {
-            QPainter p(&fullScreen);
+            QPainter p(&fullCanvas);
             for (QScreen* screen : screens) {
                 QPixmap screenPixmap = screen->grabWindow(0);
                 screenPixmap.setDevicePixelRatio(screen->devicePixelRatio());
@@ -334,14 +343,39 @@ QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
             }
         }
 
-        SnippetOverlay overlay(fullScreen, this);
-        if (overlay.exec() == QDialog::Accepted) {
-            QPixmap result = overlay.selectedPixmap();
+        SelectionState state;
+        QEventLoop loop;
+        for (QScreen* screen : screens) {
+            SnippetOverlay* overlay = new SnippetOverlay(fullCanvas, screen->geometry(), totalGeo, &state);
+            overlay->setScreen(screen);
+            state.overlays.append(overlay);
+            // When one overlay is finished (accepted or rejected), close all and quit the loop.
+            connect(overlay, &QDialog::finished, &loop, [&]() {
+                for (auto o : state.overlays) {
+                    if (o->isVisible()) {
+                        o->blockSignals(true);
+                        o->hide();
+                        o->blockSignals(false);
+                    }
+                }
+                loop.quit();
+            });
+            overlay->show();
+        }
+        
+        loop.exec();
+
+        if (state.accepted) {
+            // Get selected pixmap from any overlay (since they share state and canvas)
+            QPixmap result = state.overlays.first()->selectedPixmap();
             if (!result.isNull()) {
                 resultData = new QMimeData();
                 resultData->setImageData(result.toImage());
             }
         }
+
+        // Clean up overlays
+        qDeleteAll(state.overlays);
     }
 
     if (wasVisible && restoreWindow) {
@@ -1020,67 +1054,99 @@ void ModuleCallback::onFinished() {
 }
 
 // --- SnippetOverlay Implementation ---
-SnippetOverlay::SnippetOverlay(const QPixmap& screenShot, QWidget* parent)
-    : QDialog(parent), m_fullScreenPixmap(screenShot), m_isSelecting(false)
+SnippetOverlay::SnippetOverlay(const QPixmap& fullCanvas, const QRect& screenGeo, const QRect& totalGeo, SelectionState* state, QWidget* parent)
+    : QDialog(parent), m_fullCanvas(fullCanvas), m_screenGeo(screenGeo), m_totalGeo(totalGeo), m_state(state)
 {
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
     setCursor(Qt::CrossCursor);
-    QRect totalGeo;
-    for (QScreen* screen : QGuiApplication::screens()) {
-        totalGeo = totalGeo.united(screen->geometry());
-    }
-    setGeometry(totalGeo);
+    setGeometry(screenGeo);
 }
 
 QRect SnippetOverlay::selectedRect() const {
-    return m_selectionRect.normalized();
+    return m_state->selectionRect.normalized();
 }
 
 QPixmap SnippetOverlay::selectedPixmap() const {
     QRect r = selectedRect();
     if (r.isEmpty()) return QPixmap();
-    return m_fullScreenPixmap.copy(r);
+    
+    // r 是全域邏輯座標，相對於 m_totalGeo.topLeft()
+    // 我們需要將其轉換為相對於 m_fullCanvas 左上角 (0,0) 的座標
+    r.translate(-m_totalGeo.topLeft());
+
+    qreal dpr = m_fullCanvas.devicePixelRatio();
+    QRect pixelRect(
+        qRound(r.x() * dpr),
+        qRound(r.y() * dpr),
+        qRound(r.width() * dpr),
+        qRound(r.height() * dpr)
+    );
+    
+    QPixmap result = m_fullCanvas.copy(pixelRect);
+    result.setDevicePixelRatio(dpr);
+    return result;
 }
 
 void SnippetOverlay::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
-    painter.drawPixmap(0, 0, m_fullScreenPixmap);
+    
+    // 繪製對應區域的 Pixmap
+    // m_fullCanvas 是全域的，我們需要繪製 m_screenGeo 對應的部分
+    // 注意：drawPixmap 的來源矩形（第 4-7 個參數）必須是像素座標
+    qreal dpr = m_fullCanvas.devicePixelRatio();
+    QRect sourceRect(
+        qRound((m_screenGeo.x() - m_totalGeo.x()) * dpr),
+        qRound((m_screenGeo.y() - m_totalGeo.y()) * dpr),
+        qRound(m_screenGeo.width() * dpr),
+        qRound(m_screenGeo.height() * dpr)
+    );
+    
+    painter.drawPixmap(rect(), m_fullCanvas, sourceRect);
+
     QColor dimColor(0, 0, 0, 120);
-    QRect r = selectedRect();
+    QRect r = selectedRect(); // Global logical
+    
+    // 將全域的選擇框轉為本地座標
+    QRect localR = r.translated(-m_screenGeo.topLeft());
+
     if (r.isEmpty()) {
         painter.fillRect(rect(), dimColor);
     } else {
-        painter.fillRect(0, 0, width(), r.top(), dimColor);
-        painter.fillRect(0, r.bottom() + 1, width(), height() - r.bottom(), dimColor);
-        painter.fillRect(0, r.top(), r.left(), r.height(), dimColor);
-        painter.fillRect(r.right() + 1, r.top(), width() - r.right(), r.height(), dimColor);
+        // 繪製遮罩
+        painter.fillRect(0, 0, width(), localR.top(), dimColor);
+        painter.fillRect(0, localR.bottom() + 1, width(), height() - localR.bottom(), dimColor);
+        painter.fillRect(0, localR.top(), localR.left(), localR.height(), dimColor);
+        painter.fillRect(localR.right() + 1, localR.top(), width() - localR.right(), localR.height(), dimColor);
+        
         painter.setPen(QPen(Qt::red, 2));
-        painter.drawRect(r);
+        painter.drawRect(localR);
+        
         QString sizeText = QString("%1 x %2").arg(r.width()).arg(r.height());
         painter.setPen(Qt::white);
-        painter.drawText(r.topLeft() - QPoint(0, 5), sizeText);
+        painter.drawText(localR.topLeft() - QPoint(0, 5), sizeText);
     }
 }
 
 void SnippetOverlay::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
-        m_startPoint = event->pos();
-        m_selectionRect = QRect(m_startPoint, QSize());
-        m_isSelecting = true;
-        update();
+        m_state->startPoint = event->globalPosition().toPoint();
+        m_state->selectionRect = QRect(m_state->startPoint, QSize());
+        m_state->isSelecting = true;
+        for (auto o : m_state->overlays) o->update();
     }
 }
 
 void SnippetOverlay::mouseMoveEvent(QMouseEvent* event) {
-    if (m_isSelecting) {
-        m_selectionRect = QRect(m_startPoint, event->pos());
-        update();
+    if (m_state->isSelecting) {
+        m_state->selectionRect = QRect(m_state->startPoint, event->globalPosition().toPoint());
+        for (auto o : m_state->overlays) o->update();
     }
 }
 
 void SnippetOverlay::mouseReleaseEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton && m_isSelecting) {
-        m_isSelecting = false;
+    if (event->button() == Qt::LeftButton && m_state->isSelecting) {
+        m_state->isSelecting = false;
+        m_state->accepted = !selectedRect().isEmpty();
         accept(); 
     }
 }
