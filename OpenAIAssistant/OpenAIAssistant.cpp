@@ -21,7 +21,32 @@ QString normalizeAuthMode(const QString& value)
 
 bool isChatApiType(const QString& value)
 {
-    return value.trimmed().compare("Chat", Qt::CaseInsensitive) == 0;
+    const QString v = value.trimmed().toLower();
+    if (v.contains("completion") || v.contains("legacy")) return false;
+    return true;
+}
+
+QUrl buildRequestUrl(QString urlStr, QString suffix, const QString& apiType, bool isAzure)
+{
+    if (urlStr.endsWith('/')) urlStr.chop(1);
+    if (suffix.trimmed().isEmpty()) suffix = (isChatApiType(apiType) ? "/chat/completions" : "/completions");
+    if (!suffix.startsWith('/')) suffix = "/" + suffix;
+
+    if (!isAzure) return QUrl(urlStr + suffix);
+
+    QUrl url(urlStr);
+    if (!url.isValid()) return QUrl(urlStr);
+
+    QString path = url.path();
+    const bool hasEndpoint = path.contains("/chat/completions", Qt::CaseInsensitive)
+        || path.contains("/completions", Qt::CaseInsensitive);
+
+    if (!hasEndpoint) {
+        if (path.endsWith('/')) path.chop(1);
+        url.setPath(path + suffix);
+    }
+
+    return url;
 }
 }
 
@@ -243,15 +268,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         }
     }
     
-    QUrl url;
-    if (isAz) {
-        url = QUrl(urlStr);
-    } else {
-        if (urlStr.endsWith("/")) urlStr.chop(1);
-        if (suffix.isEmpty()) suffix = (isChatApiType(apiType) ? "/chat/completions" : "/completions");
-        if (!suffix.startsWith("/")) suffix = "/" + suffix;
-        url = QUrl(urlStr + suffix);
-    }
+    QUrl url = buildRequestUrl(urlStr, suffix, apiType, isAz);
 
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

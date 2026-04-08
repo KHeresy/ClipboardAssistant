@@ -18,7 +18,37 @@ QString normalizeAuthMode(const QString& value)
 
 QString normalizeApiType(const QString& value)
 {
-    return value.trimmed().compare("Chat", Qt::CaseInsensitive) == 0 ? "Chat" : "Completions";
+    const QString v = value.trimmed().toLower();
+    if (v.contains("completion") || v.contains("legacy")) return "Completions";
+    return "Chat";
+}
+
+bool isChatApiType(const QString& value)
+{
+    return value.trimmed().compare("Chat", Qt::CaseInsensitive) == 0;
+}
+
+QUrl buildRequestUrl(QString urlStr, QString suffix, const QString& apiType, bool isAzure)
+{
+    if (urlStr.endsWith('/')) urlStr.chop(1);
+    if (suffix.trimmed().isEmpty()) suffix = (isChatApiType(apiType) ? "/chat/completions" : "/completions");
+    if (!suffix.startsWith('/')) suffix = "/" + suffix;
+
+    if (!isAzure) return QUrl(urlStr + suffix);
+
+    QUrl url(urlStr);
+    if (!url.isValid()) return QUrl(urlStr);
+
+    QString path = url.path();
+    const bool hasEndpoint = path.contains("/chat/completions", Qt::CaseInsensitive)
+        || path.contains("/completions", Qt::CaseInsensitive);
+
+    if (!hasEndpoint) {
+        if (path.endsWith('/')) path.chop(1);
+        url.setPath(path + suffix);
+    }
+
+    return url;
 }
 }
 
@@ -144,7 +174,7 @@ void OpenAISettings::onAccountSelected()
     ui->editPrompt->setText(acc.systemPrompt);
     ui->editUrl->setText(acc.baseUrl);
     ui->editSuffix->setText(acc.customSuffix);
-    ui->comboApiType->setCurrentText(acc.apiType == "Chat" ? "Chat" : "Completions (Legacy)");
+    ui->comboApiType->setCurrentIndex(acc.apiType == "Chat" ? 0 : 1);
     ui->comboAuthMode->setCurrentText(acc.authMode == "api-key" ? "api-key" : "Authorization: Bearer");
     ui->checkAzure->setChecked(acc.isAzure);
     
@@ -167,12 +197,15 @@ void OpenAISettings::updateHelp()
 {
     QString url = ui->editUrl->text().trimmed();
     bool isAzure = ui->checkAzure->isChecked();
+    const QString lowerUrl = url.toLower();
     QString helpText;
     QString style = "font-size: 10px; ";
 
     if (isAzure) {
-        helpText = QCoreApplication::translate("OpenAISettings", "Azure URL: ") + "https://{res}.openai.azure.com/openai/deployments/{dep}/chat/completions?api-version=2024-05-01-preview";
-        if (!url.isEmpty() && !url.contains("api-version=")) {
+        helpText = QCoreApplication::translate("OpenAISettings", "Azure URL: ") + "https://{res}.openai.azure.com/openai/v1/";
+        helpText += "<br>" + QCoreApplication::translate("OpenAISettings", "Legacy format also supported: ") + "https://{res}.openai.azure.com/openai/deployments/{dep}/chat/completions?api-version=2024-05-01-preview";
+        const bool isAzureV1 = lowerUrl.contains("/openai/v1");
+        if (!url.isEmpty() && !isAzureV1 && !lowerUrl.contains("api-version=")) {
             helpText += "<br><font color='red'>" + QCoreApplication::translate("OpenAISettings", "Warning: Azure URL usually requires '?api-version=' parameter.") + "</font>";
         }
     } else {
@@ -197,7 +230,7 @@ void OpenAISettings::onTestAccount()
     QString model = ui->editModel->text().trimmed();
     QString urlStr = ui->editUrl->text().trimmed();
     QString suffix = ui->editSuffix->text().trimmed();
-    QString type = normalizeApiType(ui->comboApiType->currentText());
+    QString type = (ui->comboApiType->currentIndex() == 1) ? "Completions" : "Chat";
     QString auth = normalizeAuthMode(ui->comboAuthMode->currentText());
     bool isAz = ui->checkAzure->isChecked();
 
@@ -209,15 +242,7 @@ void OpenAISettings::onTestAccount()
     ui->btnTest->setEnabled(false);
     ui->btnTest->setText(QCoreApplication::translate("OpenAISettings", "Testing..."));
 
-    QUrl url;
-    if (isAz) {
-        url = QUrl(urlStr);
-    } else {
-        if (urlStr.endsWith("/")) urlStr.chop(1);
-        if (suffix.isEmpty()) suffix = (type == "Chat" ? "/chat/completions" : "/completions");
-        if (!suffix.startsWith("/")) suffix = "/" + suffix;
-        url = QUrl(urlStr + suffix);
-    }
+    QUrl url = buildRequestUrl(urlStr, suffix, type, isAz);
 
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -270,7 +295,7 @@ void OpenAISettings::saveCurrentToMap()
     acc.systemPrompt = ui->editPrompt->text().trimmed();
     acc.baseUrl = ui->editUrl->text().trimmed();
     acc.customSuffix = ui->editSuffix->text().trimmed();
-    acc.apiType = normalizeApiType(ui->comboApiType->currentText());
+    acc.apiType = (ui->comboApiType->currentIndex() == 1) ? "Completions" : "Chat";
     acc.authMode = normalizeAuthMode(ui->comboAuthMode->currentText());
     acc.isAzure = ui->checkAzure->isChecked();
 }
