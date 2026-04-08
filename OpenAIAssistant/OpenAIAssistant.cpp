@@ -13,6 +13,18 @@
 #include <QApplication>
 #include <QCoreApplication>
 
+namespace {
+QString normalizeAuthMode(const QString& value)
+{
+    return value.trimmed().compare("api-key", Qt::CaseInsensitive) == 0 ? "api-key" : "Bearer";
+}
+
+bool isChatApiType(const QString& value)
+{
+    return value.trimmed().compare("Chat", Qt::CaseInsensitive) == 0;
+}
+}
+
 OpenAIAssistant::OpenAIAssistant()
 {
     m_networkManager = new QNetworkAccessManager(this);
@@ -102,7 +114,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
             urlStr = s.value(id + "/Url").toString().trimmed();
             suffix = s.value(id + "/Suffix").toString().trimmed();
             apiType = s.value(id + "/ApiType", "Chat").toString();
-            authMode = s.value(id + "/AuthMode", "api-key").toString();
+            authMode = normalizeAuthMode(s.value(id + "/AuthMode", "Bearer").toString());
             accountSystemPrompt = s.value(id + "/SystemPrompt").toString().trimmed();
             isAz = s.value(id + "/IsAzure").toBool();
             found = true;
@@ -138,7 +150,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         urlStr = s.value("Url").toString().trimmed();
         suffix = s.value("Suffix").toString().trimmed();
         apiType = s.value("ApiType", "Chat").toString();
-        authMode = s.value("AuthMode", "api-key").toString();
+        authMode = normalizeAuthMode(s.value("AuthMode", "Bearer").toString());
         accountSystemPrompt = s.value("SystemPrompt").toString().trimmed();
         isAz = s.value("IsAzure").toBool();
         s.endGroup();
@@ -164,9 +176,10 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
 
     if (key.isEmpty()) { callback->onError(QCoreApplication::translate("OpenAIAssistant", "API Key is empty for the selected account.")); return; }
 
+    const QString inputText = (data->hasText() ? data->text() : QString());
     QJsonArray content;
-    if (data->hasText() && !data->text().isEmpty()) { 
-        QJsonObject o; o["type"]="text"; o["text"]=data->text(); content.append(o); 
+    if (!inputText.isEmpty()) {
+        QJsonObject o; o["type"] = "text"; o["text"] = inputText; content.append(o);
     }
     if (data->hasImage()) {
         QImage img = qvariant_cast<QImage>(data->imageData());
@@ -180,13 +193,20 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
 
     if (content.isEmpty()) { callback->onError(QCoreApplication::translate("OpenAIAssistant", "No content to process")); return; }
 
+    const bool hasImage = data->hasImage();
+
     QJsonArray msgs;
-    QJsonObject sys; sys["role"]="system"; sys["content"]=prompt; msgs.append(sys);
-    QJsonObject usr; usr["role"]="user"; usr["content"]=content; msgs.append(usr);
+    QJsonObject sys; sys["role"] = "system"; sys["content"] = prompt; msgs.append(sys);
+    QJsonObject usr; usr["role"] = "user";
+    if (hasImage) usr["content"] = content;
+    else usr["content"] = inputText;
+    msgs.append(usr);
+
+    const bool chatApi = isChatApiType(apiType);
 
     QJsonObject json; json["model"]=model; json["stream"]=true;
-    
-    if (apiType == "Chat") {
+
+    if (chatApi) {
         json["messages"] = msgs;
         if (actionParams.value("ResponseFormat").toString() == "JSON Object") {
             QJsonObject fmt; fmt["type"] = "json_object"; json["response_format"] = fmt;
@@ -199,14 +219,16 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     
     int maxTokens = actionParams.value("MaxTokens").toInt();
     if (maxTokens > 0) {
-        if (apiType == "Chat") json["max_completion_tokens"] = maxTokens;
+        if (chatApi) json["max_tokens"] = maxTokens;
         else json["max_tokens"] = maxTokens;
     }
     
+    const bool isGeminiCompat = urlStr.contains("generativelanguage.googleapis.com", Qt::CaseInsensitive);
+
     if (actionParams.contains("Temperature")) json["temperature"] = actionParams.value("Temperature").toDouble();
     if (actionParams.contains("TopP")) json["top_p"] = actionParams.value("TopP").toDouble();
-    if (actionParams.contains("FrequencyPenalty")) json["frequency_penalty"] = actionParams.value("FrequencyPenalty").toDouble();
-    if (actionParams.contains("PresencePenalty")) json["presence_penalty"] = actionParams.value("PresencePenalty").toDouble();
+    if (!isGeminiCompat && actionParams.contains("FrequencyPenalty")) json["frequency_penalty"] = actionParams.value("FrequencyPenalty").toDouble();
+    if (!isGeminiCompat && actionParams.contains("PresencePenalty")) json["presence_penalty"] = actionParams.value("PresencePenalty").toDouble();
     
     if (actionParams.contains("ReasoningEffort") && (model.contains("o1") || model.contains("o3") || model.contains("gpt-5.4") || model.contains("o5"))) {
         json["reasoning_effort"] = actionParams.value("ReasoningEffort").toString();
@@ -226,7 +248,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
         url = QUrl(urlStr);
     } else {
         if (urlStr.endsWith("/")) urlStr.chop(1);
-        if (suffix.isEmpty()) suffix = (apiType == "Chat" ? "/chat/completions" : "/completions");
+        if (suffix.isEmpty()) suffix = (isChatApiType(apiType) ? "/chat/completions" : "/completions");
         if (!suffix.startsWith("/")) suffix = "/" + suffix;
         url = QUrl(urlStr + suffix);
     }
@@ -242,6 +264,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     QByteArray* buf = new QByteArray();
 
     connect(reply, &QNetworkReply::readyRead, [reply, callback, buf, apiType]() {
+        const bool chatApi = isChatApiType(apiType);
         while(reply->canReadLine()) {
             QByteArray line = reply->readLine().trimmed();
             if (line.startsWith("data: ")) {
@@ -252,7 +275,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
                     if (!choices.isEmpty()) {
                         QJsonObject choice = choices[0].toObject();
                         QString text;
-                        if (apiType == "Chat") text = choice["delta"].toObject()["content"].toString();
+                        if (chatApi) text = choice["delta"].toObject()["content"].toString();
                         else text = choice["text"].toString();
                         
                         if (!text.isEmpty()) callback->onTextData(text, false);
@@ -266,6 +289,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
     });
 
     connect(reply, &QNetworkReply::finished, [this, reply, callback, buf, apiType]() {
+        const bool chatApi = isChatApiType(apiType);
         if (m_currentReply == reply) m_currentReply = nullptr;
         reply->disconnect();
         if (reply->error() != QNetworkReply::NoError && reply->error() != QNetworkReply::OperationCanceledError) {
@@ -275,7 +299,7 @@ void OpenAIAssistant::process(const QMimeData* data, const QVariantMap& actionPa
                 QJsonDocument doc = QJsonDocument::fromJson(*buf);
                 QJsonArray choices = doc.object()["choices"].toArray();
                 if (!choices.isEmpty()) {
-                    if (apiType == "Chat") callback->onTextData(choices[0].toObject()["message"].toObject()["content"].toString(), true);
+                    if (chatApi) callback->onTextData(choices[0].toObject()["message"].toObject()["content"].toString(), true);
                     else callback->onTextData(choices[0].toObject()["text"].toString(), true);
                 }
             }

@@ -4,137 +4,137 @@
 <context>
     <name>OpenAIAssistant</name>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="23"/>
+        <location filename="../OpenAIAssistant.cpp" line="35"/>
         <source>OpenAI Assistant</source>
         <translation>OpenAI 助手</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="39"/>
+        <location filename="../OpenAIAssistant.cpp" line="51"/>
         <source>Default (Not Configured)</source>
         <translation>預設 (尚未設定)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="42"/>
+        <location filename="../OpenAIAssistant.cpp" line="54"/>
         <source>Account</source>
         <translation>帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="42"/>
+        <location filename="../OpenAIAssistant.cpp" line="54"/>
         <source>Select which OpenAI account to use</source>
         <translation>選擇要使用的 OpenAI 帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="43"/>
+        <location filename="../OpenAIAssistant.cpp" line="55"/>
         <source>System Prompt</source>
         <translation>系統提示詞 (System Prompt)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="43"/>
+        <location filename="../OpenAIAssistant.cpp" line="55"/>
         <source>The prompt to send to the AI</source>
         <translation>傳送給 AI 的提示詞</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="44"/>
+        <location filename="../OpenAIAssistant.cpp" line="56"/>
         <source>Prompt Mode</source>
         <translation>提示詞模式</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="44"/>
+        <location filename="../OpenAIAssistant.cpp" line="56"/>
         <source>Choose whether to override or append to account default prompt</source>
         <translation>選擇要覆蓋還是附加到帳戶的預設提示詞</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="45"/>
+        <location filename="../OpenAIAssistant.cpp" line="57"/>
         <source>Max Tokens</source>
         <translation>最大 Token 數</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="45"/>
+        <location filename="../OpenAIAssistant.cpp" line="57"/>
         <source>Maximum tokens to generate (0 for model default)</source>
         <translation>產生的最大 Token 數 (0 代表使用模型預設值)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="46"/>
+        <location filename="../OpenAIAssistant.cpp" line="58"/>
         <source>Override Model</source>
         <translation>覆蓋模型設定</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="46"/>
+        <location filename="../OpenAIAssistant.cpp" line="58"/>
         <source>Leave empty to use account default model</source>
         <translation>留空以使用帳戶預設模型</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="47"/>
+        <location filename="../OpenAIAssistant.cpp" line="59"/>
         <source>Temperature</source>
         <translation>溫度 (Temperature)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="47"/>
+        <location filename="../OpenAIAssistant.cpp" line="59"/>
         <source>What sampling temperature to use (0 to 2)</source>
         <translation>要使用的採樣溫度 (0 到 2)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="48"/>
+        <location filename="../OpenAIAssistant.cpp" line="60"/>
         <source>Top P</source>
         <translation>Top P</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="48"/>
+        <location filename="../OpenAIAssistant.cpp" line="60"/>
         <source>Nucleus sampling probability (0 to 1)</source>
         <translation>核採樣概率 (0 到 1)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="49"/>
+        <location filename="../OpenAIAssistant.cpp" line="61"/>
         <source>Frequency Penalty</source>
         <translation>頻率懲罰 (Frequency Penalty)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="49"/>
+        <location filename="../OpenAIAssistant.cpp" line="61"/>
         <source>Penalize new tokens based on their existing frequency in the text (-2.0 to 2.0)</source>
         <translation>根據新 Token 在文本中出現的頻率進行懲罰 (-2.0 到 2.0)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="50"/>
+        <location filename="../OpenAIAssistant.cpp" line="62"/>
         <source>Presence Penalty</source>
         <translation>存在懲罰 (Presence Penalty)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="50"/>
+        <location filename="../OpenAIAssistant.cpp" line="62"/>
         <source>Penalize new tokens based on whether they appear in the text so far (-2.0 to 2.0)</source>
         <translation>根據新 Token 是否已出現在文本中進行懲罰 (-2.0 到 2.0)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="51"/>
+        <location filename="../OpenAIAssistant.cpp" line="63"/>
         <source>Reasoning Effort</source>
         <translation>推理力 (Reasoning Effort)</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="51"/>
+        <location filename="../OpenAIAssistant.cpp" line="63"/>
         <source>For reasoning models (o1/o3), sets how much effort to spend on thinking</source>
         <translation>針對推理模型 (o1/o3)，設定在思考上花費的精力</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="52"/>
+        <location filename="../OpenAIAssistant.cpp" line="64"/>
         <source>Response Format</source>
         <translation>回應格式</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="52"/>
+        <location filename="../OpenAIAssistant.cpp" line="64"/>
         <source>The format that the model must output</source>
         <translation>模型必須輸出的格式</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="53"/>
+        <location filename="../OpenAIAssistant.cpp" line="65"/>
         <source>Raw JSON Params</source>
         <translation>原始 JSON 參數</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="53"/>
+        <location filename="../OpenAIAssistant.cpp" line="65"/>
         <source>Optional raw JSON parameters to merge into the request body</source>
         <translation>可選的原始 JSON 參數，將合併到請求主體中</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="64"/>
+        <location filename="../OpenAIAssistant.cpp" line="76"/>
         <source>Summarize</source>
         <translation>摘要重點</translation>
     </message>
@@ -143,7 +143,7 @@
         <translation type="vanished">提示詞</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="117"/>
+        <location filename="../OpenAIAssistant.cpp" line="129"/>
         <source>Account not found or not configured. Please check Module Settings.</source>
         <translation>找不到帳戶或尚未設定，請檢查模組設定。</translation>
     </message>
@@ -152,32 +152,32 @@
         <translation type="vanished">找不到帳戶或尚未設定，請檢查外掛設定。</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="124"/>
+        <location filename="../OpenAIAssistant.cpp" line="136"/>
         <source>Select OpenAI Account</source>
         <translation>選擇 OpenAI 帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="125"/>
+        <location filename="../OpenAIAssistant.cpp" line="137"/>
         <source>Account &apos;%1&apos; not found. Please select an account:</source>
         <translation>找不到帳戶 &apos;%1&apos;。請選擇一個帳戶：</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="128"/>
+        <location filename="../OpenAIAssistant.cpp" line="140"/>
         <source>No account selected.</source>
         <translation>未選擇帳戶。</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="165"/>
+        <location filename="../OpenAIAssistant.cpp" line="177"/>
         <source>API Key is empty for the selected account.</source>
         <translation>所選帳戶的 API Key 為空。</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="181"/>
+        <location filename="../OpenAIAssistant.cpp" line="194"/>
         <source>No content to process</source>
         <translation>沒有可處理的內容</translation>
     </message>
     <message>
-        <location filename="../OpenAIAssistant.cpp" line="260"/>
+        <location filename="../OpenAIAssistant.cpp" line="283"/>
         <source>
 
 [Warning: Message truncated due to Max Tokens limit.]</source>
@@ -203,22 +203,22 @@ Error:
 <context>
     <name>OpenAISettings</name>
     <message>
-        <location filename="../OpenAISettings.cpp" line="83"/>
+        <location filename="../OpenAISettings.cpp" line="96"/>
         <source>New Account</source>
         <translation>新帳戶</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="161"/>
+        <location filename="../OpenAISettings.cpp" line="174"/>
         <source>Azure URL: </source>
         <translation>Azure URL： </translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="163"/>
+        <location filename="../OpenAISettings.cpp" line="176"/>
         <source>Warning: Azure URL usually requires &apos;?api-version=&apos; parameter.</source>
         <translation>警告：Azure URL 通常需要 &apos;?api-version=&apos; 參數。</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="166"/>
+        <location filename="../OpenAISettings.cpp" line="179"/>
         <source>OpenAI URL: </source>
         <translation>OpenAI URL： </translation>
     </message>
@@ -227,40 +227,40 @@ Error:
         <translation type="vanished">警告：基礎 URL 通常不應包含 &apos;/chat/completions&apos;。</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="169"/>
+        <location filename="../OpenAISettings.cpp" line="182"/>
         <source>Warning: Base URL should usually NOT include endpoints like &apos;/chat/completions&apos;.</source>
         <translation>警告：基礎 URL 通常不應包含像 &apos;/chat/completions&apos; 這樣的端點。</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="173"/>
+        <location filename="../OpenAISettings.cpp" line="186"/>
         <source>Default suffix will be: </source>
         <translation>預設後綴將為： </translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="192"/>
-        <location filename="../OpenAISettings.cpp" line="233"/>
-        <location filename="../OpenAISettings.cpp" line="236"/>
-        <location filename="../OpenAISettings.cpp" line="243"/>
+        <location filename="../OpenAISettings.cpp" line="205"/>
+        <location filename="../OpenAISettings.cpp" line="246"/>
+        <location filename="../OpenAISettings.cpp" line="249"/>
+        <location filename="../OpenAISettings.cpp" line="256"/>
         <source>Test Connection</source>
         <translation>測試連線</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="192"/>
+        <location filename="../OpenAISettings.cpp" line="205"/>
         <source>API Key and URL are required.</source>
         <translation>需要 API Key 與 URL。</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="197"/>
+        <location filename="../OpenAISettings.cpp" line="210"/>
         <source>Testing...</source>
         <translation>測試中...</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="236"/>
+        <location filename="../OpenAISettings.cpp" line="249"/>
         <source>Connection successful!</source>
         <translation>連線成功！</translation>
     </message>
     <message>
-        <location filename="../OpenAISettings.cpp" line="243"/>
+        <location filename="../OpenAISettings.cpp" line="256"/>
         <source>Connection failed: %1</source>
         <translation>連線失敗：%1</translation>
     </message>

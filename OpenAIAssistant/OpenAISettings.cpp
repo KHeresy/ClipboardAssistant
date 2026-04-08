@@ -9,6 +9,19 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+namespace {
+QString normalizeAuthMode(const QString& value)
+{
+    const QString v = value.trimmed().toLower();
+    return v == "api-key" ? "api-key" : "Bearer";
+}
+
+QString normalizeApiType(const QString& value)
+{
+    return value.trimmed().compare("Chat", Qt::CaseInsensitive) == 0 ? "Chat" : "Completions";
+}
+}
+
 OpenAISettings::OpenAISettings(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::OpenAISettingsClass)
@@ -62,8 +75,8 @@ void OpenAISettings::loadAccounts()
         acc.systemPrompt = s.value("SystemPrompt").toString().trimmed();
         acc.baseUrl = s.value("Url").toString().trimmed();
         acc.customSuffix = s.value("Suffix").toString().trimmed();
-        acc.apiType = s.value("ApiType", "Chat").toString();
-        acc.authMode = s.value("AuthMode", "api-key").toString();
+        acc.apiType = normalizeApiType(s.value("ApiType", "Chat").toString());
+        acc.authMode = normalizeAuthMode(s.value("AuthMode", "Bearer").toString());
         acc.isAzure = s.value("IsAzure").toBool();
         m_accounts.insert(id, acc);
         
@@ -86,7 +99,7 @@ void OpenAISettings::onAddAccount()
     acc.systemPrompt = "You are a helpful assistant.";
     acc.baseUrl = "https://api.openai.com/v1";
     acc.apiType = "Chat";
-    acc.authMode = "Authorization: Bearer";
+    acc.authMode = "Bearer";
     acc.customSuffix = "";
 
     m_accounts.insert(id, acc);
@@ -131,8 +144,8 @@ void OpenAISettings::onAccountSelected()
     ui->editPrompt->setText(acc.systemPrompt);
     ui->editUrl->setText(acc.baseUrl);
     ui->editSuffix->setText(acc.customSuffix);
-    ui->comboApiType->setCurrentText(acc.apiType);
-    ui->comboAuthMode->setCurrentText(acc.authMode);
+    ui->comboApiType->setCurrentText(acc.apiType == "Chat" ? "Chat" : "Completions (Legacy)");
+    ui->comboAuthMode->setCurrentText(acc.authMode == "api-key" ? "api-key" : "Authorization: Bearer");
     ui->checkAzure->setChecked(acc.isAzure);
     
     updateHelp();
@@ -184,8 +197,8 @@ void OpenAISettings::onTestAccount()
     QString model = ui->editModel->text().trimmed();
     QString urlStr = ui->editUrl->text().trimmed();
     QString suffix = ui->editSuffix->text().trimmed();
-    QString type = ui->comboApiType->currentText();
-    QString auth = ui->comboAuthMode->currentText();
+    QString type = normalizeApiType(ui->comboApiType->currentText());
+    QString auth = normalizeAuthMode(ui->comboAuthMode->currentText());
     bool isAz = ui->checkAzure->isChecked();
 
     if (key.isEmpty() || urlStr.isEmpty()) {
@@ -257,8 +270,8 @@ void OpenAISettings::saveCurrentToMap()
     acc.systemPrompt = ui->editPrompt->text().trimmed();
     acc.baseUrl = ui->editUrl->text().trimmed();
     acc.customSuffix = ui->editSuffix->text().trimmed();
-    acc.apiType = ui->comboApiType->currentText();
-    acc.authMode = ui->comboAuthMode->currentText();
+    acc.apiType = normalizeApiType(ui->comboApiType->currentText());
+    acc.authMode = normalizeAuthMode(ui->comboAuthMode->currentText());
     acc.isAzure = ui->checkAzure->isChecked();
 }
 
