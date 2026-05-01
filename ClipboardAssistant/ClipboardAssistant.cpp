@@ -517,20 +517,26 @@ void ClipboardAssistant::loadModules() {
         QObject* p = loader->instance();
         if (p) { 
             IClipboardModule* iM = qobject_cast<IClipboardModule*>(p); 
-            if (iM) {
+            if (iM && iM->apiVersion() == IClipboardModuleApiVersion) {
                 m_pluginLoaders.append(loader);
-                m_modules.append({iM, false, f, loader});
+                m_modules.append({iM, false, f, loader, QString(), false});
             } else {
+                QString error = iM
+                    ? tr("API version mismatch. Host expects %1, plugin reports %2.").arg(IClipboardModuleApiVersion).arg(iM->apiVersion())
+                    : tr("Plugin does not implement the required IClipboardModule interface.");
+                m_modules.append({nullptr, false, f, nullptr, error, true});
                 loader->unload();
                 delete loader;
             }
         } else {
+            m_modules.append({nullptr, false, f, nullptr, loader->errorString(), true});
             delete loader;
         }
     }
 
     QSettings s("Heresy", "ClipboardAssistant");
     for (const auto& info : m_modules) {
+        if (!info.module) continue;
         s.beginGroup("Modules/" + info.module->id() + "/Global");
         QVariantMap globalParams;
         for (const auto& def : info.module->globalParameterDefinitions()) {
@@ -631,13 +637,13 @@ void ClipboardAssistant::setupActionSetWidget(QListWidgetItem* item, ActionSetIn
         return b;
     };
 
-    QPushButton* bE = createBtn("E", tr("Edit")); 
+    QPushButton* bE = createBtn("⚙️", tr("Edit")); 
     connect(bE, &QPushButton::clicked, [this, asid]() { onEditActionSet(nullptr, asid); });
     
-    QPushButton* bExp = createBtn("↑", tr("Export")); 
+    QPushButton* bExp = createBtn("📤", tr("Export")); 
     connect(bExp, &QPushButton::clicked, [this, asid]() { onExportActionSet(asid); });
     
-    QPushButton* bDel = createBtn("X", tr("Delete")); 
+    QPushButton* bDel = createBtn("❌", tr("Delete")); 
     connect(bDel, &QPushButton::clicked, [this, asid]() { onDeleteActionSet(nullptr, asid); });
     
     sideLayout->addWidget(bE); 

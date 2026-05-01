@@ -9,7 +9,7 @@
 class OPENAIASSISTANT_EXPORT OpenAIAssistant : public QObject, public IClipboardModule
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.gemini.ClipboardAssistant.IClipboardModule")
+    Q_PLUGIN_METADATA(IID IClipboardModule_iid)
     Q_INTERFACES(IClipboardModule)
 
 public:

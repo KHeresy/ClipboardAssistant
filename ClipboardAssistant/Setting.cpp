@@ -8,7 +8,9 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QToolButton>
 
 #include <QCoreApplication>
 #include <QDir>
@@ -20,6 +22,7 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
     , ui(new Ui::SettingClass)
 {
     ui->setupUi(this);
+    m_moduleInfos = modules;
 
     // Load Hotkey
     QSettings settings("Heresy", "ClipboardAssistant");
@@ -67,6 +70,28 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
     // Setup Modules
     ui->listPlugins->clear();
     for (const auto& info : modules) {
+        if (!info.module) {
+            QListWidgetItem* item = new QListWidgetItem(tr("%1 (Failed)").arg(info.filePath), ui->listPlugins);
+            item->setToolTip(info.loadError);
+
+            QWidget* page = new QWidget();
+            QVBoxLayout* layout = new QVBoxLayout(page);
+            QLabel* title = new QLabel(QString("<b>%1</b>").arg(info.filePath));
+            layout->addWidget(title);
+            QLabel* sourceLabel = new QLabel(tr("<i>External Module Load Failed</i>"));
+            sourceLabel->setStyleSheet("color: gray;");
+            layout->addWidget(sourceLabel);
+            QLabel* errorTitle = new QLabel(tr("<b>Reason:</b>"));
+            layout->addWidget(errorTitle);
+            QLabel* errorLabel = new QLabel(info.loadError.isEmpty() ? tr("Unknown error") : info.loadError);
+            errorLabel->setWordWrap(true);
+            errorLabel->setStyleSheet("color: #aa0000;");
+            layout->addWidget(errorLabel);
+            layout->addStretch();
+            ui->stackedWidgetPlugins->addWidget(page);
+            continue;
+        }
+
         IClipboardModule* module = info.module;
         m_modules.append(module);
         QListWidgetItem* item = new QListWidgetItem(module->name(), ui->listPlugins);
@@ -115,6 +140,8 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
             layout->addWidget(gTitle);
 
             QFormLayout* form = new QFormLayout();
+            QFormLayout* advancedForm = new QFormLayout();
+            bool hasAdvanced = false;
             QMap<QString, QWidget*> widgets;
             
             QSettings ps("Heresy", "ClipboardAssistant");
@@ -141,18 +168,52 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
                     QComboBox* c = new QComboBox(page); c->addItems(def.options); c->setCurrentText(val.toString()); widget = c; break;
                 }
                 case ParameterType::Number: {
-                    QSpinBox* s = new QSpinBox(page); s->setRange(-999999, 999999); s->setValue(val.toInt()); widget = s; break;
+                    QSpinBox* s = new QSpinBox(page);
+                    s->setRange(def.minimumValue.isValid() ? def.minimumValue.toInt() : -999999, def.maximumValue.isValid() ? def.maximumValue.toInt() : 999999);
+                    s->setSingleStep(def.stepValue.isValid() ? qMax(1, def.stepValue.toInt()) : 1);
+                    s->setValue(val.toInt());
+                    widget = s;
+                    break;
+                }
+                case ParameterType::Decimal: {
+                    QDoubleSpinBox* s = new QDoubleSpinBox(page);
+                    s->setRange(def.minimumValue.isValid() ? def.minimumValue.toDouble() : -999999.0, def.maximumValue.isValid() ? def.maximumValue.toDouble() : 999999.0);
+                    s->setDecimals(def.decimals);
+                    s->setSingleStep(def.stepValue.isValid() ? def.stepValue.toDouble() : 0.1);
+                    s->setValue(val.toDouble());
+                    widget = s;
+                    break;
                 }
                 }
 
                 if (widget) {
                     widget->setToolTip(def.description);
-                    form->addRow(tr("%1:").arg(def.name), widget);
+                    if (def.advanced) {
+                        advancedForm->addRow(tr("%1:").arg(def.name), widget);
+                        hasAdvanced = true;
+                    } else {
+                        form->addRow(tr("%1:").arg(def.name), widget);
+                    }
                     widgets.insert(def.id, widget);
                 }
             }
             ps.endGroup();
             layout->addLayout(form);
+            if (hasAdvanced) {
+                QToolButton* toggle = new QToolButton(page);
+                toggle->setText(tr("Advanced Settings"));
+                toggle->setCheckable(true);
+                toggle->setChecked(false);
+                toggle->setToolButtonStyle(Qt::ToolButtonTextOnly);
+                QWidget* advancedWidget = new QWidget(page);
+                advancedWidget->setVisible(false);
+                QVBoxLayout* advancedLayout = new QVBoxLayout(advancedWidget);
+                advancedLayout->setContentsMargins(0, 0, 0, 0);
+                advancedLayout->addLayout(advancedForm);
+                connect(toggle, &QToolButton::toggled, advancedWidget, &QWidget::setVisible);
+                layout->addWidget(toggle);
+                layout->addWidget(advancedWidget);
+            }
             m_paramWidgets[module] = widgets;
         }
 
@@ -281,6 +342,8 @@ void Setting::accept()
                 val = qobject_cast<QComboBox*>(widget)->currentText(); break;
             case ParameterType::Number:
                 val = qobject_cast<QSpinBox*>(widget)->value(); break;
+            case ParameterType::Decimal:
+                val = qobject_cast<QDoubleSpinBox*>(widget)->value(); break;
             }
             settings.setValue(def.id, val);
         }

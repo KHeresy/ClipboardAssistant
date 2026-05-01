@@ -11,7 +11,7 @@ ScriptAssistant::ScriptAssistant()
 QString ScriptAssistant::id() const { return "kheresy.ScriptAssistant"; }
 
 QString ScriptAssistant::name() const { return tr("Script Assistant"); }
-QString ScriptAssistant::version() const { return "0.2.0"; }
+QString ScriptAssistant::version() const { return "0.3.0"; }
 
 QList<ParameterDefinition> ScriptAssistant::actionParameterDefinitions() const
 {

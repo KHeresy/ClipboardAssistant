@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QtPlugin>
 #include <QString>
@@ -9,6 +9,8 @@
 #include <QVariant>
 #include <QMap>
 
+inline constexpr int IClipboardModuleApiVersion = 1;
+
 enum class ParameterType {
     String,
     Text,
@@ -16,6 +18,7 @@ enum class ParameterType {
     Bool,
     Password,
     Number,
+    Decimal,
     File,
     Directory
 };
@@ -27,6 +30,11 @@ struct ParameterDefinition {
     QVariant defaultValue;
     QStringList options;
     QString description;
+    QVariant minimumValue;
+    QVariant maximumValue;
+    QVariant stepValue;
+    int decimals = 4;
+    bool advanced = false;
 };
 
 // Represents a single configured action instance in a pipeline
@@ -47,6 +55,8 @@ struct ModuleInfo {
     bool isInternal;
     QString filePath;
     class QPluginLoader* loader = nullptr;
+    QString loadError;
+    bool loadFailed = false;
 
     bool hostOwnsModule() const { return isInternal; }
     bool loaderOwnsModule() const { return !isInternal && loader != nullptr; }
@@ -64,6 +74,7 @@ public:
 class IClipboardModule {
 public:
     virtual ~IClipboardModule() = default;
+    virtual int apiVersion() const { return IClipboardModuleApiVersion; }
     
     virtual QString id() const = 0;
     virtual QString name() const = 0;
@@ -92,6 +103,6 @@ public:
 
 QT_END_NAMESPACE
 
-#define IClipboardModule_iid "org.gemini.ClipboardAssistant.IClipboardModule"
+#define IClipboardModule_iid "org.gemini.ClipboardAssistant.IClipboardModule/1.0"
 Q_DECLARE_INTERFACE(IClipboardModule, IClipboardModule_iid)
 Q_DECLARE_OPERATORS_FOR_FLAGS(IClipboardModule::DataTypes)

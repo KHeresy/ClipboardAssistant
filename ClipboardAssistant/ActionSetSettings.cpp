@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -14,6 +15,7 @@
 #include <QPushButton>
 #include <QMenu>
 #include <QScrollArea>
+#include <QToolButton>
 
 ActionSetSettings::ActionSetSettings(const QList<ModuleInfo>& modules, QWidget *parent) :
     QWidget(parent),
@@ -215,6 +217,8 @@ void ActionSetSettings::loadParamsForAction(int row) {
     QWidget* container = new QWidget();
     QVBoxLayout* mainVBox = new QVBoxLayout(container);
     QFormLayout* form = new QFormLayout();
+    QFormLayout* advancedForm = new QFormLayout();
+    bool hasAdvanced = false;
     
     m_currentDefs = module->actionParameterDefinitions();
     for (const auto& def : m_currentDefs) {
@@ -226,7 +230,23 @@ void ActionSetSettings::loadParamsForAction(int row) {
             case ParameterType::Text: { QTextEdit* e = new QTextEdit(container); e->setPlainText(val.toString()); e->setMaximumHeight(80); widget = e; break; }
             case ParameterType::Bool: { QCheckBox* c = new QCheckBox(container); c->setChecked(val.toBool()); widget = c; break; }
             case ParameterType::Choice: { QComboBox* c = new QComboBox(container); c->addItems(def.options); c->setCurrentText(val.toString()); widget = c; break; }
-            case ParameterType::Number: { QSpinBox* s = new QSpinBox(container); s->setRange(-999,999999); s->setValue(val.toInt()); widget = s; break; }
+            case ParameterType::Number: {
+                QSpinBox* s = new QSpinBox(container);
+                s->setRange(def.minimumValue.isValid() ? def.minimumValue.toInt() : -999999, def.maximumValue.isValid() ? def.maximumValue.toInt() : 999999);
+                s->setSingleStep(def.stepValue.isValid() ? qMax(1, def.stepValue.toInt()) : 1);
+                s->setValue(val.toInt());
+                widget = s;
+                break;
+            }
+            case ParameterType::Decimal: {
+                QDoubleSpinBox* s = new QDoubleSpinBox(container);
+                s->setRange(def.minimumValue.isValid() ? def.minimumValue.toDouble() : -999999.0, def.maximumValue.isValid() ? def.maximumValue.toDouble() : 999999.0);
+                s->setDecimals(def.decimals);
+                s->setSingleStep(def.stepValue.isValid() ? def.stepValue.toDouble() : 0.1);
+                s->setValue(val.toDouble());
+                widget = s;
+                break;
+            }
             case ParameterType::File: case ParameterType::Directory: {
                 QWidget* c = new QWidget(container); QHBoxLayout* h = new QHBoxLayout(c); h->setContentsMargins(0,0,0,0);
                 QLineEdit* e = new QLineEdit(c); e->setText(val.toString()); e->setObjectName("PathEdit");
@@ -240,11 +260,31 @@ void ActionSetSettings::loadParamsForAction(int row) {
         }
         if (widget) { 
             widget->setToolTip(def.description);
-            form->addRow(tr("%1:").arg(def.name), widget); 
+            if (def.advanced) {
+                advancedForm->addRow(tr("%1:").arg(def.name), widget);
+                hasAdvanced = true;
+            } else {
+                form->addRow(tr("%1:").arg(def.name), widget);
+            }
             m_paramWidgets.insert(def.id, widget); 
         }
     }
     mainVBox->addLayout(form);
+    if (hasAdvanced) {
+        QToolButton* toggle = new QToolButton(container);
+        toggle->setText(tr("Advanced Settings"));
+        toggle->setCheckable(true);
+        toggle->setChecked(false);
+        toggle->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        QWidget* advancedWidget = new QWidget(container);
+        advancedWidget->setVisible(false);
+        QVBoxLayout* advancedLayout = new QVBoxLayout(advancedWidget);
+        advancedLayout->setContentsMargins(0, 0, 0, 0);
+        advancedLayout->addLayout(advancedForm);
+        connect(toggle, &QToolButton::toggled, advancedWidget, &QWidget::setVisible);
+        mainVBox->addWidget(toggle);
+        mainVBox->addWidget(advancedWidget);
+    }
     mainVBox->addStretch();
     ui->scrollArea->setWidget(container);
 }

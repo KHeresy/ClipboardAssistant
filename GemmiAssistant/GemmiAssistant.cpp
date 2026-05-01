@@ -43,7 +43,7 @@ GemmiAssistant::GemmiAssistant()
 
 QString GemmiAssistant::id() const { return "kheresy.GemmiAssistant"; }
 QString GemmiAssistant::name() const { return tr("Gemmi Assistant"); }
-QString GemmiAssistant::version() const { return "0.1.0"; }
+QString GemmiAssistant::version() const { return "0.3.0"; }
 
 void GemmiAssistant::showConfiguration(QWidget* parent)
 {
@@ -64,11 +64,11 @@ QList<ParameterDefinition> GemmiAssistant::actionParameterDefinitions() const
         {"Account", QCoreApplication::translate("GemmiAssistant", "Account"), ParameterType::Choice, accounts.first(), accounts, QCoreApplication::translate("GemmiAssistant", "Select which Gemmi account to use")},
         {"Prompt", QCoreApplication::translate("GemmiAssistant", "System Prompt"), ParameterType::Text, "", {}, QCoreApplication::translate("GemmiAssistant", "The prompt to send to the AI")},
         {"PromptMode", QCoreApplication::translate("GemmiAssistant", "Prompt Mode"), ParameterType::Choice, "Override", {"Override", "Append"}, QCoreApplication::translate("GemmiAssistant", "Choose whether to override or append to account default prompt")},
-        {"MaxTokens", QCoreApplication::translate("GemmiAssistant", "Max Tokens"), ParameterType::Number, 0, {}, QCoreApplication::translate("GemmiAssistant", "Maximum tokens to generate (0 for model default)")},
-        {"OverrideModel", QCoreApplication::translate("GemmiAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("GemmiAssistant", "Leave empty to use account default model")},
-        {"Temperature", QCoreApplication::translate("GemmiAssistant", "Temperature"), ParameterType::Number, 1.0, {}, QCoreApplication::translate("GemmiAssistant", "What sampling temperature to use")},
-        {"TopP", QCoreApplication::translate("GemmiAssistant", "Top P"), ParameterType::Number, 1.0, {}, QCoreApplication::translate("GemmiAssistant", "Nucleus sampling probability")},
-        {"RawJsonParams", QCoreApplication::translate("GemmiAssistant", "Raw JSON Params"), ParameterType::Text, "", {}, QCoreApplication::translate("GemmiAssistant", "Optional raw JSON parameters to merge into the request body")}
+        {"MaxTokens", QCoreApplication::translate("GemmiAssistant", "Max Tokens"), ParameterType::Number, 0, {}, QCoreApplication::translate("GemmiAssistant", "Maximum tokens to generate (0 for model default)"), 0.0, 128000.0, 1.0, 0, true},
+        {"OverrideModel", QCoreApplication::translate("GemmiAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("GemmiAssistant", "Leave empty to use account default model"), {}, {}, {}, 4, true},
+        {"Temperature", QCoreApplication::translate("GemmiAssistant", "Temperature"), ParameterType::Decimal, 1.0, {}, QCoreApplication::translate("GemmiAssistant", "What sampling temperature to use"), 0.0, 2.0, 0.1, 2, true},
+        {"TopP", QCoreApplication::translate("GemmiAssistant", "Top P"), ParameterType::Decimal, 1.0, {}, QCoreApplication::translate("GemmiAssistant", "Nucleus sampling probability"), 0.0, 1.0, 0.05, 2, true},
+        {"RawJsonParams", QCoreApplication::translate("GemmiAssistant", "Raw JSON Params"), ParameterType::Text, "", {}, QCoreApplication::translate("GemmiAssistant", "Optional raw JSON parameters to merge into the request body"), {}, {}, {}, 4, true}
     };
 }
 

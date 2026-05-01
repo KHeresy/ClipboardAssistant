@@ -15,7 +15,7 @@ QString RegExAssistant::id() const { return "kheresy.RegExAssistant"; }
 
 
 QString RegExAssistant::name() const { return tr("RegEx Assistant"); }
-QString RegExAssistant::version() const { return "0.2.0"; }
+QString RegExAssistant::version() const { return "0.3.0"; }
 
 QList<ParameterDefinition> RegExAssistant::actionParameterDefinitions() const
 {

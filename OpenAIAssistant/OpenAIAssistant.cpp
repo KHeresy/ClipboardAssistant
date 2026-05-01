@@ -58,7 +58,7 @@ OpenAIAssistant::OpenAIAssistant()
 QString OpenAIAssistant::id() const { return "kheresy.OpenAIAssistant"; }
 
 QString OpenAIAssistant::name() const { return tr("OpenAI Assistant"); }
-QString OpenAIAssistant::version() const { return "0.2.0"; }
+QString OpenAIAssistant::version() const { return "0.3.0"; }
 
 void OpenAIAssistant::showConfiguration(QWidget* parent) {
     OpenAISettings(parent).exec();
@@ -79,15 +79,15 @@ QList<ParameterDefinition> OpenAIAssistant::actionParameterDefinitions() const {
         {"Account", QCoreApplication::translate("OpenAIAssistant", "Account"), ParameterType::Choice, accounts.first(), accounts, QCoreApplication::translate("OpenAIAssistant", "Select which OpenAI account to use")},
         {"Prompt", QCoreApplication::translate("OpenAIAssistant", "System Prompt"), ParameterType::Text, "", {}, QCoreApplication::translate("OpenAIAssistant", "The prompt to send to the AI")},
         {"PromptMode", QCoreApplication::translate("OpenAIAssistant", "Prompt Mode"), ParameterType::Choice, "Override", {"Override", "Append"}, QCoreApplication::translate("OpenAIAssistant", "Choose whether to override or append to account default prompt")},
-        {"MaxTokens", QCoreApplication::translate("OpenAIAssistant", "Max Tokens"), ParameterType::Number, 0, {}, QCoreApplication::translate("OpenAIAssistant", "Maximum tokens to generate (0 for model default)")},
-        {"OverrideModel", QCoreApplication::translate("OpenAIAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("OpenAIAssistant", "Leave empty to use account default model")},
-        {"Temperature", QCoreApplication::translate("OpenAIAssistant", "Temperature"), ParameterType::Number, 1.0, {}, QCoreApplication::translate("OpenAIAssistant", "What sampling temperature to use (0 to 2)")},
-        {"TopP", QCoreApplication::translate("OpenAIAssistant", "Top P"), ParameterType::Number, 1.0, {}, QCoreApplication::translate("OpenAIAssistant", "Nucleus sampling probability (0 to 1)")},
-        {"FrequencyPenalty", QCoreApplication::translate("OpenAIAssistant", "Frequency Penalty"), ParameterType::Number, 0.0, {}, QCoreApplication::translate("OpenAIAssistant", "Penalize new tokens based on their existing frequency in the text (-2.0 to 2.0)")},
-        {"PresencePenalty", QCoreApplication::translate("OpenAIAssistant", "Presence Penalty"), ParameterType::Number, 0.0, {}, QCoreApplication::translate("OpenAIAssistant", "Penalize new tokens based on whether they appear in the text so far (-2.0 to 2.0)")},
-        {"ReasoningEffort", QCoreApplication::translate("OpenAIAssistant", "Reasoning Effort"), ParameterType::Choice, "medium", {"low", "medium", "high"}, QCoreApplication::translate("OpenAIAssistant", "For reasoning models (o1/o3), sets how much effort to spend on thinking")},
-        {"ResponseFormat", QCoreApplication::translate("OpenAIAssistant", "Response Format"), ParameterType::Choice, "Text", {"Text", "JSON Object"}, QCoreApplication::translate("OpenAIAssistant", "The format that the model must output")},
-        {"RawJsonParams", QCoreApplication::translate("OpenAIAssistant", "Raw JSON Params"), ParameterType::Text, "", {}, QCoreApplication::translate("OpenAIAssistant", "Optional raw JSON parameters to merge into the request body")}
+        {"MaxTokens", QCoreApplication::translate("OpenAIAssistant", "Max Tokens"), ParameterType::Number, 0, {}, QCoreApplication::translate("OpenAIAssistant", "Maximum tokens to generate (0 for model default)"), 0.0, 128000.0, 1.0, 0, true},
+        {"OverrideModel", QCoreApplication::translate("OpenAIAssistant", "Override Model"), ParameterType::String, "", {}, QCoreApplication::translate("OpenAIAssistant", "Leave empty to use account default model"), {}, {}, {}, 4, true},
+        {"Temperature", QCoreApplication::translate("OpenAIAssistant", "Temperature"), ParameterType::Decimal, 1.0, {}, QCoreApplication::translate("OpenAIAssistant", "What sampling temperature to use (0 to 2)"), 0.0, 2.0, 0.1, 2, true},
+        {"TopP", QCoreApplication::translate("OpenAIAssistant", "Top P"), ParameterType::Decimal, 1.0, {}, QCoreApplication::translate("OpenAIAssistant", "Nucleus sampling probability (0 to 1)"), 0.0, 1.0, 0.05, 2, true},
+        {"FrequencyPenalty", QCoreApplication::translate("OpenAIAssistant", "Frequency Penalty"), ParameterType::Decimal, 0.0, {}, QCoreApplication::translate("OpenAIAssistant", "Penalize new tokens based on their existing frequency in the text (-2.0 to 2.0)"), -2.0, 2.0, 0.1, 2, true},
+        {"PresencePenalty", QCoreApplication::translate("OpenAIAssistant", "Presence Penalty"), ParameterType::Decimal, 0.0, {}, QCoreApplication::translate("OpenAIAssistant", "Penalize new tokens based on whether they appear in the text so far (-2.0 to 2.0)"), -2.0, 2.0, 0.1, 2, true},
+        {"ReasoningEffort", QCoreApplication::translate("OpenAIAssistant", "Reasoning Effort"), ParameterType::Choice, "medium", {"low", "medium", "high"}, QCoreApplication::translate("OpenAIAssistant", "For reasoning models (o1/o3), sets how much effort to spend on thinking"), {}, {}, {}, 4, true},
+        {"ResponseFormat", QCoreApplication::translate("OpenAIAssistant", "Response Format"), ParameterType::Choice, "Text", {"Text", "JSON Object"}, QCoreApplication::translate("OpenAIAssistant", "The format that the model must output"), {}, {}, {}, 4, true},
+        {"RawJsonParams", QCoreApplication::translate("OpenAIAssistant", "Raw JSON Params"), ParameterType::Text, "", {}, QCoreApplication::translate("OpenAIAssistant", "Optional raw JSON parameters to merge into the request body"), {}, {}, {}, 4, true}
     };
 }
 

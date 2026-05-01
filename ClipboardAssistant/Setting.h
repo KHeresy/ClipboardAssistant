@@ -38,6 +38,7 @@ private slots:
 
 private:
     Ui::SettingClass *ui;
+    QList<ModuleInfo> m_moduleInfos;
     QList<IClipboardModule*> m_modules;
     QMap<IClipboardModule*, QMap<QString, QWidget*>> m_paramWidgets;
     QMap<IClipboardModule*, QList<ParameterDefinition>> m_paramDefs;

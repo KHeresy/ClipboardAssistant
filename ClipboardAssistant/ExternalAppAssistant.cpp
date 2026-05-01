@@ -9,7 +9,7 @@ ExternalAppAssistant::ExternalAppAssistant(QObject* parent) : QObject(parent)
 QString ExternalAppAssistant::id() const { return "kheresy.ExternalAppAssistant"; }
 
 QString ExternalAppAssistant::name() const { return tr("External App Assistant"); }
-QString ExternalAppAssistant::version() const { return "0.2.0"; }
+QString ExternalAppAssistant::version() const { return "0.3.0"; }
 
 QList<ParameterDefinition> ExternalAppAssistant::actionParameterDefinitions() const
 {

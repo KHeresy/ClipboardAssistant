@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>SettingClass</class>
  <widget class="QDialog" name="SettingClass">
@@ -199,7 +199,7 @@
         <item>
          <widget class="QLabel" name="labelAbout">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.1&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open source notice&lt;/span&gt;&lt;br/&gt;This application uses Qt 6 libraries, including QtCore, QtGui and QtWidgets, under the GNU Lesser General Public License (LGPL).&lt;/p&gt;&lt;p&gt;A copy of the applicable third-party notices and license texts should be distributed with this application in the files &lt;span style=&quot; font-weight:700;&quot;&gt;THIRD_PARTY_NOTICES.md&lt;/span&gt; and the &lt;span style=&quot; font-weight:700;&quot;&gt;licenses&lt;/span&gt; folder.&lt;/p&gt;&lt;p&gt;Qt source code and license information:&lt;br/&gt;&lt;a href=&quot;https://www.qt.io/licensing/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;https://www.qt.io/licensing/&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;&lt;a href=&quot;https://code.qt.io/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;https://code.qt.io/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.3&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open source notice&lt;/span&gt;&lt;br/&gt;This application uses Qt 6 libraries, including QtCore, QtGui and QtWidgets, under the GNU Lesser General Public License (LGPL).&lt;/p&gt;&lt;p&gt;A copy of the applicable third-party notices and license texts should be distributed with this application in the files &lt;span style=&quot; font-weight:700;&quot;&gt;THIRD_PARTY_NOTICES.md&lt;/span&gt; and the &lt;span style=&quot; font-weight:700;&quot;&gt;licenses&lt;/span&gt; folder.&lt;/p&gt;&lt;p&gt;Qt source code and license information:&lt;br/&gt;&lt;a href=&quot;https://www.qt.io/licensing/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;https://www.qt.io/licensing/&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;&lt;a href=&quot;https://code.qt.io/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;https://code.qt.io/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -284,3 +284,4 @@
   </connection>
  </connections>
 </ui>
+
