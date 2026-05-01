@@ -1,0 +1,2 @@
+Qt is licensed under the GNU Lesser General Public License (LGPL).
+See https://www.qt.io/licensing/ and https://code.qt.io/ for details.

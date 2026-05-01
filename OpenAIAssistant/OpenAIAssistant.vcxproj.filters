@@ -56,4 +56,7 @@
       <Filter>Translation Files</Filter>
     </QtTranslation>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
 </Project>

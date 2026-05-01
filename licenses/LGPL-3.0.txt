@@ -1,0 +1,1 @@
+Refer to the official GNU LGPL v3 license text at https://www.gnu.org/licenses/lgpl-3.0.txt

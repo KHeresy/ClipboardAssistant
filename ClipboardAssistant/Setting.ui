@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>567</width>
-    <height>575</height>
+    <width>707</width>
+    <height>673</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,6 +38,19 @@
             </item>
             <item>
              <widget class="QComboBox" name="comboBoxLanguage"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </item>
@@ -162,6 +175,19 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </item>
      <item>
@@ -173,7 +199,10 @@
         <item>
          <widget class="QLabel" name="labelAbout">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;Developed by Heresy &lt;br/&gt;with Google Gemini-CLI&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;b&gt;Open source notice&lt;/b&gt;&lt;br/&gt;This application uses Qt 6 libraries, including QtCore, QtGui and QtWidgets, under the GNU Lesser General Public License (LGPL).&lt;/p&gt;&lt;p&gt;A copy of the applicable third-party notices and license texts should be distributed with this application in the files &lt;b&gt;THIRD_PARTY_NOTICES.md&lt;/b&gt; and the &lt;b&gt;licenses&lt;/b&gt; folder.&lt;/p&gt;&lt;p&gt;Qt source code and license information:&lt;br/&gt;&lt;a href=&quot;https://www.qt.io/licensing/&quot;&gt;https://www.qt.io/licensing/&lt;/a&gt;&lt;br/&gt;&lt;a href=&quot;https://code.qt.io/&quot;&gt;https://code.qt.io/&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
           </property>
           <property name="openExternalLinks">
            <bool>true</bool>

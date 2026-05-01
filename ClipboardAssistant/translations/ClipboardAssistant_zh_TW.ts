@@ -774,61 +774,65 @@ Error:
         <translation type="vanished">使用全域快捷鍵啟動時自動複製 (傳送 Ctrl+C)</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="47"/>
+        <location filename="../Setting.ui" line="60"/>
         <source>Close main window with Esc key</source>
         <translation>按下 Esc 鍵隱藏主視窗</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="54"/>
+        <location filename="../Setting.ui" line="67"/>
         <source>Auto-start on boot</source>
         <translation>開機時自動啟動</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="61"/>
+        <location filename="../Setting.ui" line="74"/>
         <source>Start minimized to tray</source>
         <translation>啟動時最小化到系統匣</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="71"/>
+        <location filename="../Setting.ui" line="84"/>
         <source>Global Hotkey</source>
         <translation>全域快捷鍵</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="79"/>
+        <location filename="../Setting.ui" line="92"/>
         <source>Show main window:</source>
         <translation>顯示主視窗：</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="112"/>
+        <location filename="../Setting.ui" line="125"/>
         <source>Auto-copy (Send Ctrl+C) when activated</source>
         <translation>啟動時自動複製 (傳送 Ctrl+C)</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="123"/>
+        <location filename="../Setting.ui" line="136"/>
         <source>Screen Capture:</source>
         <translation>螢幕截圖：</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="156"/>
+        <location filename="../Setting.ui" line="169"/>
         <source>Show main window after screen capture</source>
         <translation>螢幕截圖後顯示主視窗</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="170"/>
+        <location filename="../Setting.ui" line="196"/>
         <source>About</source>
         <translation>關於</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="176"/>
+        <location filename="../Setting.ui" line="202"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;b&gt;Open source notice&lt;/b&gt;&lt;br/&gt;This application uses Qt 6 libraries, including QtCore, QtGui and QtWidgets, under the GNU Lesser General Public License (LGPL).&lt;/p&gt;&lt;p&gt;A copy of the applicable third-party notices and license texts should be distributed with this application in the files &lt;b&gt;THIRD_PARTY_NOTICES.md&lt;/b&gt; and the &lt;b&gt;licenses&lt;/b&gt; folder.&lt;/p&gt;&lt;p&gt;Qt source code and license information:&lt;br/&gt;&lt;a href=&quot;https://www.qt.io/licensing/&quot;&gt;https://www.qt.io/licensing/&lt;/a&gt;&lt;br/&gt;&lt;a href=&quot;https://code.qt.io/&quot;&gt;https://code.qt.io/&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;Developed by Heresy &lt;br/&gt;with Google Gemini-CLI&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;剪貼簿小幫手 (Clipboard Assistant)&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;開發者：Heresy &lt;br/&gt;使用 Google Gemini-CLI 協助開發&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub 專案頁面&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;剪貼簿小幫手 (Clipboard Assistant)&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;開發者：Heresy &lt;br/&gt;使用 Google Gemini-CLI 協助開發&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub 專案頁面&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;center&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;b&gt;Clipboard Assistant&lt;/b&gt; v0.2.0&lt;br/&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;GitHub Project Page&lt;/a&gt;&lt;/center&gt;</source>
         <translation type="vanished">&lt;center&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;b&gt;剪貼簿助手&lt;/b&gt; v0.2.0&lt;br/&gt;開發者：Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;GitHub 專案頁面&lt;/a&gt;&lt;/center&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.ui" line="191"/>
+        <location filename="../Setting.ui" line="220"/>
         <source>Module Settings</source>
         <translation>模組設定</translation>
     </message>

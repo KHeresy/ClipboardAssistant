@@ -27,3 +27,14 @@ OpenAIAssistant
 - 本身不包含圖形介面、介面由主程式負責
 - 將剪貼簿的內容傳給 OpenAI 的 API，支援文字、圖檔、串流回覆
   - 在設定介面可以設定 OpenAI Server、API Key、Model、其他參數
+
+## 授權與第三方元件
+
+- 本專案程式碼授權請參考根目錄 `LICENSE`。
+- 本專案使用 Qt 6 函式庫（包含 QtCore、QtGui、QtWidgets）。發行二進位版本時，請一併附上：
+  - `THIRD_PARTY_NOTICES.md`
+  - `licenses/` 目錄中的授權文件
+- Qt 授權與原始碼資訊：
+  - https://www.qt.io/licensing/
+  - https://code.qt.io/
+- 建議以動態連結方式部署 Qt，避免限制使用者替換 LGPL 元件的權利。
