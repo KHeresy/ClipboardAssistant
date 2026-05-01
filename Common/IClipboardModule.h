@@ -46,6 +46,10 @@ struct ModuleInfo {
     class IClipboardModule* module;
     bool isInternal;
     QString filePath;
+    class QPluginLoader* loader = nullptr;
+
+    bool hostOwnsModule() const { return isInternal; }
+    bool loaderOwnsModule() const { return !isInternal && loader != nullptr; }
 };
 
 class IModuleCallback {

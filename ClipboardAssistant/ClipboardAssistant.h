@@ -18,6 +18,7 @@
 #include <QPoint>
 #include <QRect>
 #include <QTimer>
+#include <QPluginLoader>
 #include "ui_ClipboardAssistant.h"
 #include "../Common/IClipboardModule.h"
 
@@ -124,6 +125,7 @@ private:
     QSystemTrayIcon* m_trayIcon;
     QMenu* m_trayMenu;
     QList<ModuleInfo> m_modules;
+    QList<QPluginLoader*> m_pluginLoaders;
     IClipboardModule* m_activeModule = nullptr;
     class PipelineExecutor* m_currentExecutor = nullptr;
     class RegExAssistant* m_regexAssistant;

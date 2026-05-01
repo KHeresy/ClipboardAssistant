@@ -97,7 +97,16 @@ ClipboardAssistant::ClipboardAssistant(QWidget *parent) : QWidget(parent), ui(ne
         int w = width() / 2; ui->splitter_horizontal->setSizes({w, w});
     }
 }
-ClipboardAssistant::~ClipboardAssistant() { unregisterGlobalHotkey(); delete ui; }
+ClipboardAssistant::~ClipboardAssistant() {
+    unregisterGlobalHotkey();
+    for (QPluginLoader* loader : m_pluginLoaders) {
+        if (!loader) continue;
+        loader->unload();
+        delete loader;
+    }
+    m_pluginLoaders.clear();
+    delete ui;
+}
 
 void ClipboardAssistant::updateActionSetShortcuts() {
     unregisterGlobalHotkey();
@@ -492,21 +501,31 @@ void ClipboardAssistant::onImageDownloaded(QNetworkReply* rep, QString u) {
 
 void ClipboardAssistant::loadModules() {
     m_modules.clear(); 
+    qDeleteAll(m_pluginLoaders);
+    m_pluginLoaders.clear();
     m_regexAssistant = new RegExAssistant(this); 
-    m_modules.append({m_regexAssistant, true, "Built-in"});
+    m_modules.append({m_regexAssistant, true, "Built-in", nullptr});
     m_externalAppAssistant = new ExternalAppAssistant(this);
-    m_modules.append({m_externalAppAssistant, true, "Built-in"});
+    m_modules.append({m_externalAppAssistant, true, "Built-in", nullptr});
     m_textInputAssistant = new TextInputAssistant(this);
-    m_modules.append({ m_textInputAssistant, true, "" });
+    m_modules.append({ m_textInputAssistant, true, "", nullptr });
 
     // Load external modules (DLLs)
     QDir dir(QCoreApplication::applicationDirPath());
     for (const QString& f : dir.entryList({"*.dll"}, QDir::Files)) {
-        QPluginLoader l(dir.absoluteFilePath(f)); 
-        QObject* p = l.instance();
+        QPluginLoader* loader = new QPluginLoader(dir.absoluteFilePath(f));
+        QObject* p = loader->instance();
         if (p) { 
             IClipboardModule* iM = qobject_cast<IClipboardModule*>(p); 
-            if (iM) m_modules.append({iM, false, f}); 
+            if (iM) {
+                m_pluginLoaders.append(loader);
+                m_modules.append({iM, false, f, loader});
+            } else {
+                loader->unload();
+                delete loader;
+            }
+        } else {
+            delete loader;
         }
     }
 
