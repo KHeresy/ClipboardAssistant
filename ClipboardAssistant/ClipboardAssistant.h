@@ -158,7 +158,7 @@ private:
     void setupActionSetWidget(QListWidgetItem* item, ActionSetInfo& info);
     QMimeData* captureScreenRegion(bool restoreWindow);
     QMap<QString, ActionSetInfo> m_actionSetMap;
-    // Plugin Name -> Global Settings
+    // Plugin ID -> Global Settings
     QMap<QString, QVariantMap> m_globalSettingsMap;
     // Map WinAPI Hotkey ID to ActionSetInfo
     QMap<int, ActionSetInfo> m_hotkeyMap;

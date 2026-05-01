@@ -146,5 +146,5 @@ void PipelineExecutor::executeNext() {
     }
 
     // 啟動下一個插件
-    module->process(m_currentData, action.parameters, m_parent->m_globalSettingsMap[module->name()], this);
+    module->process(m_currentData, action.parameters, m_parent->m_globalSettingsMap[module->id()], this);
 }

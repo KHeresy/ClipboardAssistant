@@ -118,7 +118,7 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
             QMap<QString, QWidget*> widgets;
             
             QSettings ps("Heresy", "ClipboardAssistant");
-            ps.beginGroup("Modules/" + module->name() + "/Global");
+            ps.beginGroup("Modules/" + module->id() + "/Global");
 
             for (const auto& def : gDefs) {
                 QWidget* widget = nullptr;
@@ -260,7 +260,7 @@ void Setting::accept()
     for (IClipboardModule* module : m_modules) {
         if (!m_paramWidgets.contains(module)) continue;
         
-        settings.beginGroup("Modules/" + module->name() + "/Global");
+        settings.beginGroup("Modules/" + module->id() + "/Global");
         const auto& widgets = m_paramWidgets[module];
         const auto& defs = m_paramDefs[module];
 

@@ -512,12 +512,12 @@ void ClipboardAssistant::loadModules() {
 
     QSettings s("Heresy", "ClipboardAssistant");
     for (const auto& info : m_modules) {
-        s.beginGroup("Modules/" + info.module->name() + "/Global");
+        s.beginGroup("Modules/" + info.module->id() + "/Global");
         QVariantMap globalParams;
         for (const auto& def : info.module->globalParameterDefinitions()) {
             globalParams[def.id] = s.value(def.id, def.defaultValue);
         }
-        m_globalSettingsMap[info.module->name()] = globalParams;
+        m_globalSettingsMap[info.module->id()] = globalParams;
         s.endGroup();
     }
 }
