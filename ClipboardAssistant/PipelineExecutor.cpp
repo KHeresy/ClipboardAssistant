@@ -113,6 +113,7 @@ void PipelineExecutor::executeNext() {
     const auto& action = m_info.actions[m_currentIdx++];
     IClipboardModule* module = nullptr;
     for (const auto& mi : m_parent->m_modules) {
+        if (!mi.module) continue;
         if (mi.module->id() == action.moduleId) {
             module = mi.module;
             break;

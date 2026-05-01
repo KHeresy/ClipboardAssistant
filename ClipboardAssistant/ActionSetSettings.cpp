@@ -100,6 +100,7 @@ void ActionSetSettings::updateActionList() {
     for (int i = 0; i < m_actions.size(); ++i) {
         QString displayName = m_actions[i].moduleId;
         for (const auto& info : m_modules) {
+            if (!info.module) continue;
             if (info.module->id() == m_actions[i].moduleId) {
                 displayName = info.module->name();
                 break;
@@ -115,6 +116,7 @@ void ActionSetSettings::updateActionList() {
 void ActionSetSettings::onAddAction() {
     QMenu menu(this);
     for (const auto& info : m_modules) {
+        if (!info.module) continue;
         QMenu* sub = menu.addMenu(info.module->name());
         QAction* actNew = sub->addAction(tr("New %1 Action").arg(info.module->name()));
         connect(actNew, &QAction::triggered, [this, info]() {

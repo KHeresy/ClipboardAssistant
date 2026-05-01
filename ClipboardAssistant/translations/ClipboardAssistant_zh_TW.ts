@@ -104,28 +104,28 @@
         <translation>步驟配置</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="119"/>
+        <location filename="../ActionSetSettings.cpp" line="121"/>
         <source>New %1 Action</source>
         <translation>新增 %1 動作</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="255"/>
+        <location filename="../ActionSetSettings.cpp" line="257"/>
         <source>Select File</source>
         <translation>選取檔案</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="255"/>
+        <location filename="../ActionSetSettings.cpp" line="257"/>
         <source>Select Directory</source>
         <translation>選取目錄</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="264"/>
-        <location filename="../ActionSetSettings.cpp" line="267"/>
+        <location filename="../ActionSetSettings.cpp" line="266"/>
+        <location filename="../ActionSetSettings.cpp" line="269"/>
         <source>%1:</source>
         <translation>%1:</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="275"/>
+        <location filename="../ActionSetSettings.cpp" line="277"/>
         <source>Advanced Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -143,190 +143,190 @@
         <translation>[未知內容]</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="640"/>
+        <location filename="../ClipboardAssistant.cpp" line="646"/>
         <source>Edit</source>
         <translation>編輯</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="643"/>
-        <location filename="../ClipboardAssistant.cpp" line="924"/>
+        <location filename="../ClipboardAssistant.cpp" line="649"/>
+        <location filename="../ClipboardAssistant.cpp" line="936"/>
         <source>Export</source>
         <translation>匯出</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="646"/>
+        <location filename="../ClipboardAssistant.cpp" line="652"/>
         <source>Delete</source>
         <translation>刪除</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="676"/>
+        <location filename="../ClipboardAssistant.cpp" line="682"/>
         <source>Capture cancelled or failed.</source>
         <translation>螢幕截取已取消或失敗。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="660"/>
+        <location filename="../ClipboardAssistant.cpp" line="666"/>
         <source>No actions in this set.</source>
         <translation>此動作集中沒有動作。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="702"/>
+        <location filename="../ClipboardAssistant.cpp" line="708"/>
         <source>Edit Action Set</source>
         <translation>編輯動作集</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="952"/>
-        <location filename="../ClipboardAssistant.cpp" line="969"/>
+        <location filename="../ClipboardAssistant.cpp" line="964"/>
+        <location filename="../ClipboardAssistant.cpp" line="981"/>
         <source>Clipboard Assistant</source>
         <translation>剪貼簿小幫手</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="971"/>
+        <location filename="../ClipboardAssistant.cpp" line="983"/>
         <source>Show</source>
         <translation>顯示</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="736"/>
+        <location filename="../ClipboardAssistant.cpp" line="742"/>
         <source>Delete pipeline?</source>
         <translation>確定要刪除此流程嗎？</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="525"/>
+        <location filename="../ClipboardAssistant.cpp" line="531"/>
         <source>API version mismatch. Host expects %1, plugin reports %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="526"/>
+        <location filename="../ClipboardAssistant.cpp" line="532"/>
         <source>Plugin does not implement the required IClipboardModule interface.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="736"/>
+        <location filename="../ClipboardAssistant.cpp" line="742"/>
         <source>Confirm</source>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="751"/>
+        <location filename="../ClipboardAssistant.cpp" line="757"/>
         <source>Add Action Set</source>
         <translation>新增動作集</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="778"/>
+        <location filename="../ClipboardAssistant.cpp" line="784"/>
         <source>Import Action Set</source>
         <translation>匯入動作集</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="778"/>
-        <location filename="../ClipboardAssistant.cpp" line="855"/>
-        <location filename="../ClipboardAssistant.cpp" line="898"/>
+        <location filename="../ClipboardAssistant.cpp" line="784"/>
+        <location filename="../ClipboardAssistant.cpp" line="867"/>
+        <location filename="../ClipboardAssistant.cpp" line="910"/>
         <source>JSON Files (*.json)</source>
         <translation>JSON 檔案 (*.json)</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="784"/>
-        <location filename="../ClipboardAssistant.cpp" line="1085"/>
+        <location filename="../ClipboardAssistant.cpp" line="790"/>
+        <location filename="../ClipboardAssistant.cpp" line="1097"/>
         <source>Error</source>
         <translation>錯誤</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="784"/>
+        <location filename="../ClipboardAssistant.cpp" line="790"/>
         <source>Invalid JSON format.</source>
         <translation>無效的 JSON 格式。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="792"/>
+        <location filename="../ClipboardAssistant.cpp" line="798"/>
         <source>Skipped: Missing &apos;Name&apos; field.</source>
         <translation>已略過：缺少 &apos;Name&apos; 欄位。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="811"/>
+        <location filename="../ClipboardAssistant.cpp" line="823"/>
         <source>Action &apos;%1&apos;: Module &apos;%2&apos; not found. Step skipped.</source>
         <translation>動作 &apos;%1&apos;：找不到模組 &apos;%2&apos;。已略過此步驟。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="819"/>
+        <location filename="../ClipboardAssistant.cpp" line="831"/>
         <source>Action &apos;%1&apos; has no valid steps and was not imported.</source>
         <translation>動作 &apos;%1&apos; 沒有有效的步驟，未被匯入。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="840"/>
+        <location filename="../ClipboardAssistant.cpp" line="852"/>
         <source>Import Report</source>
         <translation>匯入回報</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="842"/>
+        <location filename="../ClipboardAssistant.cpp" line="854"/>
         <source>Issues found during import:</source>
         <translation>匯入時發現以下問題：</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="848"/>
+        <location filename="../ClipboardAssistant.cpp" line="860"/>
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="848"/>
+        <location filename="../ClipboardAssistant.cpp" line="860"/>
         <source>Import completed successfully.</source>
         <translation>匯入成功完成。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="855"/>
+        <location filename="../ClipboardAssistant.cpp" line="867"/>
         <source>Export All Action Sets</source>
         <translation>匯出所有動作集</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="890"/>
+        <location filename="../ClipboardAssistant.cpp" line="902"/>
         <source>Export All</source>
         <translation>全部匯出</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="890"/>
+        <location filename="../ClipboardAssistant.cpp" line="902"/>
         <source>All Action Sets exported successfully.</source>
         <translation>所有動作集已成功匯出。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="898"/>
+        <location filename="../ClipboardAssistant.cpp" line="910"/>
         <source>Export Action Set</source>
         <translation>匯出動作集</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="924"/>
+        <location filename="../ClipboardAssistant.cpp" line="936"/>
         <source>Action Set exported successfully.</source>
         <translation>動作集已成功匯出。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="941"/>
-        <location filename="../ClipboardAssistant.cpp" line="1081"/>
+        <location filename="../ClipboardAssistant.cpp" line="953"/>
+        <location filename="../ClipboardAssistant.cpp" line="1093"/>
         <source>Cancelled.</source>
         <translation>已取消。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="943"/>
+        <location filename="../ClipboardAssistant.cpp" line="955"/>
         <source>
 [Cancelled]</source>
         <translation>
 [已取消]</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="951"/>
+        <location filename="../ClipboardAssistant.cpp" line="963"/>
         <source>Processing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="951"/>
+        <location filename="../ClipboardAssistant.cpp" line="963"/>
         <source>Cancel</source>
         <translation type="unfinished">取消</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="972"/>
+        <location filename="../ClipboardAssistant.cpp" line="984"/>
         <source>Settings</source>
         <translation>設定</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="974"/>
+        <location filename="../ClipboardAssistant.cpp" line="986"/>
         <source>Quit</source>
         <translation>結束</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="1081"/>
+        <location filename="../ClipboardAssistant.cpp" line="1093"/>
         <source>Error.</source>
         <translation>錯誤。</translation>
     </message>
@@ -335,17 +335,17 @@
         <translation type="vanished">找不到「螢幕截圖」模組。</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="987"/>
+        <location filename="../ClipboardAssistant.cpp" line="999"/>
         <source>Main Window: %1</source>
         <translation>主視窗：%1</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="994"/>
+        <location filename="../ClipboardAssistant.cpp" line="1006"/>
         <source>Screen Capture: %1</source>
         <translation>螢幕截圖：%1</translation>
     </message>
     <message>
-        <location filename="../ClipboardAssistant.cpp" line="1006"/>
+        <location filename="../ClipboardAssistant.cpp" line="1018"/>
         <source>Action &apos;%1&apos;: %2</source>
         <translation>動作 &apos;%1&apos;：%2</translation>
     </message>
@@ -550,7 +550,7 @@ Error:
         <translation>流程執行完畢。</translation>
     </message>
     <message>
-        <location filename="../PipelineExecutor.cpp" line="123"/>
+        <location filename="../PipelineExecutor.cpp" line="124"/>
         <source>Module not found: </source>
         <translation>找不到模組：</translation>
     </message>

@@ -442,7 +442,13 @@ void ClipboardAssistant::updateButtonsState() {
                 continue;
             }
             IClipboardModule* firstModule = nullptr;
-            for(auto& mi : m_modules) if(mi.module->id() == it.value().actions[0].moduleId) { firstModule = mi.module; break; }
+            for (auto& mi : m_modules) {
+                if (!mi.module) continue;
+                if (mi.module->id() == it.value().actions[0].moduleId) {
+                    firstModule = mi.module;
+                    break;
+                }
+            }
             if (firstModule) {
                 bool isEnabled = (firstModule->supportedInputs() & cT) != IClipboardModule::None;
                 if (it.value().isAutoCopy || it.value().isCaptureScreen) {
@@ -806,7 +812,13 @@ void ClipboardAssistant::onBtnImportActionSetClicked() {
             if (moduleId.isEmpty()) moduleId = sObj["Plugin"].toString(); // 相容
             
             bool moduleExists = false;
-            for(auto& mi : m_modules) if(mi.module->id() == moduleId) { moduleExists = true; break; }
+            for (auto& mi : m_modules) {
+                if (!mi.module) continue;
+                if (mi.module->id() == moduleId) {
+                    moduleExists = true;
+                    break;
+                }
+            }
             
             if (!moduleExists) { reports << tr("Action '%1': Module '%2' not found. Step skipped.").arg(info.name, moduleId); continue; }
             
