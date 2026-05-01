@@ -58,9 +58,6 @@
     <ClCompile Include="RegExAssistant.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="ScreenCaptureAssistant.cpp">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="TextInputAssistant.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
@@ -92,9 +89,6 @@
       <Filter>Modules</Filter>
     </QtMoc>
     <QtMoc Include="RegExAssistant.h">
-      <Filter>Modules</Filter>
-    </QtMoc>
-    <QtMoc Include="ScreenCaptureAssistant.h">
       <Filter>Modules</Filter>
     </QtMoc>
     <QtMoc Include="TextInputAssistant.h">
