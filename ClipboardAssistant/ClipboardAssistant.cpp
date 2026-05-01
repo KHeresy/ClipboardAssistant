@@ -345,6 +345,20 @@ QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
 
         SelectionState state;
         QEventLoop loop;
+        QTimer escapePollTimer;
+        escapePollTimer.setInterval(30);
+        connect(&escapePollTimer, &QTimer::timeout, &loop, [&]() {
+            if ((GetAsyncKeyState(VK_ESCAPE) & 0x8000) == 0) return;
+
+            state.isSelecting = false;
+            state.accepted = false;
+            for (auto overlay : state.overlays) {
+                if (overlay && overlay->isVisible()) {
+                    overlay->reject();
+                }
+            }
+        });
+        escapePollTimer.start();
         for (QScreen* screen : screens) {
             SnippetOverlay* overlay = new SnippetOverlay(fullCanvas, screen->geometry(), totalGeo, &state);
             overlay->setScreen(screen);
@@ -364,6 +378,7 @@ QMimeData* ClipboardAssistant::captureScreenRegion(bool restoreWindow) {
         }
         
         loop.exec();
+        escapePollTimer.stop();
 
         if (state.accepted) {
             // Get selected pixmap from any overlay (since they share state and canvas)
@@ -1058,8 +1073,17 @@ SnippetOverlay::SnippetOverlay(const QPixmap& fullCanvas, const QRect& screenGeo
     : QDialog(parent), m_fullCanvas(fullCanvas), m_screenGeo(screenGeo), m_totalGeo(totalGeo), m_state(state)
 {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
+    setFocusPolicy(Qt::StrongFocus);
     setCursor(Qt::CrossCursor);
     setGeometry(screenGeo);
+
+    QShortcut* escapeShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    escapeShortcut->setContext(Qt::ApplicationShortcut);
+    connect(escapeShortcut, &QShortcut::activated, this, [this]() {
+        m_state->isSelecting = false;
+        m_state->accepted = false;
+        reject();
+    });
 }
 
 QRect SnippetOverlay::selectedRect() const {
@@ -1153,6 +1177,8 @@ void SnippetOverlay::mouseReleaseEvent(QMouseEvent* event) {
 
 void SnippetOverlay::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Escape) {
+        m_state->isSelecting = false;
+        m_state->accepted = false;
         reject();
     } else {
         QDialog::keyPressEvent(event);
