@@ -1,40 +1,68 @@
 # Clipboard Assistant
 
-這個專案是要設計一個用來協助處理剪貼簿內容、允許使用者自訂處理剪貼簿操作的工具程式。
+[English](README.md) | [繁體中文](README_TW.md)
 
-ClipboardAssistant 主程式概念：
-- 介面的部分主要是主介面、設定介面兩者
-- 常駐程式、system tray 顯示應用程式圖示，可叫出設定介面
-- 設定介面可以自定義：
-  - 叫出主介面的全域快速鍵
-  - 開機自動執行
-  - 列出讀取的 plugin
-- 主介面功能
-  - 顯示目前剪貼簿的內容
-  - 顯示使用者自定義的功能清單、個別清單可以設定快速鍵來執行
-  - 處理後的結果可以讓使用者設定：直接貼上、更新剪貼簿、用另一個視窗來顯示
-- 執行時透過 Qt  plug-in 機制來載入使用者自定義的功能
-  - 每個 plug-in 可以定義一個或多個功能
-  - 每個功能可以設定名稱、說明、快速鍵
-  - 執行功能時會將目前剪貼簿的內容傳給 plug-in 來處理
-  - plug-in 處理後會回傳結果，主程式會依照 plug-in 的設定來決定如何處理結果
-  - Plugin 的 API 介面包含：
-    - 是否支援文字、圖片、RTF
-    - 是否有設定介面，有的話要列出需要設定的參數
+Clipboard Assistant is a Windows desktop tool built with Qt 6 for managing clipboard content and extending custom functionality through a plugin mechanism.
 
-OpenAIAssistant
-- 對應主程式的 Plug-in
-- 本身不包含圖形介面、介面由主程式負責
-- 將剪貼簿的內容傳給 OpenAI 的 API，支援文字、圖檔、串流回覆
-  - 在設定介面可以設定 OpenAI Server、API Key、Model、其他參數
+## Project Goals
 
-## 授權與第三方元件
+- Stay in the system tray for quick access to the main window and settings window
+- Let users view the current clipboard content
+- Run custom actions through hotkeys
+- Support outputting results by pasting directly, updating the clipboard, or showing them in a window
+- Load additional feature modules through the Qt plugin mechanism
 
-- 本專案程式碼授權請參考根目錄 `LICENSE`。
-- 本專案使用 Qt 6 函式庫（包含 QtCore、QtGui、QtWidgets）。發行二進位版本時，請一併附上：
+## Included Modules
+
+- `OpenAIAssistant`: a plugin module integrated with the OpenAI API, supporting text, images, and streaming responses
+- `GemmiAssistant`: an additional plugin module
+- `ScriptAssistant`: a script-based extension module
+
+## Main Application Features
+
+- Separate main window and settings window
+- Settings window options include:
+  - Global hotkey for opening the main window
+  - Launch at startup
+  - List of loaded plugins
+- Main window can:
+  - Display the current clipboard content
+  - Show the user-defined action list
+  - Assign hotkeys to individual actions
+- When a plugin runs, it receives the current clipboard content and returns the processed result; the main application decides how to output it
+
+## Plugin Design
+
+Each plugin can provide one or more actions and define:
+
+- Action name
+- Action description
+- Hotkey
+- Whether it supports text, images, and RTF
+- Whether it provides a settings UI and required parameters
+
+## Build Environment
+
+- Windows
+- Visual Studio
+- Qt 6 (QtCore, QtGui, QtWidgets, QtNetwork, with some modules also using QML)
+
+## Repository Structure
+
+- `ClipboardAssistant/`: main application
+- `OpenAIAssistant/`: OpenAI plugin
+- `GemmiAssistant/`: plugin module
+- `ScriptAssistant/`: plugin module
+- `Common/`: shared headers
+- `licenses/`: third-party license files
+
+## Licensing and Third-Party Components
+
+- Refer to the root `LICENSE.txt` for the project code license.
+- When distributing binaries, include:
   - `THIRD_PARTY_NOTICES.md`
-  - `licenses/` 目錄中的授權文件
-- Qt 授權與原始碼資訊：
+  - license files under the `licenses/` directory
+- Qt licensing and source information:
   - https://www.qt.io/licensing/
   - https://code.qt.io/
-- 建議以動態連結方式部署 Qt，避免限制使用者替換 LGPL 元件的權利。
+- It is recommended to deploy Qt via dynamic linking to avoid restricting users' rights to replace LGPL components.
