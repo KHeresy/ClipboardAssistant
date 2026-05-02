@@ -16,6 +16,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QMessageBox>
+#include <QStringList>
 
 Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
     : QDialog(parent)
@@ -69,26 +70,10 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
 
     // Setup Modules
     ui->listPlugins->clear();
+    m_failedModuleInfos.clear();
     for (const auto& info : modules) {
         if (!info.module) {
-            QListWidgetItem* item = new QListWidgetItem(tr("%1 (Failed)").arg(info.filePath), ui->listPlugins);
-            item->setToolTip(info.loadError);
-
-            QWidget* page = new QWidget();
-            QVBoxLayout* layout = new QVBoxLayout(page);
-            QLabel* title = new QLabel(QString("<b>%1</b>").arg(info.filePath));
-            layout->addWidget(title);
-            QLabel* sourceLabel = new QLabel(tr("<i>External Module Load Failed</i>"));
-            sourceLabel->setStyleSheet("color: gray;");
-            layout->addWidget(sourceLabel);
-            QLabel* errorTitle = new QLabel(tr("<b>Reason:</b>"));
-            layout->addWidget(errorTitle);
-            QLabel* errorLabel = new QLabel(info.loadError.isEmpty() ? tr("Unknown error") : info.loadError);
-            errorLabel->setWordWrap(true);
-            errorLabel->setStyleSheet("color: #aa0000;");
-            layout->addWidget(errorLabel);
-            layout->addStretch();
-            ui->stackedWidgetPlugins->addWidget(page);
+            m_failedModuleInfos.append(info);
             continue;
         }
 
@@ -230,6 +215,7 @@ Setting::Setting(const QList<ModuleInfo>& modules, QWidget *parent)
     }
 
     connect(ui->listPlugins, &QListWidget::currentRowChanged, this, &Setting::onModuleSelected);
+    ui->buttonFailedModules->setVisible(!m_failedModuleInfos.isEmpty());
     
     if (ui->listPlugins->count() > 0) {
         ui->listPlugins->setCurrentRow(0);
@@ -288,6 +274,23 @@ void Setting::onModuleSelected(int row)
     if (row >= 0 && row < ui->stackedWidgetPlugins->count() - 1) {
         ui->stackedWidgetPlugins->setCurrentIndex(row + 1); 
     }
+}
+
+void Setting::slotFailedModules()
+{
+    if (m_failedModuleInfos.isEmpty()) {
+        return;
+    }
+
+    QStringList failedModules;
+    for (const auto& info : m_failedModuleInfos) {
+        failedModules << tr("Module: %1\nReason: %2")
+            .arg(info.filePath, info.loadError.isEmpty() ? tr("Unknown error") : info.loadError);
+    }
+
+    QMessageBox::warning(this,
+        tr("Failed Modules"),
+        failedModules.join("\n\n"));
 }
 
 void Setting::accept()

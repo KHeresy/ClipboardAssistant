@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>SettingClass</class>
  <widget class="QDialog" name="SettingClass">
@@ -15,20 +15,20 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="layoutMainSettings">
      <property name="topMargin">
       <number>0</number>
      </property>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="layoutSettins">
        <item>
-        <widget class="QGroupBox" name="groupBoxGeneral">
+        <widget class="QGroupBox" name="groupGeneral">
          <property name="title">
           <string>General</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_general">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_lang">
+           <layout class="QHBoxLayout" name="layoutlanguage">
             <item>
              <widget class="QLabel" name="labelLanguage">
               <property name="text">
@@ -40,7 +40,7 @@
              <widget class="QComboBox" name="comboBoxLanguage"/>
             </item>
             <item>
-             <spacer name="horizontalSpacer_3">
+             <spacer name="spacerLanguage">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>
@@ -79,13 +79,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupHotkey">
          <property name="title">
           <string>Global Hotkey</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
+           <layout class="QHBoxLayout" name="layoutMainHotkey">
             <item>
              <widget class="QCheckBox" name="checkBoxEnableHotkey">
               <property name="text">
@@ -102,9 +102,9 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <layout class="QHBoxLayout" name="layoutAutoCopy">
             <item>
-             <spacer name="horizontalSpacer_2">
+             <spacer name="spacerAutoCopy">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>
@@ -129,7 +129,7 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_capture">
+           <layout class="QHBoxLayout" name="layoutCapture">
             <item>
              <widget class="QCheckBox" name="checkBoxEnableCaptureHotkey">
               <property name="text">
@@ -146,9 +146,9 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <layout class="QHBoxLayout" name="layoutShowAfterCapture">
             <item>
-             <spacer name="horizontalSpacer">
+             <spacer name="spacerShowAfterCapture">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>
@@ -176,7 +176,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer">
+        <spacer name="spacerSettings">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>
@@ -191,7 +191,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBoxAbout">
+      <widget class="QGroupBox" name="groupAbout">
        <property name="title">
         <string>About</string>
        </property>
@@ -221,14 +221,43 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QListWidget" name="listPlugins">
-        <property name="maximumSize">
-         <size>
-          <width>150</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="layoutModuleList">
+        <item>
+         <widget class="QListWidget" name="listPlugins">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonFailedModules">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Failed Modules</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QStackedWidget" name="stackedWidgetPlugins">
@@ -257,8 +286,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
+     <x>29</x>
+     <y>659</y>
     </hint>
     <hint type="destinationlabel">
      <x>20</x>
@@ -273,8 +302,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>20</x>
-     <y>20</y>
+     <x>29</x>
+     <y>659</y>
     </hint>
     <hint type="destinationlabel">
      <x>20</x>
@@ -282,6 +311,24 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>buttonFailedModules</sender>
+   <signal>clicked()</signal>
+   <receiver>SettingClass</receiver>
+   <slot>slotFailedModules()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>115</x>
+     <y>603</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>703</x>
+     <y>565</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>slotFailedModules()</slot>
+ </slots>
 </ui>
-

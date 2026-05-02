@@ -34,11 +34,13 @@ public:
 
 private slots:
     void onModuleSelected(int row);
+    void slotFailedModules();
     void accept() override;
 
 private:
     Ui::SettingClass *ui;
     QList<ModuleInfo> m_moduleInfos;
+    QList<ModuleInfo> m_failedModuleInfos;
     QList<IClipboardModule*> m_modules;
     QMap<IClipboardModule*, QMap<QString, QWidget*>> m_paramWidgets;
     QMap<IClipboardModule*, QList<ParameterDefinition>> m_paramDefs;

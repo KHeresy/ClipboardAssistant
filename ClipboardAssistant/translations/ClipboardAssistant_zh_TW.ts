@@ -655,133 +655,129 @@ Error:
 <context>
     <name>Setting</name>
     <message>
-        <location filename="../Setting.cpp" line="52"/>
+        <location filename="../Setting.cpp" line="53"/>
         <source>System Default</source>
         <translation>系統預設</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="53"/>
+        <location filename="../Setting.cpp" line="54"/>
         <source>English</source>
         <translation>英文 (English)</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="74"/>
-        <source>%1 (Failed)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Setting.cpp" line="81"/>
-        <source>&lt;i&gt;External Module Load Failed&lt;/i&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Setting.cpp" line="84"/>
-        <source>&lt;b&gt;Reason:&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Setting.cpp" line="86"/>
+        <location filename="../Setting.cpp" line="288"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="98"/>
+        <location filename="../Setting.cpp" line="83"/>
         <source>ID: %1</source>
         <translation>ID: %1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="108"/>
+        <location filename="../Setting.cpp" line="93"/>
         <source>&lt;i&gt;Built-in Module&lt;/i&gt;</source>
         <translation>&lt;i&gt;內建模組&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="108"/>
+        <location filename="../Setting.cpp" line="93"/>
         <source>&lt;i&gt;External Module: %1&lt;/i&gt;</source>
         <translation>&lt;i&gt;外部模組：%1&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="119"/>
+        <location filename="../Setting.cpp" line="104"/>
         <source>Text</source>
         <translation>文字</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="120"/>
+        <location filename="../Setting.cpp" line="105"/>
         <source>Image</source>
         <translation>圖片</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="121"/>
+        <location filename="../Setting.cpp" line="106"/>
         <source>RTF</source>
         <translation>富文字 (RTF)</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="122"/>
+        <location filename="../Setting.cpp" line="107"/>
         <source>File</source>
         <translation>檔案</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="123"/>
+        <location filename="../Setting.cpp" line="108"/>
         <source>None</source>
         <translation>無</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="126"/>
+        <location filename="../Setting.cpp" line="111"/>
         <source>&lt;b&gt;Module Capabilities:&lt;/b&gt;</source>
         <translation>&lt;b&gt;模組能力：&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="129"/>
+        <location filename="../Setting.cpp" line="114"/>
         <source> - Inputs: %1</source>
         <translation> - 輸入：%1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="130"/>
+        <location filename="../Setting.cpp" line="115"/>
         <source> - Outputs: %1</source>
         <translation> - 輸出：%1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="131"/>
+        <location filename="../Setting.cpp" line="116"/>
         <source> - Streaming: %1</source>
         <translation> - 串流支援：%1</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="131"/>
+        <location filename="../Setting.cpp" line="116"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="131"/>
+        <location filename="../Setting.cpp" line="116"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="139"/>
+        <location filename="../Setting.cpp" line="124"/>
         <source>&lt;b&gt;Module Configuration:&lt;/b&gt;</source>
         <translation>&lt;b&gt;模組配置：&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="192"/>
-        <location filename="../Setting.cpp" line="195"/>
+        <location filename="../Setting.cpp" line="177"/>
+        <location filename="../Setting.cpp" line="180"/>
         <source>%1:</source>
         <translation>%1:</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="204"/>
+        <location filename="../Setting.cpp" line="189"/>
         <source>Advanced Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="221"/>
+        <location filename="../Setting.cpp" line="206"/>
         <source>Advanced Configuration</source>
         <translation>進階設定</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="354"/>
+        <location filename="../Setting.cpp" line="287"/>
+        <source>Module: %1
+Reason: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Setting.cpp" line="292"/>
+        <source>Failed Modules</source>
+        <translation type="unfinished">失敗的模組</translation>
+    </message>
+    <message>
+        <location filename="../Setting.cpp" line="357"/>
         <source>Restart Required</source>
         <translation>需要重啟</translation>
     </message>
     <message>
-        <location filename="../Setting.cpp" line="355"/>
+        <location filename="../Setting.cpp" line="358"/>
         <source>Language changed. Do you want to restart the application now to apply changes?</source>
         <translation>語言已變更。您是否要立即重啟應用程式以套用變更？</translation>
     </message>
@@ -864,6 +860,11 @@ Error:
         <location filename="../Setting.ui" line="202"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.3&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;hr/&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Open source notice&lt;/span&gt;&lt;br/&gt;This application uses Qt 6 libraries, including QtCore, QtGui and QtWidgets, under the GNU Lesser General Public License (LGPL).&lt;/p&gt;&lt;p&gt;A copy of the applicable third-party notices and license texts should be distributed with this application in the files &lt;span style=&quot; font-weight:700;&quot;&gt;THIRD_PARTY_NOTICES.md&lt;/span&gt; and the &lt;span style=&quot; font-weight:700;&quot;&gt;licenses&lt;/span&gt; folder.&lt;/p&gt;&lt;p&gt;Qt source code and license information:&lt;br/&gt;&lt;a href=&quot;https://www.qt.io/licensing/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;https://www.qt.io/licensing/&lt;/span&gt;&lt;/a&gt;&lt;br/&gt;&lt;a href=&quot;https://code.qt.io/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;https://code.qt.io/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Setting.ui" line="256"/>
+        <source>Failed Modules</source>
+        <translation>失敗的模組</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;Developed by Heresy &lt;br/&gt;with Google Gemini-CLI&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>

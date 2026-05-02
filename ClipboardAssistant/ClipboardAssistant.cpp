@@ -517,7 +517,7 @@ void ClipboardAssistant::loadModules() {
     m_modules.append({ m_textInputAssistant, true, "", nullptr });
 
     // Load external modules (DLLs)
-    QDir dir(QCoreApplication::applicationDirPath());
+    QDir dir(QCoreApplication::applicationDirPath() + "/modules");
     for (const QString& f : dir.entryList({"*.dll"}, QDir::Files)) {
         QPluginLoader* loader = new QPluginLoader(dir.absoluteFilePath(f));
         QObject* p = loader->instance();
