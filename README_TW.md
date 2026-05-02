@@ -16,7 +16,7 @@ Clipboard Assistant 是一個以 Qt 6 製作的 Windows 桌面工具，用來協
 
 - `OpenAIAssistant`：與 OpenAI API 整合的外掛模組，支援文字、圖片與串流回覆
 - `GemmiAssistant`：額外外掛模組
-- `ScriptAssistant`：以腳本方式擴充的外掛模組
+- `ScriptAssistant`：以腳本方式擴充的外掛模組，使用 `QJSEngine` 執行 JavaScript
 
 ## 主程式功能
 
@@ -40,6 +40,13 @@ Clipboard Assistant 是一個以 Qt 6 製作的 Windows 桌面工具，用來協
 - 快速鍵
 - 是否支援文字、圖片、RTF
 - 是否提供設定介面與必要參數
+
+## ScriptAssistant 腳本格式
+
+- 使用 JavaScript 語法
+- 腳本由 `QJSEngine` 執行
+- 每個腳本都必須定義 `process(text)` 函式
+- 可使用一般 JavaScript API，例如 `text.toUpperCase()`、`JSON.parse()`
 
 ## 建置環境
 

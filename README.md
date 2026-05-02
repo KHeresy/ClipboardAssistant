@@ -16,7 +16,7 @@ Clipboard Assistant is a Windows desktop tool built with Qt 6 for managing clipb
 
 - `OpenAIAssistant`: a plugin module integrated with the OpenAI API, supporting text, images, and streaming responses
 - `GemmiAssistant`: an additional plugin module
-- `ScriptAssistant`: a script-based extension module
+- `ScriptAssistant`: a script-based extension module that uses JavaScript via `QJSEngine`
 
 ## Main Application Features
 
@@ -40,6 +40,13 @@ Each plugin can provide one or more actions and define:
 - Hotkey
 - Whether it supports text, images, and RTF
 - Whether it provides a settings UI and required parameters
+
+## ScriptAssistant Script Format
+
+- Uses JavaScript syntax
+- Scripts are executed by `QJSEngine`
+- Each script must define a `process(text)` function
+- Example functions can use standard JavaScript APIs such as `text.toUpperCase()` and `JSON.parse()`
 
 ## Build Environment
 
