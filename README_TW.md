@@ -31,6 +31,20 @@ Clipboard Assistant 是一個以 Qt 6 製作的 Windows 桌面工具，用來協
   - 為各項功能設定快速鍵
 - plugin 執行時會取得目前剪貼簿內容並回傳處理結果，由主程式決定後續輸出方式
 
+## 截圖
+
+### 主畫面
+
+![主畫面](doc/main-window-tw.png)
+
+### Action Set 編輯器
+
+![Action Set 編輯器](doc/actionset-tw.png)
+
+### Action Set 編輯器 - 多動作
+
+![Action Set 編輯器 - 進階畫面](doc/actionset2-tw.png)
+
 ## 外掛設計
 
 每個 plugin 可以提供一個或多個功能，並可定義：

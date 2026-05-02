@@ -31,6 +31,20 @@ Clipboard Assistant is a Windows desktop tool built with Qt 6 for managing clipb
   - Assign hotkeys to individual actions
 - When a plugin runs, it receives the current clipboard content and returns the processed result; the main application decides how to output it
 
+## Screenshots
+
+### Main Window
+
+![Main Window](doc/main-window-en.png)
+
+### Action Set Editor
+
+![Action Set Editor](doc/actionset-en.png)
+
+### Action Set Editor - multiple actions
+
+![Action Set Editor - Advanced View](doc/actionset2-en.png)
+
 ## Plugin Design
 
 Each plugin can provide one or more actions and define:
