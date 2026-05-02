@@ -109,25 +109,25 @@
         <translation>新增 %1 動作</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="257"/>
+        <location filename="../ActionSetSettings.cpp" line="258"/>
         <source>Select File</source>
         <translation>選取檔案</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="257"/>
+        <location filename="../ActionSetSettings.cpp" line="258"/>
         <source>Select Directory</source>
         <translation>選取目錄</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="266"/>
-        <location filename="../ActionSetSettings.cpp" line="269"/>
+        <location filename="../ActionSetSettings.cpp" line="267"/>
+        <location filename="../ActionSetSettings.cpp" line="270"/>
         <source>%1:</source>
         <translation>%1:</translation>
     </message>
     <message>
-        <location filename="../ActionSetSettings.cpp" line="277"/>
+        <location filename="../ActionSetSettings.cpp" line="278"/>
         <source>Advanced Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>進階設定</translation>
     </message>
 </context>
 <context>
@@ -192,12 +192,12 @@
     <message>
         <location filename="../ClipboardAssistant.cpp" line="531"/>
         <source>API version mismatch. Host expects %1, plugin reports %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>API 版本不符合。需要 %1，但是外掛回報 %2。</translation>
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="532"/>
         <source>Plugin does not implement the required IClipboardModule interface.</source>
-        <translation type="unfinished"></translation>
+        <translation>外掛沒有實作需要的 IClipboardModule 介面</translation>
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="742"/>
@@ -308,12 +308,12 @@
     <message>
         <location filename="../ClipboardAssistant.cpp" line="963"/>
         <source>Processing...</source>
-        <translation type="unfinished"></translation>
+        <translation>處理中…</translation>
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="963"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location filename="../ClipboardAssistant.cpp" line="984"/>
@@ -667,7 +667,7 @@ Error:
     <message>
         <location filename="../Setting.cpp" line="288"/>
         <source>Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>未知的錯誤</translation>
     </message>
     <message>
         <location filename="../Setting.cpp" line="83"/>
@@ -753,7 +753,7 @@ Error:
     <message>
         <location filename="../Setting.cpp" line="189"/>
         <source>Advanced Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>進階設定</translation>
     </message>
     <message>
         <location filename="../Setting.cpp" line="206"/>
@@ -764,12 +764,13 @@ Error:
         <location filename="../Setting.cpp" line="287"/>
         <source>Module: %1
 Reason: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>模組： %1
+原因： %2</translation>
     </message>
     <message>
         <location filename="../Setting.cpp" line="292"/>
         <source>Failed Modules</source>
-        <translation type="unfinished">失敗的模組</translation>
+        <translation>失敗的模組</translation>
     </message>
     <message>
         <location filename="../Setting.cpp" line="357"/>
@@ -865,14 +866,6 @@ Reason: %2</source>
         <location filename="../Setting.ui" line="256"/>
         <source>Failed Modules</source>
         <translation>失敗的模組</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Clipboard Assistant&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;Developed by Heresy &lt;br/&gt;with Google Gemini-CLI&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub Project Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;剪貼簿小幫手 (Clipboard Assistant)&lt;/span&gt; v0.2.0&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;開發者：Heresy &lt;br/&gt;使用 Google Gemini-CLI 協助開發&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5b0c6d;&quot;&gt;GitHub 專案頁面&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;center&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;b&gt;Clipboard Assistant&lt;/b&gt; v0.2.0&lt;br/&gt;Developed by Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;GitHub Project Page&lt;/a&gt;&lt;/center&gt;</source>
-        <translation type="vanished">&lt;center&gt;&lt;img src=&quot;:/ClipboardAssistant/app_icon.png&quot; width=&quot;64&quot; height=&quot;64&quot;/&gt;&lt;br/&gt;&lt;b&gt;剪貼簿助手&lt;/b&gt; v0.2.0&lt;br/&gt;開發者：Heresy&lt;br/&gt;&lt;a href=&quot;https://github.com/KHeresy/ClipboardAssistant&quot;&gt;GitHub 專案頁面&lt;/a&gt;&lt;/center&gt;</translation>
     </message>
     <message>
         <location filename="../Setting.ui" line="220"/>

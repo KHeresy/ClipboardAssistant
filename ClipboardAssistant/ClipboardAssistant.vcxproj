@@ -121,10 +121,13 @@
     <ClCompile Include="main.cpp" />
     <ResourceCompile Include="ClipboardAssistant.rc" />
     <Image Include="app_icon.ico" />
+    <None Include="..\README.md" />
+    <None Include="..\README_TW.md" />
     <None Include="app_icon.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\IClipboardModule.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <QtTranslation Include="translations\ClipboardAssistant_zh_TW.ts">

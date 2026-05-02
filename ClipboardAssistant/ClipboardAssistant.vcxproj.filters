@@ -66,6 +66,9 @@
     <ClInclude Include="..\Common\IClipboardModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="Setting.ui">
@@ -109,6 +112,8 @@
     <None Include="app_icon.png">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\README.md" />
+    <None Include="..\README_TW.md" />
   </ItemGroup>
   <ItemGroup>
     <QtTranslation Include="translations\ClipboardAssistant_zh_TW.ts">

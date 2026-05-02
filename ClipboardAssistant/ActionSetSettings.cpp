@@ -191,6 +191,7 @@ void ActionSetSettings::saveCurrentParams() {
             case ParameterType::Bool: val = qobject_cast<QCheckBox*>(widget)->isChecked(); break;
             case ParameterType::Choice: val = qobject_cast<QComboBox*>(widget)->currentText(); break;
             case ParameterType::Number: val = qobject_cast<QSpinBox*>(widget)->value(); break;
+            case ParameterType::Decimal: val = qobject_cast<QDoubleSpinBox*>(widget)->value(); break;
             case ParameterType::File: case ParameterType::Directory: 
                 if (QLineEdit* le = widget->findChild<QLineEdit*>("PathEdit")) val = le->text(); 
                 break;
